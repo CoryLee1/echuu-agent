@@ -1,0 +1,281 @@
+[
+  {
+    "id": "clip_001",
+    "source": "中文主播",
+    "language": "zh",
+    "duration": 180,
+    "title": "沉没成本与读博换导师",
+    "quality_score": 5,
+    "trigger_type": "danmaku",
+    "catchphrases": [
+      "对吧",
+      "我觉得"
+    ],
+    "skeleton": "共情→自我经历→对比→建议→升华"
+  },
+  {
+    "id": "clip_002",
+    "source": "中文主播",
+    "language": "zh",
+    "duration": 77,
+    "title": "逗猫日常",
+    "quality_score": 4,
+    "trigger_type": "self",
+    "catchphrases": [
+      "小猫猫",
+      "啊"
+    ],
+    "skeleton": "互动→抱怨→对比→感慨→收尾"
+  },
+  {
+    "id": "clip_003",
+    "source": "中文主播",
+    "language": "zh",
+    "duration": 118,
+    "title": "起名与责任转嫁",
+    "quality_score": 5,
+    "trigger_type": "sc",
+    "catchphrases": [
+      "对吧",
+      "对不对",
+      "我跟你们说"
+    ],
+    "skeleton": "拒绝→心理分析→举例→延伸→总结"
+  },
+  {
+    "id": "clip_004",
+    "source": "中文主播",
+    "language": "zh",
+    "duration": 185,
+    "title": "被当成DeepSeek的主播",
+    "quality_score": 5,
+    "trigger_type": "sc",
+    "catchphrases": [
+      "对不对",
+      "我觉得"
+    ],
+    "skeleton": "吐槽→自我发现→担忧→自嘲→反转"
+  },
+  {
+    "id": "clip_005",
+    "source": "中文主播",
+    "language": "zh",
+    "duration": 403,
+    "title": "海苔腰果偷吃记",
+    "quality_score": 5,
+    "trigger_type": "self",
+    "catchphrases": [
+      "我跟你们说",
+      "天哪"
+    ],
+    "skeleton": "悬念→背景铺垫→核心故事→高潮→释放→收尾"
+  },
+  {
+    "id": "clip_006",
+    "source": "中文主播",
+    "language": "zh",
+    "duration": 354,
+    "title": "转行当老师的畅想",
+    "quality_score": 4,
+    "trigger_type": "danmaku",
+    "catchphrases": [
+      "对吧",
+      "就是"
+    ],
+    "skeleton": "问题→畅想→分析技能→转折→故事→反思"
+  },
+  {
+    "id": "clip_007",
+    "source": "中文主播联动",
+    "language": "zh",
+    "duration": 280,
+    "title": "展麟做客辅威联动",
+    "quality_score": 4,
+    "trigger_type": "collab",
+    "catchphrases": [
+      "如履薄冰"
+    ],
+    "skeleton": "开场→规则说明→快问快答→互相调侃"
+  },
+  {
+    "id": "clip_008",
+    "source": "中文主播",
+    "language": "zh",
+    "duration": 47,
+    "title": "精神寄托论",
+    "quality_score": 4,
+    "trigger_type": "danmaku",
+    "catchphrases": [
+      "我觉得"
+    ],
+    "skeleton": "回应→定义→边界→正向引导→收尾"
+  },
+  {
+    "id": "clip_009",
+    "source": "中文主播",
+    "language": "zh",
+    "duration": 45,
+    "title": "恋爱脑辩护",
+    "quality_score": 3,
+    "trigger_type": "danmaku",
+    "catchphrases": [
+      "我觉得",
+      "那咋了呢"
+    ],
+    "skeleton": "回应→反驳→举例→边界→总结"
+  },
+  {
+    "id": "clip_010",
+    "source": "中文主播联动",
+    "language": "zh",
+    "duration": 440,
+    "title": "辅威联动防诈骗现场",
+    "quality_score": 5,
+    "trigger_type": "collab",
+    "catchphrases": [
+      "爆爆爆",
+      "辅威"
+    ],
+    "skeleton": "快问快答→互相挖坑→现场连线演示"
+  },
+  {
+    "id": "clip_011",
+    "source": "Nijisanji EN VTuber",
+    "language": "en",
+    "duration": 140,
+    "title": "Stealing vs Borrowing Philosophy",
+    "quality_score": 4,
+    "trigger_type": "self",
+    "catchphrases": [
+      "you know what I mean",
+      "the thing is"
+    ],
+    "skeleton": "荒诞辩论→脑细胞吐槽→话题切换"
+  },
+  {
+    "id": "clip_012",
+    "source": "Nijisanji EN VTuber (Vox Akuma)",
+    "language": "en",
+    "duration": 92,
+    "title": "Daddy称呼的认真讨论",
+    "quality_score": 5,
+    "trigger_type": "danmaku",
+    "catchphrases": [
+      "you know",
+      "okay"
+    ],
+    "skeleton": "问题→铺垫→语言科普→态度声明→反转"
+  },
+  {
+    "id": "clip_013",
+    "source": "Nijisanji EN VTuber (Enna Alouette)",
+    "language": "en",
+    "duration": 265,
+    "title": "没上大学的人生选择",
+    "quality_score": 5,
+    "trigger_type": "self",
+    "catchphrases": [
+      "you know",
+      "like"
+    ],
+    "skeleton": "坦白→家庭背景→理性分析→自嘲→鼓励观众"
+  },
+  {
+    "id": "clip_014",
+    "source": "Nijisanji EN VTuber (Enna Alouette)",
+    "language": "en",
+    "duration": 68,
+    "title": "没有PS的童年愤怒",
+    "quality_score": 5,
+    "trigger_type": "danmaku",
+    "catchphrases": [
+      "shut the f*** up"
+    ],
+    "skeleton": "愤怒回应→背景揭示→反击"
+  },
+  {
+    "id": "clip_015",
+    "source": "Nijisanji EN VTuber (Ren Zotto)",
+    "language": "en",
+    "duration": 102,
+    "title": "当过课后托管老师",
+    "quality_score": 4,
+    "trigger_type": "danmaku",
+    "catchphrases": [
+      "uhm",
+      "you know"
+    ],
+    "skeleton": "否认→回忆→温馨故事→满足"
+  },
+  {
+    "id": "clip_016",
+    "source": "Nijisanji EN VTuber (Ren Zotto)",
+    "language": "en",
+    "duration": 193,
+    "title": "摸胸的哲学辩护",
+    "quality_score": 4,
+    "trigger_type": "self",
+    "catchphrases": [
+      "ayo",
+      "you know"
+    ],
+    "skeleton": "被发现→辩护→读评论→继续辩护→alien梗"
+  },
+  {
+    "id": "clip_017",
+    "source": "Nijisanji EN VTuber (Enna Alouette)",
+    "language": "en",
+    "duration": 141,
+    "title": "器官捐献的经济学思考",
+    "quality_score": 4,
+    "trigger_type": "sc",
+    "catchphrases": [
+      "oh my god",
+      "what the f***"
+    ],
+    "skeleton": "感谢→玩梗→真的开始算账→哲学思考"
+  },
+  {
+    "id": "clip_018",
+    "source": "Nijisanji EN VTuber (Enna Alouette)",
+    "language": "en",
+    "duration": 183,
+    "title": "强迫症般的下播时间",
+    "quality_score": 4,
+    "trigger_type": "self",
+    "catchphrases": [
+      "oh my god",
+      "like"
+    ],
+    "skeleton": "道别→发现问题→自我吐槽→互动→继续等"
+  },
+  {
+    "id": "clip_019",
+    "source": "Nijisanji EN VTuber",
+    "language": "en",
+    "duration": 95,
+    "title": "被朋友怼到说不出话",
+    "quality_score": 4,
+    "trigger_type": "self",
+    "catchphrases": [
+      "I fear",
+      "what the f***"
+    ],
+    "skeleton": "故事设置→punch line→反应→评价"
+  },
+  {
+    "id": "clip_020",
+    "source": "Nijisanji EN VTuber (Vox Akuma)",
+    "language": "en",
+    "duration": 164,
+    "title": "塔罗牌占卜的感悟",
+    "quality_score": 5,
+    "trigger_type": "self",
+    "catchphrases": [
+      "uhm",
+      "you know",
+      "really"
+    ],
+    "skeleton": "分享经历→理性怀疑→情感连接→角色融入→感悟"
+  }
+]
