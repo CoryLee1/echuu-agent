@@ -78,9 +78,7 @@ echuu-agent/
 
 ## 核心概念
 
-### 标注维度
-
-| 维度 | 说明 | 取值 |
+### 标注维度| 维度 | 说明 | 取值 |
 |------|------|------|
 | attention_focus | 注意力指向 | self, audience, specific, content, meta |
 | speech_act | 话语行为 | narrate, opine, respond, elicit, pivot, backchannel |
@@ -118,9 +116,7 @@ decision_value = urgency - cost
 }
 ```
 
-### 标注数据 (JSON)
-
-```json
+### 标注数据 (JSON)```json
 {
   "clip_id": "clip_001",
   "skeleton": "共情→自我经历→对比→建议→升华",
@@ -139,9 +135,7 @@ decision_value = urgency - cost
 }
 ```
 
-## 命令行工具
-
-```bash
+## 命令行工具```bash
 # 查看帮助
 python workflow/data-annotation-process/run_annotation.py --help
 
