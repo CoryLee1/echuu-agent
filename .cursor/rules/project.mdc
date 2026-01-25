@@ -1,0 +1,87 @@
+# echuu-agent 项目规范
+
+## 项目概述
+
+echuu-agent 是一个 AI VTuber 自动直播系统，核心功能：
+1. **数据标注**: 从真实主播切片中提取表演模式
+2. **模式分析**: 学习注意力转移、话语行为等规律
+3. **自动生成**: 基于学习到的模式生成自然的直播内容
+
+## 目录结构
+
+```
+echuu-agent/
+├── .env                  # 环境变量配置（API Keys）
+├── .env.example          # 环境变量模板
+├── data/                 # 数据目录
+│   ├── vtuber_raw_clips_*.jsonl    # 原始数据
+│   └── annotated_clips.json        # 标注后数据
+├── workflow/
+│   ├── data-annotation-process/    # 数据标注流程
+│   │   ├── data_annotation_pipeline.py
+│   │   ├── data_to_echuu_pipeline.ipynb
+│   │   └── run_annotation.py       # 标注入口脚本
+│   ├── jupyter_notebook/           # 交互式notebook
+│   │   └── echuu_notebook (1).ipynb
+│   └── backend/                    # 后端引擎
+│       └── echuu_engine (1).py
+└── vtuber_multiagent.ipynb        # 多Agent系统
+```
+
+## 核心Schema
+
+### Segment标注维度
+
+```python
+# 注意力指向
+AttentionFocus = ["self", "audience", "specific", "content", "meta"]
+
+# 话语行为  
+SpeechAct = ["narrate", "opine", "respond", "elicit", "pivot", "backchannel"]
+
+# 触发源
+Trigger = ["sc", "danmaku", "self", "content", "prior"]
+```
+
+## 开发规范
+
+### 环境配置
+- 所有 API Key 必须通过 `.env` 文件配置
+- 使用 `python-dotenv` 加载环境变量
+- 禁止在代码中硬编码任何密钥
+
+### 数据格式
+- 原始数据: JSONL格式
+- 标注数据: JSON数组格式
+- 所有文本使用 UTF-8 编码
+
+### 代码风格
+- 使用 Python 3.10+
+- 遵循 PEP 8 规范
+- 所有函数需要有 docstring
+- 关键逻辑添加中文注释
+
+### 标注流程
+1. 配置 `.env` 中的 API Key
+2. 运行 `python workflow/data-annotation-process/run_annotation.py`
+3. 检查 `data/annotated_clips.json` 输出
+4. 在 echuu notebook 中使用标注数据
+
+## 常用命令
+
+```bash
+# 快速标注（不调用LLM）
+python workflow/data-annotation-process/run_annotation.py --quick
+
+# LLM精细标注
+python workflow/data-annotation-process/run_annotation.py
+
+# 标注指定数量的clips（用于测试）
+python workflow/data-annotation-process/run_annotation.py --max-clips 5
+```
+
+## 注意事项
+
+1. **API 限流**: LLM 调用有速率限制，使用 `REQUEST_DELAY` 控制
+2. **数据备份**: 标注前备份原始数据
+3. **增量标注**: 支持断点续传，已标注的clip不会重复处理

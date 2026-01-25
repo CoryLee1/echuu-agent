@@ -1,0 +1,28 @@
+# echuu-agent 依赖
+
+# 核心依赖
+python-dotenv>=1.0.0
+anthropic>=0.18.0
+openai>=1.12.0
+
+# 数据处理
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Jupyter支持
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# TTS (通义千问 CosyVoice)
+dashscope>=1.20.0
+
+# 音频播放 (可选)
+# pyaudio  # Windows: pip install pyaudio, Linux: sudo apt install python3-pyaudio
+
+# 可选：异步支持
+aiohttp>=3.9.0
+asyncio-throttle>=1.0.0
+
+# 开发工具
+rich>=13.0.0  # 美化终端输出
+tqdm>=4.65.0  # 进度条

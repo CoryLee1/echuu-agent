@@ -1,0 +1,1882 @@
+[
+  {
+    "clip_id": "clip_001",
+    "source": "中文主播（学术/人生建议类）",
+    "language": "zh",
+    "duration": 180,
+    "title": "沉没成本与读博换导师",
+    "skeleton": "共情→自我经历→对比→建议→升华",
+    "catchphrases": [
+      "对吧",
+      "我觉得"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 15,
+        "text": "所以说你只能把这条路走完，这个就是很多时候我们会很畏首畏尾的一个原因，就是因为有这个沉没成本在这里。",
+        "attention_focus": "specific",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "对吧",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 15,
+        "end_time": 35,
+        "text": "而我觉得做学术这件事情，它不是最简单。讲沉没成本的时候，也许你可能已经做了一年两年的研究，对吧。你可能已经做了一年两年的研究了，你觉得换方向会白掉这一两年，然后你可能会延毕。",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "对吧,我觉得",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_03",
+        "start_time": 35,
+        "end_time": 60,
+        "text": "但是你要想，你换方向后面的一年两年，甚至是三年，可能仍然处在这种你学不到什么新东西的环境下，你不会觉得后面这两三年也很可惜吗？那我就当前面这一两年白读了，就当我要延毕一两年。我转去一个像隔壁的。我们换个方向，我们再来，它会改变很多的。",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "我觉得",
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_04",
+        "start_time": 60,
+        "end_time": 75,
+        "text": "我觉得，我知道你想说能不能鼓励鼓励你，但是在鼓励你之前，我还是劝。我是劝换，我是劝回头的那种。我是非常劝回头，非常想劝回头的那种。",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "我觉得",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_05",
+        "start_time": 75,
+        "end_time": 95,
+        "text": "我读博的时候，那个老板就是属于只会看微信公众号，然后要和自己的学生抢一作。然后没有任何指导。因为他根本不懂，他只是一个当领导的，天天干的是行政的事情。老粉应该都知道。",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_06",
+        "start_time": 95,
+        "end_time": 110,
+        "text": "我吐槽过导师骂人，开组会，三楼在开组会，他在组会的房间里，在这个教室里骂人，然后二楼的人，第二天都在说，诶，昨天三楼谁在开组会骂人呢，听得好清楚。",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_07",
+        "start_time": 110,
+        "end_time": 130,
+        "text": "我是他的第一届。嗯，应该算是第一届毕业生。然后我们第一届毕业生理应毕业两三个，应届毕业三个，一个因为被他逼的学术造假然后被退学了，另一个懵懵的，现在还没毕业，只有我。",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_08",
+        "start_time": 130,
+        "end_time": 155,
+        "text": "我从这个养蛊，在这个蛊罐子里活出来了。出来之后我就发现，也许当时我换了一个导师的话，可能会很好。因为现在我博后在的这个组，我发现这个导师非常nice。他愿意给我投经费，愿意一起跟我看文章，一起跟我聊项目设计，愿意去帮我介绍资源，去帮我撮合我想要的项目合作。",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": "我觉得",
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_09",
+        "start_time": 155,
+        "end_time": 180,
+        "text": "他就是这样的一个人。我觉得跟这样的一个人一起合作，一起共事，一起做研究，只需要一年，我的成长能比得上之前博士的四五年。所以我觉得对你也是这样。既然你已经认清了，这个导师真的是垃圾中的垃圾，而且你的师兄师姐也通通延毕，你未来大概率也会延毕。在这种情况下，你是不是可以考虑，抛弃掉这个沉没成本呢？每一个错误的选择，每一个现在受的苦，可能都是在为我们当初一个鲁莽的生活选择而赎罪。当初我们，对吧，无论是我还是你，当初都没有选好导师，都没有在选导师这件事情上上太多的心，没有做好背调。所以落得这样的下场。我觉得既知如此，那现在后悔不完，现在跑也不完。跑吧，跑吧，去好好调查一下，选择一个更好的组，去实现你的抱负和梦想吧。一切都会变好的。与其没有希望的熬下去，不如充满希望地去挑战一个未知的选择。",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "对吧,我觉得",
+        "emotion_shift": true
+      }
+    ],
+    "notes": {
+      "trigger": "回应弹幕/观众提问（学术困境）",
+      "habit": "\"对吧\"、\"我觉得\"",
+      "structure": "共情→自我经历→对比→建议→升华",
+      "emotion": "从理性分析到情感鼓励",
+      "feature": "大量个人经历分享，建立信任感"
+    }
+  },
+  {
+    "clip_id": "clip_002",
+    "source": "中文主播（杂谈/宠物互动）",
+    "language": "zh",
+    "duration": 77,
+    "title": "逗猫日常",
+    "skeleton": "互动→抱怨→对比（外面的猫）→感慨→收尾",
+    "catchphrases": [
+      "小猫猫",
+      "啊？"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 75,
+        "text": "猫猫怎么了？你也想要上镜是不是，小猫猫？小猫猫你也想要上镜，那你上镜啊，小猫猫！你上镜我就给你准备上镜礼物。是陈子又冠名的猫粮哦，小猫猫。嗯？ 你怎么不上镜啊小猫猫，我都抱抱你这么久了你怎么还不上镜。小猫猫，你还叫，你还叫，臭猫猫啊，白嫖失败，臭猫猫。我怎么坏了，我养这个猫猫这么久我怎么坏了，好吃好喝我供着它我怎么坏了，我是大好人好吧。看看我家外面，听到没有小猫猫，小橘听到没有，看看外面的那些小猫猫，一个二个，饿的呀，那个面黄肌瘦。啊？ 我今天才看到两只，那个奶牛猫，跑去翻垃圾堆呀。小朋友，小橘，别的小猫猫在外面翻垃圾堆，你趴在爸爸的腿上一边听爸爸直播一边吃猫粮。啊？你不要身在福中不知福啊小猫猫，你为什么不给爸爸上镜呢？ 你身在福中不知福不知感恩啊。啊？好啦，我们继续看提问箱啊。哎呦吊我，丑丑猫头。猫猫走了。哇，猫猫走了之后，这个座位好热乎，猫猫好烫哦，这个猫猫太烫了。",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "content",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "自发（和宠物互动）",
+      "habit": "\"小猫猫\"、\"啊？\"",
+      "structure": "互动→抱怨→对比（外面的猫）→感慨→收尾",
+      "emotion": "宠溺+假装嫌弃",
+      "feature": "自言自语式、和宠物的\"对话\""
+    }
+  },
+  {
+    "clip_id": "clip_003",
+    "source": "中文主播（杂谈/人生哲学）",
+    "language": "zh",
+    "duration": 118,
+    "title": "起名与责任转嫁",
+    "skeleton": "拒绝→心理分析（举例）→延伸（宠物/孩子）→总结",
+    "catchphrases": [
+      "对吧",
+      "对不对",
+      "我跟你们说"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 20,
+        "text": "谢谢XX的SC，\"也可以先从宝宝起名开始\"。不行不行不行，给活物起名是我的第一线。有很多人啊，他做选择是什么，他就想赖别人，我是特别特别有感触的，我对这个真的PTSD了，你可能觉得这个很夸张，但是你仔细想想，是吧？",
+        "attention_focus": "specific",
+        "speech_act": "respond",
+        "trigger": "sc",
+        "catchphrase": [
+          "对吧"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 20,
+        "end_time": 63,
+        "text": "就是很多时候你跟朋友讲话，然后朋友给你抱怨一个事情。我们打个比方吧，他跟你说这个工作怎么怎么不好，怎么怎么不好，怎么怎么不好。然后你开始劝他说，那你可以这么做这么做，给他一点真心的建议，对吧，希望他能变得更好。然后他可能听着\"哦好的好的我会试一试\"，但是转头又跟你说这工作怎么样怎么不好，他根本就没有去尝试。最后你烦了你跟他说\"你辞职算了\"，他说\"哎我也是这么想的\"。然后他真辞职了，真辞职之后，如果他找到了更好的工作，他并不会感谢你，他会觉得是自己的能力，顶多就是人好一点，请你吃个饭。但是你又没有想过，那跟你有什么关系呢。这还不是重点，最重要是如果他辞职了没有获得好的结果。",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "对吧"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_03",
+        "start_time": 63,
+        "end_time": 118,
+        "text": "好了，你就是他人生的毁灭者。他只是不想自己去做出那个重要的决定，你一旦帮他做决定了，他就仿佛有了一个大靠山，就算失败了也不是因为自己而失败，因为大家都不喜欢承认自己的错误，对不对。这个是人之常情的。我对这个事情是太有PTSD的了。所以包括宠物取名什么什么的也是的，你如果你自己给它取名，就算你再怎么随便，这个赋予名字的那一瞬间你就会对它形成一个纽带。但是你连家养的这种宠物活物甚至孩子的名字都是别人起的，你总会不自觉地想要怪罪到给他起名的那个人头上的，总会在那么一瞬间。我不想给你留这么一个隐患，让你在以后莫名其妙，我啥都没干，家里猫猫睡大觉然后打了个喷嚏，因为你在那边偷偷骂我。这个是真的会有这个情况发生的。人就是这样。",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "我跟你们说"
+        ],
+        "emotion_shift": true
+      }
+    ],
+    "notes": {
+      "trigger": "SC打赏（\"宝宝起名\"）",
+      "habit": "\"对吧\"、\"对不对\"、\"我跟你们说\"",
+      "structure": "拒绝→心理分析（举例）→延伸（宠物/孩子）→总结",
+      "emotion": "从调侃到认真分析",
+      "feature": "通过具体场景展开抽象道理，PTSD作为情绪锚点"
+    }
+  },
+  {
+    "clip_id": "clip_004",
+    "source": "中文主播（杂谈/自嘲）",
+    "language": "zh",
+    "duration": 185,
+    "title": "被当成DeepSeek的主播",
+    "skeleton": "吐槽→自我发现→担忧→自嘲→反转",
+    "catchphrases": [
+      "对不对",
+      "我觉得"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 185,
+        "text": "谢谢小黎大大大王的一个SC啊，\"最近一直在玩CF，想名字想了好久不知道取什么，你有什么推荐的名字吗？\"我的天哪，我发现了，大家现在这个SC把我当DeepSeek整。你要不问DeepSeek吧，有点想不出来。你玩CF都要让我取名字，你叫枪神算了。今天的这个SC我们来看一看，\"老相机点什么好，选择困难\"，对不对。然后那个\"去当街舞社长，有点紧张怎么办\"。其实你们的这个问题，你们有发现很像是一般会问DeepSeek的那些问题吗？\"我当上了一个什么什么什么什么职位，然后我有点紧张，这个时候我应该做一些什么可以让自己感觉到好一点\"。然后还有就是\"想不出来要吃什么怎么办\"，\"我第一次干嘛干嘛干嘛干嘛，应该怎么办\"。 或者说就是\"很焦虑\"这样子的。我一直感觉我对自己的那个回复SC有一种既视感，然后我现在突然意识到，我是DeepSeek主播啊。可能觉得主播很厉害吧，但是有时候会感觉让我压力很大，我感觉大家是把我的形象想的太高大了。很多问题都来问我，包括人生问题。就目前可能因为观众年龄层的问题，没有人问我\"我生了个小孩，小孩应该怎么样\"，没有问我这个宝宝宝宝这个晚上一直哭怎么办。顶多就是\"我家养了个小狗...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "sc",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "SC打赏（游戏取名问题）",
+      "habit": "\"对不对\"、\"我觉得\"",
+      "structure": "吐槽→自我发现→担忧→自嘲→反转",
+      "emotion": "从调侃到认真反思再到自嘲收尾",
+      "feature": "元评论（评论自己的直播状态），年龄焦虑"
+    }
+  },
+  {
+    "clip_id": "clip_005",
+    "source": "中文主播（杂谈/回忆）",
+    "language": "zh",
+    "duration": 403,
+    "title": "海苔腰果偷吃记",
+    "skeleton": "开场悬念→背景铺垫（穷）→核心故事（偷吃腰果）→高潮（坦白）→释放→收尾（广告）",
+    "catchphrases": [
+      "我跟你们说",
+      "天哪"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 403,
+        "text": "这个吃完了我一下子我的心都颤抖了，我心想咋咋回事，怎么被我全吃完了，那里头腰果。我跟你们说我这两天我都，我有好几次想直播，然后我都很有罪恶感，因为我最近有歌要录，我已经录了两首了，然后我还有两首歌要录，还要练一练那个演出的歌嘛。歌没录好，然后我就打开直播，我就感觉特别的特别的有罪恶感，活都没干完呢，就想着直播。好几次想直播，我都想算了算了，凉一凉嗓子，赶紧把歌录了。今天我本来上午的就想直播，想着嗓子没养好呢，竟想着直播，歌都没录，就一直这么想着，最后就是一直没开。刚刚休息了一下，我想着试一下，把那个和声录完，然后录完了，想着可以，今天我都录了和声了，我已经累了，开直播。哈哈哈哈哈哈。 \"现在开播是已经放松了吗？\"还行，反正我现在开播，现在直播没有以前那么紧张了，有时候会因为某种因素突然让我紧张起来，我觉得我播的时候还挺放松的，累了就歇了。\"缺钱紧张\"，不是因为缺钱，缺钱有啥紧张的，没钱了就饿着呗。我跟你们说，我现在回想一下，我觉得我心理负担最轻的时候，就是我最穷的时候，就我留学的时候最穷，那是我最穷的时候，都没钱吃饭，就在那里随便搞点东西，酱油拌饭。我那时候可不是雪碧拌饭，雪碧太贵了。...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "自发（吃东西联想到回忆）",
+      "habit": "\"我跟你们说\"、\"天哪\"",
+      "structure": "开场悬念→背景铺垫（穷）→核心故事（偷吃腰果）→高潮（坦白）→释放→收尾（广告）",
+      "emotion": "从紧张到释然，穿插自嘲",
+      "feature": "**经典叙事结构**，细节丰富，情绪完整弧线"
+    }
+  },
+  {
+    "clip_id": "clip_006",
+    "source": "中文主播（杂谈/职业畅想）",
+    "language": "zh",
+    "duration": 354,
+    "title": "转行当老师的畅想",
+    "skeleton": "问题→畅想→分析技能→转折（不喜欢小孩）→故事（小女孩）→反思",
+    "catchphrases": [
+      "对吧",
+      "就是"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 354,
+        "text": "嗨，\"如果转行，会选择什么呢？\"这完全不干这行是吧？就除了当那个啊，开经纪公司，开公会，开主播公会以外，会选择干什么？ 我又有点像当老师，我有一点想当老师，想跟孩子们玩。这可能最近嘛，我就一阵一阵的，这阵子想当那个想开餐厅的，那次就想开甜品店。最近这一阵子看来刷了一些抖音，看这种就是九零后老师的那个视频嘛，这个很好玩，哎呦好开心啊想跟孩子们玩。\"六螺不应该开个蛋兔？\"现在还有蛋兔。然后我想了一下觉得我还，我有个技能，应该算是一个小技能吧，就是我还挺懂得怎么样靠语言艺术去吸引孩子们的注意，也不是孩子们注意嘛，就是吸引人们的注意的。就是通过说话，就纯靠说话来吸引你的注意，让你对我对我的话题感兴趣，然后想要听我接下去说下去。这一件我觉得我还是做的还是还可以的。反正这个技能不是还挺适合当老师的吗，对吧。然后有很多人说我声音听得很舒服嘛，对吧？ 听得很清晰。但可能不一定，想的是很美好的，真的当了老师了，可能不当老师之前每个人讲话都是温柔柔的吧。当了老师以后，都会变成：\"打开课本，我们翻书翻到第15页，好，打起精神来。\"就是可能当老师当久了，都会变成这个语调，语调会趋同。因为我从小到大的老师好像就...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "danmaku",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "弹幕提问（转行选择）",
+      "habit": "\"对吧\"、\"就是\"",
+      "structure": "问题→畅想→分析技能→转折（不喜欢小孩）→故事（小女孩）→反思",
+      "emotion": "从憧憬到自嘲到调侃",
+      "feature": "自我矛盾的展示，真实感"
+    }
+  },
+  {
+    "clip_id": "clip_007",
+    "source": "中文主播（联动/访谈）",
+    "language": "zh",
+    "duration": 280,
+    "title": "展麟做客辅威联动（破防挑战）",
+    "skeleton": "开场介绍→规则说明→快问快答→互相调侃",
+    "catchphrases": [
+      "如履薄冰"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 280,
+        "text": "**主持人:** 今天晚上嘉宾，展麟老师，欢迎欢迎欢迎欢迎欢迎。 **展麟:** 嗨，大家好。 **主持人:** 有点紧张怎么回事啊，你先别紧张，先让我紧张。他们都说这个今天会有一些非常刺激悖德感是什么，刺激悖德感。悖什么德啊？我刺黑圈那个难得的悖德呀，就是很……有人对我有误解，以为我是一个为了流量无所不用其极的人，其实这不是误解，这是真的。 **展麟:** 行，好好好，那我今天我想给自己也增加一个小挑战，就是看看能不能让你破防。 **主持人:** 那我就宣告你失败吧，没破过防吧，没有的。 **展麟:** OK，可以。今天再给你一个安全词的机会，就是如果我问到一些问题可能你不太好回答，你就说\"如履薄冰\"，咱们就pass。 **主持人:** 行，这个好。 **展麟:** 第一条，请问更喜欢聪明还是强壮？ **主持人:** 强壮没什么用啊，因为这个聪明，我喜欢和这个聪明的人说话，不是这个，啊，那我是强壮的人，那强壮也可以的，也挺好的。 **展麟:** 下一条，觉得颜值更重要还是身材更重要？ **主持人:** 颜值吧，我觉得。因为身材的话也没什么用啊，身材。 **展麟:** 又来了！ **主...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "联动节目设定",
+      "habit": "\"如履薄冰\"（节目梗）",
+      "structure": "开场介绍→规则说明→快问快答→互相调侃",
+      "emotion": "轻松调侃、互相挖坑",
+      "feature": "**双人互动**，节奏紧凑，梗密度高"
+    }
+  },
+  {
+    "clip_id": "clip_008",
+    "source": "中文主播（杂谈/鸡汤）",
+    "language": "zh",
+    "duration": 47,
+    "title": "精神寄托论",
+    "skeleton": "回应→定义→边界→正向引导→收尾",
+    "catchphrases": [
+      "我觉得"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 47,
+        "text": "\"但主播看多了会容易成为精神寄托，有自知之明\"（复读弹幕） 精神寄托不是一件坏事，你不要找精神寄托，但是还要那个人家一直要跟你保持高强度私联的话，我觉得就没关系啊。主播不就是干精神寄托来的吗？把精神寄托放在一个具体的人身上很难受，我不建议你把精神寄托放在我身上。因为我一直我会一直跟你说，你要把自己的日子过好。就算我是你的精神寄托，我也不会就是跟你说你要一直依赖我，我会一直说男儿当自强。我不介意这个东西，我觉得能够给你们提供一些帮助，是我的荣幸。把日子过好这种话说都没说，但是我是相信人之间是可以互相影响的。如果你身边一直是一个低能量的人，你不如来找点高能量的人跟你相处，你的想法会从\"觉得我死了算了\"变成\"没什么大不了的\"。 因为你会被身边的人的想法对影响到，我觉得这是好的。\"带着我的精神寄托到我现在能自己自主\"，就很好，对啊，你看这是我带出来的兵。",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "danmaku",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "弹幕（担心精神寄托）",
+      "habit": "\"我觉得\"",
+      "structure": "回应→定义→边界→正向引导→收尾",
+      "emotion": "理性温和",
+      "feature": "主播对粉丝关系的健康引导"
+    }
+  },
+  {
+    "clip_id": "clip_009",
+    "source": "中文主播（杂谈/恋爱观）",
+    "language": "zh",
+    "duration": 45,
+    "title": "恋爱脑辩护",
+    "skeleton": "回应→反驳→举例→边界→总结",
+    "catchphrases": [
+      "我觉得",
+      "那咋了呢"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 45,
+        "text": "\"但是不要恋爱脑\"。我觉得恋爱脑这个东西吧，很多人在骂，但是也看你自己怎么样去吧。其实你不管你怎么样去付出，比如说你就爱给男的花钱，他哄得我高兴我就要给，这个女孩子她就是我就是喜欢给她买小裙子，那咋了呢？人家喜欢，人家能在这个付出中就是得到一些快乐和反馈，这种程度恋爱脑我觉得没什么。就只要不是那种被PUA了就还好，随便。我觉得一定程度上的恋爱脑，它就是一个沉浸式恋爱该有的。你完全理智地去谈这段感情，卧槽那你这个感情谈得可没意思了，你去计较，你去很理智地权衡一些东西，那不是谈恋爱，不权就是找个人搭伙过日子。",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "danmaku",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "弹幕（恋爱脑警告）",
+      "habit": "\"我觉得\"、\"那咋了呢\"",
+      "structure": "回应→反驳→举例→边界→总结",
+      "emotion": "轻松辩护",
+      "feature": "为\"恋爱脑\"正名，反主流观点"
+    }
+  },
+  {
+    "clip_id": "clip_010",
+    "source": "中文主播（联动/访谈）",
+    "language": "zh",
+    "duration": 440,
+    "title": "辅威联动（防诈骗现场演示）",
+    "skeleton": "快问快答→互相挖坑→现场连线演示防诈骗",
+    "catchphrases": [
+      "爆爆爆",
+      "辅威"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 431,
+        "text": "\"内桑如果必须直播一场ASMR的话会选择什么主题？\"直接就是日常的那样子直播方法，然后把它换成ASMR呀，就是两个耳朵双声道，在你耳朵边爆爆爆吗。\"二妈完全看不懂啥屁\"，就这样。今天晚上嘉宾红毛鸡蛋，内斗威德老师。兄弟们我刚才给标题写\"参加辅威联动\"，结果这两个字不让打，结果这两个字被屏蔽掉了，我这原来想炒一下的，结果没炒起来。对，原来想炒作的。\"辅哥看来是\"，这两个字不让打我难受。OK，你直接说实话，我是不是这档节目最大的嘉宾了，还有没有比我更大的？那我这样问你，你和哲也露露哪个大？那他大，哲也露露是最大嘉宾，我第二。\"南非最大\"，可以，南非最大，可以吧。咱们闲言少说直接开始今天的节目，这个第一条，喜欢独处还是聚会？ 那我肯定喜欢独处一点，对啊，因为我发现身边的人根本跟不上我的节奏，他们的脑细胞无法像我一样活跃地跳动，我要构思一些，然后晚上给大家爆爆爆，每天就想着想着怎么爆爆，对，每天就得想着怎么爆，一天不爆一天不舒服。\"好，下一条，你更喜欢安定还是冒险？\"肯定喜欢冒险，因为我喜欢爆爆爆。\"那下一条，你出去旅行，你会更关注当地的美食还是当地的文化？\"坏了我这两天才在直播间说话，傻逼才...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "联动节目",
+      "habit": "\"爆爆爆\"（节目梗）、\"辅威\"",
+      "structure": "快问快答→互相挖坑→现场连线演示防诈骗",
+      "emotion": "搞笑、默契",
+      "feature": "**现场即兴**，防诈骗梗，节目效果拉满"
+    }
+  },
+  {
+    "clip_id": "clip_011",
+    "source": "Nijisanji EN VTuber",
+    "language": "en",
+    "duration": 140,
+    "title": "Stealing vs Borrowing Philosophy",
+    "skeleton": "荒诞辩论→脑细胞吐槽→话题切换",
+    "catchphrases": [
+      "you know what I mean",
+      "the thing is"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 16,
+        "text": "Okay, you know what? I can teach you how to be— I can teach you how to steal things. Yes, I want to be a part of the, the scalping. I want to, I want to profit off of everyone else, teaching me. But the thing is, okay, you, you steal things, but—",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "you know what I mean",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 16,
+        "end_time": 32,
+        "text": "Oh, wait, what? That's just borrowing stuff. Yeah, you just, so you, so you want to be, so you want to be the big bad boss, right? By stealing. But you know, you're not actually that, you know, that big bad, because you return it.",
+        "attention_focus": "self",
+        "speech_act": "respond",
+        "trigger": "prior",
+        "catchphrase": "the thing is",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_03",
+        "start_time": 32,
+        "end_time": 38,
+        "text": "Well, I'm not returning it. I'm giving it back.",
+        "attention_focus": "self",
+        "speech_act": "respond",
+        "trigger": "prior",
+        "catchphrase": null,
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_04",
+        "start_time": 38,
+        "end_time": 51,
+        "text": "Uhm, I have a question. Yeah? Is English your first language?",
+        "attention_focus": "audience",
+        "speech_act": "elicit",
+        "trigger": "prior",
+        "catchphrase": null,
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_05",
+        "start_time": 51,
+        "end_time": 109,
+        "text": "No, no, but listen, though. I take it— No, no, answer my question. No, no, no, but listen, listen a second. I take it, right? I lose it. And then I give it back. So is that really returning it, if it's not the same exact thing? I still want my question to be answered. Yeah, I mean, English is my first language, yeah. So, so, you know what a synonym is, right? Synonym, yes, yes, I love synonyms. So, you know, giving back and returning, they're synonyms, right?",
+        "attention_focus": "audience",
+        "speech_act": "respond",
+        "trigger": "prior",
+        "catchphrase": "you know what I mean",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_06",
+        "start_time": 109,
+        "end_time": 140,
+        "text": "The thing is, I'm not borrowing. Uhm, I hope so. I'm taking it, and I'm giving it back. As much as I would like to keep this conversation going, I, I don't know if I can, you know, take the additional, uhm, the additional, like, like, my last two brain cells are already fighting for their life right now, and I, I, I don't want to lose them, you know? Boss, which power will you choose, teleport or invisibility? Here's the one thing you should know about teleportation, okay? Just because you can get to places very fast, doesn't mean you can survive bullets, okay? But! I choose teleportation. Guys, come on! That's like God's plan! I could literally do this. I miss Vox, Mista, and Ike. BOOM! I'm in Europe! Invisibility is like teleportation, but you actually have to walk. You know what I mean?",
+        "attention_focus": "audience",
+        "speech_act": "pivot",
+        "trigger": "danmaku",
+        "catchphrase": "the thing is",
+        "emotion_shift": true
+      }
+    ],
+    "notes": {
+      "trigger": "观众问题/闲聊",
+      "habit": "\"you know what I mean\"、\"the thing is\"",
+      "structure": "荒诞辩论→脑细胞吐槽→话题切换",
+      "emotion": "搞笑、自嘲",
+      "feature": "**荒诞逻辑**，stealing vs borrowing的哲学辩论"
+    }
+  },
+  {
+    "clip_id": "clip_012",
+    "source": "Nijisanji EN VTuber (Vox Akuma)",
+    "language": "en",
+    "duration": 92,
+    "title": "Daddy称呼的认真讨论",
+    "skeleton": "问题→铺垫→语言知识科普→态度声明→反转",
+    "catchphrases": [
+      "you know",
+      "okay"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 80,
+        "text": "I'm curious. How much do you enjoy being called daddy? I was going to be coy, because I've never said it, but today is such a special occasion. I just want to be sure you know. Sure, I'll tell you the truth. You know, okay, before I do, let me remind you all. I've said this before, but I'll say it again, because we have a larger audience here. And now, for those of you with a language barrier, remember, the word Daddy, when not used to refer to a member of your own family, carries extremely over...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "danmaku",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "观众问题（敏感话题）",
+      "habit": "\"you know\"、\"okay\"",
+      "structure": "问题→铺垫→语言知识科普→态度声明→反转",
+      "emotion": "从认真科普到反转玩梗",
+      "feature": "**边界设定**但以玩梗收尾，处理敏感话题的范例"
+    }
+  },
+  {
+    "clip_id": "clip_013",
+    "source": "Nijisanji EN VTuber (Enna Alouette)",
+    "language": "en",
+    "duration": 265,
+    "title": "没上大学的人生选择",
+    "skeleton": "坦白→家庭背景→理性分析→自嘲→鼓励观众",
+    "catchphrases": [
+      "you know",
+      "like"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 34,
+        "text": "Guys, I never went to university. I couldn't afford it. I still can't really afford it. Well, more than not being able to afford it, it was more like— So in Canada, if you want to go to university, they do have like these systems where like, uhm, you can borrow money to go. Yeah, yeah, so you take a loan. A student loan.",
+        "attention_focus": "audience",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "you know",
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 34,
+        "end_time": 51,
+        "text": "My biggest problem was, I always, always, like, understood this. I come from two parents who— One of them is basically incapable of, like, working at all. The other one is, like, on the other side of the world, working, but, he's at the point where he can really only afford things for himself.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "you know",
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_03",
+        "start_time": 51,
+        "end_time": 104,
+        "text": "What I understood was, I could go to university. But the thing is, is that I didn't particularly want to study anything. Like, I wasn't like, oh my god, I really, really want to, like, I don't know, study, let's just say, like, history or something. Music. But, for me, I just didn't think that, like— Like, I could do music at home, you know? Like, I just felt like I didn't really want to, like, sit in school and just, like, learn about, like, theories and stuff. I think I'd much rather try to do something hands-on and learn the theories from, like, people, you know?",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "you know",
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_04",
+        "start_time": 104,
+        "end_time": 140,
+        "text": "Yeah, I actually never went to university. Okay, that's why I'm f****** stupid. But, I'm pretty happy, not gonna lie. I don't really want to go.",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "you know"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_05",
+        "start_time": 140,
+        "end_time": 205,
+        "text": "Uhm, but, you know, my main factor was, I knew that if I, you know, went to university, I didn't have the ambition to actually want to learn anything specific, you know? I just thought, like, if you're gonna spend or even, like, borrow or loan thousands of dollars to, like, you know, try out something that you, you're not really even sure if you are interested in learning, then maybe it's not a good idea. I was pretty disciplined. I was like, okay, and if you're not gonna study, then you gotta work. I mean, otherwise, if you don't, like, do anything, you can't just, like, not study and not work. You gotta do something. Because, like, working is also, like, studying. You're just studying.",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "you know",
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_06",
+        "start_time": 205,
+        "end_time": 247,
+        "text": "Yeah, I decided from a very, very young age. I was like, I wanna work. I don't want to, like, sit in school. After I started working, I, I've never learned— I'm not even joking, I've learned so much from my job. I hated all my jobs, except— Except for this one. But still, I don't regret it because I learned so much.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_07",
+        "start_time": 247,
+        "end_time": 307,
+        "text": "Like, I've been in school longer, but I feel like I've learned more from working. And you know what? Like, some people are the opposite. Some people learn a shit ton in school. And that's great. I wish I could learn a shit ton in school because I was in there for so long and I didn't learn shit. I was like, like a zombie. But you know, I think also like you have to take into consideration that when I was in school, I wasn't like having the best family situation as well. So I had a lot of family problems around grade 10 to 11. It was like a very rough year, but like nobody gives a shit. Okay. So, you know, when I was working, like, that's when it sort of calmed down. So there's also that too. I'm not just, like, blaming school. I just, I also probably just don't like school, but, you know, there's a lot of factors.",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "you know",
+          "like"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_08",
+        "start_time": 307,
+        "end_time": 265,
+        "text": "When you are in university or college, please be proud of it. Whether you go or not, it's all up to you, and it doesn't mean one is better than the other. Like, if you are in university, good for you. You're gonna get something on paper that literally says that, you know, you have really good education. My dad always tells me the one thing that he thinks that I'm missing out on by not going to school is making those connections, and he's absolutely right. Like, I don't really know a lot of people. Well, I mean, like, I know a fair amount because of the internet, but again, they're, like, from all over the world, right? It's a little different. But, like, you get to make more connections when you're in an environment where there's just a shit ton of people, you know? And, you know, it's easier to, like, find peers that way, you know? Sometimes, when I'm really down, I'll be like, I should've went to uni because I feel like a dumbass. But then sometimes, when I'm feeling a little better than usual, I'll be like, I'm so glad I didn't go!",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "you know",
+          "like"
+        ],
+        "emotion_shift": true
+      }
+    ],
+    "notes": {
+      "trigger": "自发分享",
+      "habit": "\"you know\"、\"like\"",
+      "structure": "坦白→家庭背景→理性分析→自嘲→鼓励观众",
+      "emotion": "脆弱→理性→积极",
+      "feature": "**真实脆弱的分享**，不说教但有力量"
+    }
+  },
+  {
+    "clip_id": "clip_014",
+    "source": "Nijisanji EN VTuber (Enna Alouette)",
+    "language": "en",
+    "duration": 68,
+    "title": "没有PS的童年愤怒",
+    "skeleton": "愤怒回应→背景揭示→反击",
+    "catchphrases": [
+      "shut the f*** up"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 64,
+        "text": "A lot of people were like, oh my god, you've never played Pokemon? I just look at them, like I just grab the collar of their shirt and I'm just like, yeah, that's right, not everybody's parents love them. So shut the f*** up, you privileged b****. I did. I spent all those years singing. A lot of people that I've met throughout my life, when they say things like, you know, not everybody's born talented like you. I literally just want to find their PS2, throw it outside the window, grab their coll...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "danmaku",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "观众评论（天赋论）",
+      "habit": "\"shut the f*** up\"",
+      "structure": "愤怒回应→背景揭示→反击",
+      "emotion": "**高强度愤怒**但带自嘲",
+      "feature": "用愤怒包装真实脆弱，反驳天赋论"
+    }
+  },
+  {
+    "clip_id": "clip_015",
+    "source": "Nijisanji EN VTuber (Ren Zotto)",
+    "language": "en",
+    "duration": 102,
+    "title": "当过课后托管老师",
+    "skeleton": "否认→回忆→温馨故事→满足",
+    "catchphrases": [
+      "uhm",
+      "you know"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 101,
+        "text": "What if Ren was a music teacher? Please no. You guys, I am not a good teacher. You know, actually, uh, I, I had one job in the past, uhm, where I was kind of like, uh, uh, like a, a carer, like a, a, you know, you know, like, after school carer? It was like, it was like that. So I was, I was, uh, a carer there. And, uhm, one of the, one of the students, like, really wanted to, uhm, really wanted to learn guitar, and they were just like, hey! Like, my boss was just like, hey, Ren, would, would yo...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "danmaku",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "观众提问（假设题）",
+      "habit": "\"uhm\"、\"you know\"",
+      "structure": "否认→回忆→温馨故事→满足",
+      "emotion": "谦虚→温暖",
+      "feature": "真实工作经历分享，温馨收尾"
+    }
+  },
+  {
+    "clip_id": "clip_016",
+    "source": "Nijisanji EN VTuber (Ren Zotto)",
+    "language": "en",
+    "duration": 193,
+    "title": "摸胸的哲学辩护",
+    "skeleton": "被发现→辩护→读评论→继续辩护→alien梗",
+    "catchphrases": [
+      "ayo",
+      "you know"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 181,
+        "text": "What am I doing to my nipples right now? What am I doing to my— What am I doing— I'm like rubbing my chest. What am I doing? It feels nice. I mean, oh my god. Oh no, it's happening. Oh no, I've returned to everybody saying, Ayo. Ayo. What? What? My chest feels good. Why? Why are you hating? What's wrong with you guys? Why are you hating? Normal people do this. Everybody does this. What are you talking about? Not hating. Can we talk? Excuse me? Hey, hey, hey, hey. That's too far, okay? These, the...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "自发（无意识行为被发现）",
+      "habit": "\"ayo\"、\"you know\"",
+      "structure": "被发现→辩护→读评论→继续辩护→alien梗",
+      "emotion": "搞笑、尴尬",
+      "feature": "**尴尬时刻的处理**，用alien人设化解"
+    }
+  },
+  {
+    "clip_id": "clip_017",
+    "source": "Nijisanji EN VTuber (Enna Alouette)",
+    "language": "en",
+    "duration": 141,
+    "title": "器官捐献的经济学思考",
+    "skeleton": "感谢→玩梗→真的开始算账→哲学思考",
+    "catchphrases": [
+      "oh my god",
+      "what the f***"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 39,
+        "text": "Happy birthday, Anna. Please enjoy your day and have a good rest after this. Your voice is beautiful, for real, for real. Truly appreciate how far you've made. Knowing you is one of the best things happened to me. Awww, oh man, I really wish you— I hope you're the very best in life and that many more better things come in life because if I'm the best thing, oh my god, I'm so sorry.",
+        "attention_focus": "specific",
+        "speech_act": "respond",
+        "trigger": "sc",
+        "catchphrase": [
+          "oh my god"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 39,
+        "end_time": 59,
+        "text": "\"Finally able to afford SuperChat after I sold my kidney?\" Okay, well, I guess I'll sell mine and you can buy it back. Did you know a healthy kidney can self— resell? 70k? Really? Holy shit! Wait, actually, that's so expensive. Wait, can your kidneys grow back or is that the liver? The liver grows back, right?",
+        "attention_focus": "audience",
+        "speech_act": "respond",
+        "trigger": "sc",
+        "catchphrase": [
+          "oh my god",
+          "what the f***"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_03",
+        "start_time": 59,
+        "end_time": 129,
+        "text": "Oh my god. I didn't know your kidney could sell— Sell for that much? Wait, we have two, right? How badly is it to only function with one kidney? Is it really that bad? Oh my god. You actually need both? Really? \"Don't think about it. Don't do it, Anna.\" No. No, first of all, I'm too much of a pussy to, like, do stuff like that. But second of all, oh my god, wait, who would— Wait, in my will, I said I was gonna give all my organs to them. Who the f*** did I give it to? I take it back! I take my will back. Oh my god, that's a lot of f****** money! You're not getting all that money from me, what the f***? Oh my god. Kyo, I give you all my organs. Isn't he, like, chronically ill? So, like, in case he needs a liver or something, I can give him— He can preserve my liver and shit, like, I'm gonna save his life, literally.",
+        "attention_focus": [
+          "self",
+          "audience"
+        ],
+        "speech_act": [
+          "respond",
+          "opine"
+        ],
+        "trigger": [
+          "sc",
+          "self"
+        ],
+        "catchphrase": [
+          "oh my god",
+          "what the f***"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_04",
+        "start_time": 129,
+        "end_time": 195,
+        "text": "\"Was it Kyo?\" Oh shit, yeah, cause he's chronically ill. So I feel like I need to give him— No, yo! Oh my god, I was gonna give this kid, like, 500 million bucks. What the f***? No f****** way, bro. If I die, you're dying— You're dying too? Hahaha. Yo, I didn't know a kidney could sell for 70k. Yeah, okay, that's crazy. Oh my god, I almost— I think, like, once I get a little bit older, like, 40s, 50s, 60s, sorta age. And I still think I'm relatively healthy. I might actually sign up to be an organ donor.",
+        "attention_focus": [
+          "self",
+          "audience"
+        ],
+        "speech_act": [
+          "respond",
+          "opine"
+        ],
+        "trigger": [
+          "self",
+          "prior"
+        ],
+        "catchphrase": [
+          "oh my god",
+          "what the f***"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_05",
+        "start_time": 195,
+        "end_time": 216,
+        "text": "I think it makes a lot of sense, like, if I die and I am not using my healthy organs, and they can really give it to somebody. If they can, like, somehow preserve it and give it to someone who really needs it, and I can prolong their life, like, that's awesome!",
+        "attention_focus": "content",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [],
+        "emotion_shift": true
+      }
+    ],
+    "notes": {
+      "trigger": "SC（卖肾买SC的梗）",
+      "habit": "\"oh my god\"、\"what the f***\"",
+      "structure": "感谢→玩梗→真的开始算账→哲学思考",
+      "emotion": "从感动到震惊到认真",
+      "feature": "从玩梗意外引出真诚思考"
+    }
+  },
+  {
+    "clip_id": "clip_018",
+    "source": "Nijisanji EN VTuber (Enna Alouette)",
+    "language": "en",
+    "duration": 183,
+    "title": "强迫症般的下播时间",
+    "skeleton": "道别→发现问题→自我吐槽→互动→继续等",
+    "catchphrases": [
+      "oh my god",
+      "like"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 183,
+        "text": "I'll see you guys next week, okay? Have a good day and night, sleep and eat if you haven't. And I'll see you soon! Bye, guys! Hehehe! Oh my god, I missed the five min— oh my god, I missed the 50 mark. Nooooo! I didn't do it fast enough! 51 it is. Should I go for the 55? Should I just go for the four hour mark? Oh my god, I have this weird thing with, like, I don't know what's wrong with me. I legit have this weird thing with, like, trying to end my stream on, like, a really nice number. I don't—...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "下播时发现时间不整",
+      "habit": "\"oh my god\"、\"like\"",
+      "structure": "道别→发现问题→自我吐槽→互动→继续等",
+      "emotion": "焦虑、自嘲",
+      "feature": "**完美主义焦虑**的展示，和观众分享怪癖"
+    }
+  },
+  {
+    "clip_id": "clip_019",
+    "source": "Nijisanji EN VTuber",
+    "language": "en",
+    "duration": 95,
+    "title": "被朋友怼到说不出话",
+    "skeleton": "故事设置→punch line→反应→评价",
+    "catchphrases": [
+      "I fear",
+      "what the f***"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 22,
+        "text": "We were walking and I saw this sign and I look over at him and I pointed to it and I said, oh that's so funny, I thought that that said sh**bar, but it actually says something else.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 22,
+        "end_time": 42,
+        "text": "And then he, without missing a beat, said, well, it's gonna be if you walk in there.",
+        "attention_focus": "self",
+        "speech_act": "respond",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_03",
+        "start_time": 42,
+        "end_time": 62,
+        "text": "I fear he just f***** my sh** up. I fear that he ate, he ate me up and left no crumb. I looked at him and I just stopped walking. And was just like, you're coming for me today.",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "I fear",
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_04",
+        "start_time": 62,
+        "end_time": 76,
+        "text": "How dare you say that sh** to me to my face. We need another— he's getting too comfy. We're not saying it enough, we're not saying it enough that he's a personality kind of guy.",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_05",
+        "start_time": 76,
+        "end_time": 93,
+        "text": "Isn't that what it was? Something going on with him. Yeah, he even be replying crazy to people on Twitter. On the TL. Talking about what he said. Talking about, oh, it's always goo night at my house. What the f***?",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "what the f***",
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_06",
+        "start_time": 93,
+        "end_time": 95,
+        "text": "What's wrong with you? This b**** is being crazy. He's, he's getting too comfy. He's getting too comfortable saying all this sh**. We, somebody has to stop him.",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "自发（分享日常故事）",
+      "habit": "\"I fear\"、\"what the f***\"",
+      "structure": "故事设置→punch line→反应→评价",
+      "emotion": "震惊、佩服、假装生气",
+      "feature": "讲述被朋友怼的故事，节奏完美"
+    }
+  },
+  {
+    "clip_id": "clip_020",
+    "source": "Nijisanji EN VTuber (Vox Akuma)",
+    "language": "en",
+    "duration": 164,
+    "title": "塔罗牌占卜的感悟",
+    "skeleton": "分享经历→理性怀疑→情感连接→角色设定融入→感悟",
+    "catchphrases": [
+      "uhm",
+      "you know",
+      "really"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 164,
+        "text": "Uki read my tarot cards, and I've never had a tarot reading done before. Uhm, and it was really nice. It was really, really, really nice. I wanted to take it seriously, and I'm glad I did, because it was really nice. Really, really nice, and it felt like it was so special. And it's strange, because when I think about the cynical part of myself, I think about, like, well, what he's doing is he's drawing cards, and how are the cards— like, how do these cards relate to me specifically, and how do t...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "联动后的分享",
+      "habit": "\"uhm\"、\"you know\"、\"really\"",
+      "structure": "分享经历→理性怀疑→情感连接→角色设定融入→感悟",
+      "emotion": "脆弱、感动、思考",
+      "feature": "**真实与角色扮演的融合**，用demon设定包装真实情感"
+    }
+  },
+  {
+    "clip_id": "clip_021",
+    "source": "YouTube Shorts (Ironmouse)",
+    "language": "en",
+    "duration": 40,
+    "title": "I have this sadness inside of me that…",
+    "skeleton": "坦白内心→接受现实→积极面对→遗憾承认→坚持",
+    "catchphrases": [
+      "you know",
+      "still"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 8,
+        "text": "I have this sadness inside of me that just will never go away because of the fact that I live with this problem every day, you know?",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": "you know",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 8,
+        "end_time": 15,
+        "text": "And, uhm, that's life. I can't sit here and feel sorry for myself every day. I just gotta move on.",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "prior",
+        "catchphrase": null,
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_03",
+        "start_time": 15,
+        "end_time": 26,
+        "text": "But, you know, I get reminded a lot that there's still so many things that I just can't do. And, I'm just really glad that I could experience things like in any capacity, but, it still hurts, you know, it still, it still sucks to see stuff from a screen.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": "you know, still",
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_04",
+        "start_time": 26,
+        "end_time": 40,
+        "text": "But, I'm trying my best.",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "prior",
+        "catchphrase": null,
+        "emotion_shift": true
+      }
+    ],
+    "notes": {
+      "trigger": "自发分享（关于健康问题）",
+      "habit": "\"you know\"、\"still\"",
+      "structure": "坦白内心→接受现实→积极面对→遗憾承认→坚持",
+      "emotion": "悲伤、坚强、脆弱",
+      "feature": "**真实脆弱的分享**，关于慢性疾病的生活体验，不自怜但承认痛苦",
+      "url": "https://www.youtube.com/shorts/FaQNv9ZFHL8"
+    }
+  },
+  {
+    "clip_id": "clip_022",
+    "source": "YouTube / VTuber clip",
+    "language": "en",
+    "duration": 167,
+    "title": "I got mad at him because he wore…",
+    "skeleton": "吐槽→细节描述→反驳弹幕→继续吐槽→自嘲收尾",
+    "catchphrases": [
+      "like",
+      "what the f***",
+      "you know what I mean"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 21,
+        "text": "I got mad at him because he wore the f***in' dude, he wore the f***in trash taste shirt to **teamLab**. Like, what the f***, man?",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "like",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 21,
+        "end_time": 46,
+        "text": "Dude, the collar on that shirt is so worn out. What the—like, I could understand if we were gonna go to, like, a place in the hot sun, or if we were just doing a normal stream. But we're going to— we went to a fan— and then we went to a fancy restaurant, and then we went to teamLab, and he wore the Trash Taste shirt with his— with his collar all f***ed up.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": "like, what the f***",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_03",
+        "start_time": 46,
+        "end_time": 54,
+        "text": "Like, that shirt looks like it's been through hell.",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "like",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_04",
+        "start_time": 54,
+        "end_time": 94,
+        "text": "(reply to chat) He has limited—listen, I understand he has like 30 versions of the same shirt, but he could've at least worn one where the collar's not all f***ed up. You know what I mean? He picked the worst one! He picked the one he wears the most! And it's not like he doesn't wear other stuff, because I'll—listen, I told you he's always like, \"I'm wearing your shirt today, I'm wearing your shirt today, I'm wearing your shirt,\" and then I'm just like, bro, you could've worn—like, you—",
+        "attention_focus": "specific",
+        "speech_act": "respond",
+        "trigger": "danmaku",
+        "catchphrase": "you know what I mean, like",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_05",
+        "start_time": 94,
+        "end_time": 134,
+        "text": "(reply to chat) He literally has—like, you can't sit here and tell me he doesn't have clothes when we literally sent him the whole **Apari** collection every single time! He has every single piece! It's like his default character design. TWEE! Twin, oh my god. Bro, I know you were there for Thanksgiving, man.",
+        "attention_focus": "specific",
+        "speech_act": "respond",
+        "trigger": "danmaku",
+        "catchphrase": "like",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_06",
+        "start_time": 134,
+        "end_time": 153,
+        "text": "(reply to chat) What was he wearing? Was he wearing that same outfit that day? Bro, this dude, man. RinRin got him new clothes.",
+        "attention_focus": "specific",
+        "speech_act": "respond",
+        "trigger": "danmaku",
+        "catchphrase": "bro",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_07",
+        "start_time": 153,
+        "end_time": 203,
+        "text": "(reply to chat) Where are they? They're sitting in the back of his closet. He has every single— I'm telling you guys— every single piece of Ironmouse merch that I've ever released. He has it. He has it in his closet. He has everything. He has the jackets, he has the shirts, he has the hoodies.",
+        "attention_focus": "specific",
+        "speech_act": "narrate",
+        "trigger": "danmaku",
+        "catchphrase": null,
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_08",
+        "start_time": 203,
+        "end_time": 214,
+        "text": "He has them all. I mean, he wears it sometimes. Okay, he does wear it sometimes. But it's like, Jesus—can we get FiveGifted to get Connor to wear something besides his Trash Taste shirt?",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "you know what I mean",
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_09",
+        "start_time": 214,
+        "end_time": 227,
+        "text": "I wish I could get him to stop wearing it. I mean, I'm not saying it's bad. It's a good shirt.",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "I mean",
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_10",
+        "start_time": 227,
+        "end_time": 247,
+        "text": "It's a cool shirt, you know? But it's like, holy ****, man. Like, you could have—oh my god, I sound so annoying. I shouldn't care. I shouldn't care. I shouldn't care. I should not care!",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "like, you know what I mean",
+        "emotion_shift": true
+      }
+    ],
+    "notes": {
+      "trigger": "自发（吐槽朋友穿搭）",
+      "habit": "\"like\"、\"what the f***\"、\"you know what I mean\"",
+      "structure": "吐槽→细节描述→反驳弹幕→继续吐槽→自嘲收尾",
+      "emotion": "假装生气、宠溺、自嘲",
+      "feature": "**朋友间的打趣**，吐槽Connor的Trash Taste衬衫选择，展示亲密关系",
+      "url": "https://www.youtube.com/watch?v=sQTINJv2-Yg"
+    }
+  },
+  {
+    "clip_id": "clip_023",
+    "source": "YouTube / VTuber clip",
+    "language": "en",
+    "duration": 223,
+    "title": "Yeah, I don’t know… um, Amelia? She made…",
+    "skeleton": "分享经历→焦虑描述→回忆细节→自我分析→承认内向",
+    "catchphrases": [
+      "I don't know",
+      "like",
+      "you know"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 10,
+        "text": "Yeah, I don't know… um, Amelia? She made me a sandwich. I didn't even have to ask her. Watson, make me a sandwich.",
+        "attention_focus": "specific",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "I don't know"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 10,
+        "end_time": 29,
+        "text": "She just did it. She—she just handed me a… She said, \"Here, eat this.\" It was hot. And I was like— but of course, in my brain, I was going, *\"Oh god, I have to eat this now.\"*",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "I don't know",
+          "you know"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_03",
+        "start_time": 29,
+        "end_time": 37,
+        "text": "I *want* to eat this, but my—my anxiety says, *\"Oh no. Oh no, I have to be normal.\"*",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "I don't know"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_04",
+        "start_time": 37,
+        "end_time": 46,
+        "text": "Oh no… I think it took me a really long time to eat. (reply to chat) What kind of sandwich? Oh, it was a— it was a breakfast sandwich.",
+        "attention_focus": "specific",
+        "speech_act": "respond",
+        "trigger": "sc",
+        "catchphrase": [
+          "I don't know"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_05",
+        "start_time": 46,
+        "end_time": 107,
+        "text": "It was like… egg, bread—bread, avocado, bacon, and other stuff. I don't know, but it was really tasty. It was really tasty. I don't know, I'm also… I don't— eating… I don't— I'm not a big food eater. Like, I like food, but eating it is something else. That is… I don't do it a lot, so… yeah.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "I don't know",
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_06",
+        "start_time": 107,
+        "end_time": 132,
+        "text": "Um, also, I'm not used to people making me food. The last time I had somebody be like, \"Eat this,\" was like… when— when my mom would make it and be like, \"Eat this.\" That was so long ago, so it was kind of bizarre.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "I don't know"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_07",
+        "start_time": 132,
+        "end_time": 152,
+        "text": "It was nice! It was nice. It's just… I don't know, it's a gesture I'm not used to. (reply to chat) Is it normal? Is it normal to have people make food for you? I don't know.",
+        "attention_focus": "specific",
+        "speech_act": "respond",
+        "trigger": "sc",
+        "catchphrase": [
+          "I don't know"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_08",
+        "start_time": 152,
+        "end_time": 224,
+        "text": "But yeah, I was like, \"Thank you.\" I'm— I'm— man, I get stuff in my own head about stuff. Like, just something as simple as, \"Here, I made you a sandwich.\" *\"Thanks! Om, om, om, om, om.\"* In my head, it turns into this big ordeal of: *I need to find a corner where nobody can see me, so I can scurry away with my little sandwich and watch videos.* There he is— YouTube videos. I did. So while everybody was on the squishy butt-sucker couch, I was standing at a very far distance, watching and eating. Isn't that weird? It probably looked— oh well. Oh, it's all over now.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "I don't know",
+          "like"
+        ],
+        "emotion_shift": true
+      }
+    ],
+    "notes": {
+      "trigger": "回忆分享（和朋友的互动）",
+      "habit": "\"I don't know\"、\"like\"、\"you know\"",
+      "structure": "分享经历→焦虑描述→回忆细节→自我分析→承认内向",
+      "emotion": "焦虑、感动、自我认知",
+      "feature": "**社交焦虑的展示**，简单善意（被做三明治）引发的内心波澜，躲角落吃东西",
+      "url": "https://www.youtube.com/watch?v=k_skfzMMyso"
+    }
+  },
+  {
+    "clip_id": "clip_024",
+    "source": "YouTube / VTuber clip",
+    "language": "en",
+    "duration": 81,
+    "title": "What I thought was really interesting is that,…",
+    "skeleton": "观察→反思→重新诠释→升华",
+    "catchphrases": [
+      "like",
+      "you know",
+      "how do I say it"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 16,
+        "text": "What I thought was really interesting is that, while we were walking around, it was definitely kind of… how do I say it… um… how do I say it? It's kind of like there's this really beautiful graffiti in areas that are full of trash.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "how do I say it",
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 16,
+        "end_time": 32,
+        "text": "(reply to chat) Right? Like, there's just debris and garbage everywhere around these graffitied places. And maybe someone's first instinct would be like, \"Oh yeah, this really beautiful artwork is here—too bad there's so much trash everywhere, like, in the way.\"",
+        "attention_focus": "audience",
+        "speech_act": "respond",
+        "trigger": "sc",
+        "catchphrase": [
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_03",
+        "start_time": 32,
+        "end_time": 39,
+        "text": "But yeah… to me, when I was looking at it, I was like, \"No, this is—this is just their world.\"",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "like"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_04",
+        "start_time": 39,
+        "end_time": 48,
+        "text": "Like, this is the world they draw in the manga. This is just… this is their world. And it, like, made it so much more beautiful…",
+        "attention_focus": "content",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "like"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_05",
+        "start_time": 48,
+        "end_time": 61,
+        "text": "The fact that there was so much trash around. It's hard to explain, but I just thought that was really cool, because I was looking at the walls and I was like, \"I've seen this exact panel in the manga before.\"",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "like"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_06",
+        "start_time": 61,
+        "end_time": 81,
+        "text": "So yeah. It was really neat—really neat looking at stuff. It made me even more excited about, you know, where the manga will go in the future…",
+        "attention_focus": "content",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "you know"
+        ],
+        "emotion_shift": true
+      }
+    ],
+    "notes": {
+      "trigger": "自发（旅行见闻分享）",
+      "habit": "\"like\"、\"you know\"、\"how do I say it\"",
+      "structure": "观察→反思→重新诠释→升华",
+      "emotion": "感性、哲学、兴奋",
+      "feature": "**艺术性思考**，从垃圾堆中的涂鸦看到美，独特的审美视角",
+      "url": "https://www.youtube.com/watch?v=TjEARLZwasA"
+    }
+  },
+  {
+    "clip_id": "clip_025",
+    "source": "YouTube / VTuber clip",
+    "language": "en",
+    "duration": 58,
+    "title": "Yeah, you know, I thought about what to…",
+    "skeleton": "话题引入→自嘲忘词→和弹幕互动→玩梗收尾",
+    "catchphrases": [
+      "you know",
+      "like"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 10,
+        "text": "Yeah, you know, I thought about what to chat about. Like, maybe I should come up with some topics. And I thought, \"Oh yeah, I've got some good topics to talk about,\" you know?",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "you know",
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 10,
+        "end_time": 16,
+        "text": "And then I—I went through them in my head, with the chat in my head… and now I've forgotten all of them.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "you know"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_03",
+        "start_time": 16,
+        "end_time": 21,
+        "text": "'Cause I didn't write them down. Yeah, exactly. I start the stream and my mind goes *wheeeeeeee*.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_04",
+        "start_time": 21,
+        "end_time": 25,
+        "text": "(reply to chat) You're in my head? Yeah, there's a chat in my head.",
+        "attention_focus": "audience",
+        "speech_act": "respond",
+        "trigger": "danmaku",
+        "catchphrase": [
+          "you know"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_05",
+        "start_time": 25,
+        "end_time": 31,
+        "text": "It's funny, 'cause I saw, like, on TikTok, somebody commented on a video. It was like, \"Oh, chat, is this real?\"",
+        "attention_focus": "content",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_06",
+        "start_time": 31,
+        "end_time": 38,
+        "text": "\"Chat, is this real?\" 'Cause I guess it's pretty common for streamers to ask chat, like, \"Is that real?\" and people make a meme out of it.",
+        "attention_focus": "content",
+        "speech_act": "narrate",
+        "trigger": "prior",
+        "catchphrase": [
+          "like"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_07",
+        "start_time": 38,
+        "end_time": 58,
+        "text": "Is that real? Uh, there's no meme. (reply to chat) Yeah—rent free, rent free. Just kidding, you guys are paying rent. It's in the form of the energy that I'm sucking from your soul!",
+        "attention_focus": "audience",
+        "speech_act": "respond",
+        "trigger": "danmaku",
+        "catchphrase": [],
+        "emotion_shift": true
+      }
+    ],
+    "notes": {
+      "trigger": "自发（开播闲聊）",
+      "habit": "\"you know\"、\"like\"",
+      "structure": "话题引入→自嘲忘词→和弹幕互动→玩梗收尾",
+      "emotion": "轻松、自嘲",
+      "feature": "**主播日常**，脑子一空的真实瞬间，\"脑内chat\"的网络梗",
+      "url": "https://www.youtube.com/watch?v=uGO51rQUBXA"
+    }
+  },
+  {
+    "clip_id": "clip_026",
+    "source": "YouTube / VTuber clip",
+    "language": "en",
+    "duration": 67,
+    "title": "Oh, you know what I’ve heard? That, uhm……",
+    "skeleton": "冷知识引入→细节描述→弹幕互动→联想发散",
+    "catchphrases": [
+      "like",
+      "you know",
+      "uhm"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 47,
+        "text": "Oh, you know what I’ve heard? That, uhm… If there’s, like, uuh… I’ve heard of, like, a place where you can eat. I think in, like, Alaska or something, where, uh… they, like, cut off the, like, the fillet from the salmon, and then they’ll throw it back in the river, and the salmon will still be swimming. Cause you’re cutting off, like, the fatty parts. And then bears will eat it. Cause the bears like all the nutritious, crunchy parts. (reply to chat) It’s scary. It doesn’t swim like skeleton fish...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "自发（分享冷知识）",
+      "habit": "\"like\"、\"you know\"、\"uhm\"",
+      "structure": "冷知识引入→细节描述→弹幕互动→联想发散",
+      "emotion": "好奇、轻松",
+      "feature": "**奇怪冷知识分享**，关于鲑鱼被切片后还能游泳的生态链故事",
+      "url": "https://www.youtube.com/watch?v=eNlGkPYN_ww"
+    }
+  },
+  {
+    "clip_id": "clip_027",
+    "source": "YouTube / VTuber clip",
+    "language": "en",
+    "duration": 189,
+    "title": "Maybe it was the schools that I went…",
+    "skeleton": "观点→回忆→故事（滚轮书包被踢）→自嘲（垃圾桶书包）→捡废品回忆",
+    "catchphrases": [
+      "like",
+      "you know",
+      "I don't know"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 18,
+        "text": "Maybe it was the schools that I went to, but I feel like, I don't know… I didn't really like school that much. I like learning, though. I just didn't like all the other stuff that comes with school. Learning is fun. Learning is fun.",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "like",
+          "I don't know"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 18,
+        "end_time": 45,
+        "text": "How could it not be? I wish I could, I wish I could, like… go to, I don't know, some really cool lectures and stuff without having to pay a crazy amount of— although, like, you pay a crazy amount of money to get, you know, certifications, which makes sense, because you get a test and, you know, you gotta be certified for, you know, some things. You know, so you're like a doctor or something, right? You're like a nurse, you know, you gotta be certified.",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "like",
+          "you know",
+          "I don't know"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_03",
+        "start_time": 45,
+        "end_time": 50,
+        "text": "But it's so interesting just to learn, but we have YouTube now. But it is nice. You could just walk in…",
+        "attention_focus": "audience",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": [
+          "you know"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_04",
+        "start_time": 50,
+        "end_time": 102,
+        "text": "I don't know. I don't think you can. What kind of backpack did you guys have? Because I know someone that had, like, a rolling backpack, and people would always kick it. But a rolling backpack makes sense. But why would you kick it? I never kicked the backpack. I just saw other people doing it, and it's one of those things where it's messed up, but also… I shouldn't laugh.",
+        "attention_focus": "audience",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "like",
+          "I don't know"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_05",
+        "start_time": 102,
+        "end_time": 132,
+        "text": "(reply to chat)Did I have the backpack? No, no, it wasn't me, it wasn't me. I became friends with them, okay? When I saw somebody getting bullied, I-I-I felt bad for them, you know? I mean, that's not why we became friends, but… man, kick because… it's funny. (reply to chat) No, no, it's messed up. It's messed up.",
+        "attention_focus": "specific",
+        "speech_act": "respond",
+        "trigger": "sc",
+        "catchphrase": [
+          "you know"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_06",
+        "start_time": 132,
+        "end_time": 159,
+        "text": "I had a backpack. Did I have— uhm, I had a dirty backpack. I feel like other people had, like, really fancy, good-looking backpacks, and I had, like, some cheap one that had holes, or probably spilled milk in one of the pockets, or cat pee in one of the pockets, or something. Crumbs at the bottom. And I always put my trash in there. My backpack was a walking trash can.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "like"
+        ],
+        "emotion_shift": true
+      },
+      {
+        "id": "seg_07",
+        "start_time": 159,
+        "end_time": 216,
+        "text": "Actually, my locker was a… trash can. Because I never used it for what it's supposed to be. Before, I would just put stuff in there, and then I'd forget about it. Oh my God, when— when people, like, graduate from school… I don't know if you guys ever had this, but people would, like, straight up put all of their school supplies in the garbage. And so, obviously, on the last day of school, I would go around the hallway, and there's, like… people throw away their whole backpacks. People throw away, like, binders, notebooks that have barely been used, textbooks, like, pencil cases, pencils, pens— so much stuff. And so, I remember, like… there's one year, I stayed, uhm… it was, like, the last day of school, everybody cleaned out their lockers and stuff, and I just went to the waste— and, you know, you know… why, why, why would you let it go to waste? Maybe I picked up something.",
+        "attention_focus": "audience",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "like",
+          "I don't know"
+        ],
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "自发（学校回忆）",
+      "habit": "\"like\"、\"you know\"、\"I don't know\"",
+      "structure": "观点→回忆→故事（滚轮书包被踢）→自嘲（垃圾桶书包）→捡废品回忆",
+      "emotion": "怀旧、自嘲、调皮",
+      "feature": "**童年回忆碎片**，学校生活的真实片段，书包和储物柜的混乱状态",
+      "url": "https://www.youtube.com/watch?v=8RkTvN0RGsY"
+    }
+  },
+  {
+    "clip_id": "clip_028",
+    "source": "YouTube / VTuber clip",
+    "language": "en",
+    "duration": 127,
+    "title": "**0:01 Hello!**",
+    "skeleton": "问候→状态描述→睡眠问题分享→和弹幕共鸣",
+    "catchphrases": [
+      "like",
+      "you know"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 19,
+        "text": "Yeah, yeah, my brain is still waking up. (reply to chat) Morning to you. Technically, I've been awake for, like, two and a half hours, roughly.",
+        "attention_focus": "specific",
+        "speech_act": "respond",
+        "trigger": "sc",
+        "catchphrase": "like",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_02",
+        "start_time": 19,
+        "end_time": 53,
+        "text": "But, like, I haven't done anything stimulating for my brain, so yeah—my brain is waking up, my vocal cords are waking up. I went to sleep really late last night because I was procrastinating, but that's not new, you know. Only a late brain—not so much. Exactly, exactly. Sometimes it feels like my brain only wakes up when I'm about to go to bed.",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": [
+          "like",
+          "you know"
+        ],
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_03",
+        "start_time": 53,
+        "end_time": 108,
+        "text": "Like, I'm tired for the entire day, and then, like, I'm gonna go to bed, right? And then the second I close my eyes to go to sleep, my brain is just like, \"So what is the meaning of life?\"",
+        "attention_focus": "self",
+        "speech_act": "opine",
+        "trigger": "self",
+        "catchphrase": "like",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_04",
+        "start_time": 108,
+        "end_time": 147,
+        "text": "Anyone else get the same issue? It's like you're so sleepy, your brain is not quite working. It's not letting you think or anything, and then the second you try to go to sleep, it's just like your brain gets all philosophical constantly. So I feel like when you realize—and when you actually wake up your body—you just start to realize, \"Oh right, we're in a constant state of being… going to bed, awake now, awake time, oh, I'm half asleep, I'm a little bit…\"",
+        "attention_focus": "audience",
+        "speech_act": "elicit",
+        "trigger": "self",
+        "catchphrase": "like",
+        "emotion_shift": false
+      },
+      {
+        "id": "seg_05",
+        "start_time": 147,
+        "end_time": 167,
+        "text": "(reply to chat) Always like that. All the time, ma'am. Yes, ma'am. **Admiral Bahroo**",
+        "attention_focus": "specific",
+        "speech_act": "respond",
+        "trigger": "danmaku",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "开播（早起闲聊）",
+      "habit": "\"like\"、\"you know\"",
+      "structure": "问候→状态描述→睡眠问题分享→和弹幕共鸣",
+      "emotion": "困倦、轻松、自嘲",
+      "feature": "**主播日常**，睡前大脑突然活跃的共鸣话题，\"meaning of life\"时刻",
+      "url": "https://www.youtube.com/watch?v=hqKalHX3eUQ"
+    }
+  },
+  {
+    "clip_id": "clip_029",
+    "source": "YouTube / VTuber clip",
+    "language": "en",
+    "duration": 127,
+    "title": "Yo! What’s up? Good morning, everybody. Hope y’all…",
+    "skeleton": "问候→健身吐槽→打破期望→鼓励分享→经验总结",
+    "catchphrases": [
+      "like",
+      "you know what I mean",
+      "bro"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 2,
+        "end_time": 107,
+        "text": "Yo! What’s up? Good morning, everybody. Hope y’all are doing well. Ah, it’s time for some bro-tato. I started going back to the gym yesterday, and now—my muscles are crying. Yup. Dude, I’m gonna be honest: like, the very first week of working out is, like, the worst week. (reply to chat) Gory Slott, thank you so very much for the Prime. Das Vampi, thank you for 73 months. Don’t look—(talk to chat) thanks for sub—like, the very first week that you go to the gym, that is literally the worst experi...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "self",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "开播（健身话题）",
+      "habit": "\"like\"、\"you know what I mean\"、\"bro\"",
+      "structure": "问候→健身吐槽→打破期望→鼓励分享→经验总结",
+      "emotion": "疲惫、积极、鼓励",
+      "feature": "**健身鸡汤**，第一周最难但第二周会变好，真实的身体反馈",
+      "url": "https://www.youtube.com/watch?v=2M6rwb2kIPE"
+    }
+  },
+  {
+    "clip_id": "clip_030",
+    "source": "YouTube / VTuber clip",
+    "language": "en",
+    "duration": 102,
+    "title": "Birthday cake paranoia + POS meaning",
+    "skeleton": "感谢→想吃蛋糕→担心被毒（paranoid）→学习POS含义→摔倒故事→正能量收尾",
+    "catchphrases": [
+      "like",
+      "you know",
+      "what"
+    ],
+    "segments": [
+      {
+        "id": "seg_01",
+        "start_time": 0,
+        "end_time": 54,
+        "text": "[take A] (reply to chat) Genji, for the 100 bits as well. Thank you for starting my birthday off with a stream. Hey, happy birthday, Genji! [take A] I hope you have a really good one, and I hope you have a really, really nice cake to eat! I would love a cake right now. [take A] However, I don’t have one, so I’m sad. But it’s okay. It’s fine. Maybe next—maybe one day I’ll have cake. [take A] Maybe one day. Maybe today is the day. Maybe someone—someone listening might want to send a cake to my doo...",
+        "attention_focus": "self",
+        "speech_act": "narrate",
+        "trigger": "danmaku",
+        "catchphrase": null,
+        "emotion_shift": false
+      }
+    ],
+    "notes": {
+      "trigger": "弹幕（生日祝福/网络用语提问）",
+      "habit": "\"like\"、\"you know\"、\"what\"",
+      "structure": "感谢→想吃蛋糕→担心被毒（paranoid）→学习POS含义→摔倒故事→正能量收尾",
+      "emotion": "搞笑、自嘲、paranoid、积极",
+      "feature": "**多话题跳跃**，从蛋糕到防毒到网络用语到摔屁股，混乱但有趣",
+      "url": "https://www.youtube.com/watch?v=UcIJA6drYp4",
+      "merged_takes": "A+B"
+    }
+  }
+]
