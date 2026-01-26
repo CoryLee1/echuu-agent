@@ -76,9 +76,7 @@ echuu-agent/
         └── project.mdc              # 项目规范
 ```
 
-## 核心概念
-
-### 标注维度| 维度 | 说明 | 取值 |
+## 核心概念### 标注维度| 维度 | 说明 | 取值 |
 |------|------|------|
 | attention_focus | 注意力指向 | self, audience, specific, content, meta |
 | speech_act | 话语行为 | narrate, opine, respond, elicit, pivot, backchannel |
