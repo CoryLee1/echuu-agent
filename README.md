@@ -26,6 +26,8 @@ cp .env.example .env
 # 编辑 .env 文件，填入 ANTHROPIC_API_KEY 或 OPENAI_API_KEY
 ```
 
+TTS 使用 Qwen3 Realtime 时，请在 `.env` 设置 `TTS_MODEL` 与 `TTS_VOICE`，其余参数按需调整。
+
 ### 3. 运行数据标注
 
 ```bash
@@ -52,6 +54,10 @@ from workflow.jupyter_notebook.echuu_notebook import PatternAnalyzer, EchuuEngin
 analyzer = PatternAnalyzer(annotated_clips)
 ```
 
+## TTS 音色列表
+
+详见 `docs/qwen_tts_voices.md`。
+
 ## 项目结构
 
 ```
@@ -74,17 +80,13 @@ echuu-agent/
 └── .cursor/
     └── rules/
         └── project.mdc              # 项目规范
-```
-
-## 核心概念### 标注维度| 维度 | 说明 | 取值 |
+```## 核心概念### 标注维度| 维度 | 说明 | 取值 |
 |------|------|------|
 | attention_focus | 注意力指向 | self, audience, specific, content, meta |
 | speech_act | 话语行为 | narrate, opine, respond, elicit, pivot, backchannel |
 | trigger | 触发源 | sc, danmaku, self, content, prior |
 
-### Interruption Costechuu 的核心机制：决定是否响应弹幕的动态代价
-
-```python
+### Interruption Costechuu 的核心机制：决定是否响应弹幕的动态代价```python
 decision_value = urgency - cost
 # 正数 → 回应弹幕
 # 负数 → 继续剧本
@@ -112,9 +114,7 @@ decision_value = urgency - cost
   },
   "transcript": [{"t": 0, "text": "..."}]
 }
-```
-
-### 标注数据 (JSON)```json
+```### 标注数据 (JSON)```json
 {
   "clip_id": "clip_001",
   "skeleton": "共情→自我经历→对比→建议→升华",
@@ -138,9 +138,7 @@ decision_value = urgency - cost
 python workflow/data-annotation-process/run_annotation.py --help
 
 # 快速模式
-python workflow/data-annotation-process/run_annotation.py --quick
-
-# 只标注部分数据（测试用）
+python workflow/data-annotation-process/run_annotation.py --quick# 只标注部分数据（测试用）
 python workflow/data-annotation-process/run_annotation.py --max-clips 5
 
 # 检查配置

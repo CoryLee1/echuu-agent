@@ -13,8 +13,8 @@ numpy>=1.24.0
 jupyter>=1.0.0
 ipykernel>=6.0.0
 
-# TTS (通义千问 CosyVoice)
-dashscope>=1.20.0
+# TTS (通义千问 Qwen TTS)
+dashscope>=1.25.2
 
 # 音频播放 (可选)
 # pyaudio  # Windows: pip install pyaudio, Linux: sudo apt install python3-pyaudio
