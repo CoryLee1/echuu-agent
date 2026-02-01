@@ -94,8 +94,8 @@ class TTSClient:
     def save_recording(self, path: str):
         """
         保存录制音频。
-
-        注意：这里只是简单拼接字节流，适合作为占位方案。
+        
+        注意：音频数据已经是正确格式（PCM已转换为WAV），直接拼接保存即可。
         """
         if not self._recording_buffer:
             print("没有可保存的录制音频")
@@ -108,7 +108,8 @@ class TTSClient:
             with output_path.open("wb") as f:
                 for chunk in self._recording_buffer:
                     f.write(chunk)
-            print(f"录制音频已保存: {output_path}")
+            file_size = sum(len(chunk) for chunk in self._recording_buffer)
+            print(f"录制音频已保存: {output_path} ({file_size} bytes)")
         except Exception as exc:
             print(f"[TTS] 保存录制失败: {exc}")
         finally:

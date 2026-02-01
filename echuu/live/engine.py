@@ -71,8 +71,10 @@ class EchuuLiveEngine:
         background: str = "",
         language: str = "zh",
         character_config: Optional[dict] = None,
+        on_phase_callback: Optional[callable] = None,
     ) -> PerformanceState:
         """设置表演参数并生成剧本。"""
+        # 在这里我们可以捕获推理过程并传给回调
         self.state = self.create_performance(
             name=name,
             persona=persona,
@@ -80,6 +82,7 @@ class EchuuLiveEngine:
             topic=topic,
             language=language,
             character_config=character_config,
+            on_phase_callback=on_phase_callback,
         )
         print(f"\n表演设置完成: {name} - {topic}")
         print(f"剧本行数: {len(self.state.script_lines)}")
@@ -93,13 +96,12 @@ class EchuuLiveEngine:
         topic: str,
         language: str = "zh",
         character_config: Optional[dict] = None,
+        on_phase_callback: Optional[callable] = None,
     ) -> PerformanceState:
         """创建表演（预生成完整剧本）。"""
-        print(f"\n{'='*60}")
-        print("echuu - 预生成完整剧本")
-        print(f"{'='*60}\n")
-        print(f"角色: {name}")
-        print(f"话题: {topic}\n")
+        # 如果有回调，发送初始信息
+        if on_phase_callback:
+            on_phase_callback("Phase 0: 正在初始化创作环境...")
 
         script_lines = self.script_gen.generate(
             name=name,
@@ -108,6 +110,7 @@ class EchuuLiveEngine:
             topic=topic,
             language=language,
             character_config=character_config or {},
+            on_phase_callback=on_phase_callback, # 传递回调给生成器
         )
 
         self._save_script(script_lines, name, topic)
@@ -218,7 +221,21 @@ class EchuuLiveEngine:
 
         if save_audio and self.tts.enabled:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            audio_path = self.scripts_dir / f"{timestamp}_{self.state.name}_{self.state.topic[:20].replace(' ', '_')}_live.mp3"
+            # 根据TTS实际格式选择扩展名
+            import os
+            response_format = os.getenv("TTS_RESPONSE_FORMAT", "pcm").lower()
+            if response_format == "pcm":
+                ext = ".wav"  # PCM转换为WAV保存
+            elif response_format == "mp3":
+                ext = ".mp3"
+            elif response_format == "wav":
+                ext = ".wav"
+            elif response_format == "opus":
+                ext = ".opus"
+            else:
+                ext = ".wav"  # 默认WAV
+            
+            audio_path = self.scripts_dir / f"{timestamp}_{self.state.name}_{self.state.topic[:20].replace(' ', '_')}_live{ext}"
             self.tts.save_recording(str(audio_path))
 
         print(f"\n{'='*60}")

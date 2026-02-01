@@ -28,7 +28,22 @@ cp .env.example .env
 
 TTS 使用 Qwen3 Realtime 时，请在 `.env` 设置 `TTS_MODEL` 与 `TTS_VOICE`，其余参数按需调整。
 
-### 3. 运行数据标注
+### 3. 运行交互式直播
+
+```bash
+# 交互式模式（推荐）
+python workflow/backend/echuu_interactive.py
+
+# 或使用预设测试脚本
+python workflow/backend/echuu_live_engine.py
+```
+
+交互式模式支持：
+- 输入人物名称、人设、背景
+- 自定义直播主题或运行预设案例
+- 自动保存剧本和音频文件
+
+### 4. 运行数据标注
 
 ```bash
 # 快速模式（不需要API Key，使用启发式规则）
@@ -36,9 +51,7 @@ python workflow/data-annotation-process/run_annotation.py --quick
 
 # LLM精细标注（需要配置API Key）
 python workflow/data-annotation-process/run_annotation.py
-```
-
-### 4. 使用标注数据
+```### 4. 使用标注数据
 
 在 Jupyter Notebook 中：
 
@@ -94,9 +107,7 @@ decision_value = urgency - cost
 
 ### Inner Monologue
 
-让观众看到AI的"思考过程"，这是 echuu 区别于传统AI主播的核心特性
-
-## 数据格式
+让观众看到AI的"思考过程"，这是 echuu 区别于传统AI主播的核心特性## 数据格式
 
 ### 原始数据 (JSONL)
 

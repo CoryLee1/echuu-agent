@@ -6,6 +6,7 @@
 import base64
 import io
 import os
+import struct
 import threading
 from datetime import datetime
 from typing import Callable, List, Optional
@@ -32,6 +33,41 @@ try:
 except ImportError:
     DASHSCOPE_AVAILABLE = False
     print("⚠️ dashscope 未安装，请运行: pip install dashscope")
+
+
+def pcm_to_wav(pcm_data: bytes, sample_rate: int = 24000, channels: int = 1, sample_width: int = 2) -> bytes:
+    """
+    将PCM数据转换为WAV格式
+    
+    Args:
+        pcm_data: PCM原始音频数据
+        sample_rate: 采样率（默认24000Hz）
+        channels: 声道数（默认1=单声道）
+        sample_width: 采样位深（默认2字节=16bit）
+    
+    Returns:
+        WAV格式的音频数据
+    """
+    data_size = len(pcm_data)
+    file_size = 36 + data_size
+    
+    wav_header = struct.pack('<4sI4s4sIHHIIHH4sI',
+        b'RIFF',           # ChunkID
+        file_size,        # ChunkSize
+        b'WAVE',          # Format
+        b'fmt ',          # Subchunk1ID
+        16,               # Subchunk1Size (PCM)
+        1,                # AudioFormat (PCM)
+        channels,         # NumChannels
+        sample_rate,      # SampleRate
+        sample_rate * channels * sample_width,  # ByteRate
+        channels * sample_width,  # BlockAlign
+        sample_width * 8,  # BitsPerSample
+        b'data',          # Subchunk2ID
+        data_size         # Subchunk2Size
+    )
+    
+    return wav_header + pcm_data
 
 
 class TTSCallback(ResultCallback):
@@ -92,19 +128,36 @@ class TTSCallback(ResultCallback):
 class QwenRealtimeCallback(QwenTtsRealtimeCallback):
     """Qwen3 Realtime 回调处理"""
 
-    def __init__(self, on_audio: Callable[[bytes], None] = None, save_path: str = None):
+    def __init__(self, on_audio: Callable[[bytes], None] = None, save_path: str = None, 
+                 response_format: str = "pcm", sample_rate: int = 24000):
         super().__init__()
         self.on_audio = on_audio
         self.save_path = save_path
+        self.response_format = response_format.lower()
+        self.sample_rate = sample_rate
         self.audio_buffer = io.BytesIO()
-        self.file = open(save_path, "wb") if save_path else None
+        self.file = None
+        if save_path:
+            # 根据格式决定是否立即打开文件（PCM需要转换，其他格式直接写入）
+            if self.response_format == "pcm":
+                # PCM格式稍后转换为WAV再保存
+                pass
+            else:
+                self.file = open(save_path, "wb")
         self.complete_event = threading.Event()
 
     def on_open(self) -> None:
         print("[TTS] Realtime 连接建立")
 
     def on_close(self, close_status_code, close_msg) -> None:
-        if self.file:
+        # 如果是PCM格式，需要转换为WAV再保存
+        if self.save_path and self.response_format == "pcm" and self.audio_buffer.tell() > 0:
+            pcm_data = self.audio_buffer.getvalue()
+            wav_data = pcm_to_wav(pcm_data, sample_rate=self.sample_rate)
+            with open(self.save_path, "wb") as f:
+                f.write(wav_data)
+            print(f"[TTS] PCM已转换为WAV并保存: {self.save_path} ({len(wav_data)} bytes)")
+        elif self.file:
             self.file.close()
         print(f"[TTS] Realtime 连接关闭: {close_status_code}, {close_msg}")
 
@@ -227,6 +280,9 @@ class CosyVoiceTTS:
             return None
         fmt = self.response_format.lower()
         sample_rate = self.sample_rate
+        
+        # Qwen3 Realtime 常见的 MP3 枚举名通常是 MP3_22050HZ_MONO_256KBPS 等
+        # 我们根据实际返回的可用枚举进行匹配
         if fmt == "pcm":
             name = f"PCM_{sample_rate}HZ_MONO_16BIT"
             return getattr(RealtimeAudioFormat, name, RealtimeAudioFormat.PCM_24000HZ_MONO_16BIT)
@@ -234,15 +290,26 @@ class CosyVoiceTTS:
             name = f"WAV_{sample_rate}HZ_MONO_16BIT"
             return getattr(RealtimeAudioFormat, name, RealtimeAudioFormat.PCM_24000HZ_MONO_16BIT)
         if fmt == "mp3":
-            name = f"MP3_{sample_rate}HZ_MONO_128KBPS"
-            return getattr(RealtimeAudioFormat, name, RealtimeAudioFormat.PCM_24000HZ_MONO_16BIT)
+            # 尝试几种常见的 Qwen Realtime MP3 枚举名
+            for rate in [sample_rate, 22050, 24000]:
+                for kbps in [256, 128]:
+                    name = f"MP3_{rate}HZ_MONO_{kbps}KBPS"
+                    if hasattr(RealtimeAudioFormat, name):
+                        return getattr(RealtimeAudioFormat, name)
+            # 兜底：如果找不到 MP3 枚举，报错或返回默认 PCM
+            print(f"⚠️ 找不到匹配的 MP3 枚举名，将使用默认 PCM 格式")
+            return RealtimeAudioFormat.PCM_24000HZ_MONO_16BIT
         if fmt == "opus":
             name = f"OPUS_{sample_rate}HZ_MONO_128KBPS"
             return getattr(RealtimeAudioFormat, name, RealtimeAudioFormat.PCM_24000HZ_MONO_16BIT)
         return RealtimeAudioFormat.PCM_24000HZ_MONO_16BIT
 
     def _synthesize_realtime(self, text: str, save_path: str = None) -> bytes:
-        callback = QwenRealtimeCallback(save_path=save_path)
+        callback = QwenRealtimeCallback(
+            save_path=save_path,
+            response_format=self.response_format,
+            sample_rate=self.sample_rate
+        )
         qwen_tts_realtime = QwenTtsRealtime(
             model=self.model,
             callback=callback,
@@ -256,10 +323,14 @@ class CosyVoiceTTS:
             "response_format": response_format,
             "mode": self.mode,
             "language_type": self.language_type,
-            "speech_rate": self.speech_rate,
-            "volume": self.volume,
-            "pitch_rate": self.pitch_rate,
         }
+        # 只有qwen3-tts-flash-realtime支持这些参数，旧版qwen-tts-realtime不支持
+        if "qwen3" in self.model:
+            kwargs.update({
+                "speech_rate": self.speech_rate,
+                "volume": self.volume,
+                "pitch_rate": self.pitch_rate,
+            })
         if self.response_format.lower() == "opus":
             kwargs["bit_rate"] = self.bit_rate
 
@@ -271,7 +342,13 @@ class CosyVoiceTTS:
 
         callback.wait_for_complete(self.timeout)
         qwen_tts_realtime.close()
-        return callback.get_audio()
+        
+        audio_data = callback.get_audio()
+        # 如果返回的是PCM，转换为WAV
+        if self.response_format.lower() == "pcm" and audio_data:
+            audio_data = pcm_to_wav(audio_data, sample_rate=self.sample_rate)
+        
+        return audio_data
 
     def _synthesize_offline(self, text: str, save_path: str = None) -> bytes:
         synthesizer = SpeechSynthesizer(

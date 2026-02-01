@@ -205,41 +205,45 @@ class ScriptGeneratorV4_1:
         topic: str,
         language: str = "zh",
         character_config: dict = None,
+        on_phase_callback: Optional[callable] = None,
     ) -> List[ScriptLineV4]:
         """
         V4 生成流程
-
-        0. 生成故事内核
-        1. 选择触发方式
-        2. 生成沉浸状态
-        3. 调用LLM生成初版
-        4. 结构破坏后处理
         """
 
-        print("Phase -1: 确定故事内核...")
+        def log_phase(phase, details=None):
+            msg = f"{phase}"
+            if details:
+                msg += f"\n{details}"
+            print(msg)
+            if on_phase_callback:
+                on_phase_callback(msg)
+
+        log_phase("Phase -1: 确定故事内核...")
         nucleus = self.story_nucleus.generate_nucleus(topic, character_config)
-        print(f"   内核: {nucleus['pattern_name']}")
-        print(f"   分享欲: {nucleus['sharing_urge']['description']}")
-        print(f"   反常点: {nucleus['abnormality']['description']}")
-        print(f"   开场意图: {nucleus['sharing_urge']['opening']}")
+        log_phase(f"   内核: {nucleus['pattern_name']}")
+        log_phase(f"   分享欲: {nucleus['sharing_urge']['description']}")
+        log_phase(f"   反常点: {nucleus['abnormality']['description']}")
+        log_phase(f"   开场意图: {nucleus['sharing_urge']['opening']}")
         nucleus_prompt = self._build_nucleus_prompt(nucleus)
 
-        print("Phase 0: 选择触发方式...")
+        log_phase("Phase 0: 选择触发方式...")
         trigger = self.trigger_bank.sample(character_config or {}, language, context=None)
-        print(f"   触发类型: {trigger['type']}")
-        print(f"   开场: {trigger['filled'][:50]}...")
+        log_phase(f"   触发类型: {trigger['type']}")
+        log_phase(f"   开场: {trigger['filled'][:50]}...")
 
-        print("Phase 1: 建立沉浸状态...")
+        log_phase("Phase 1: 建立沉浸状态...")
         immersion = self._build_immersion(name, persona, topic, trigger)
-        print(f"   沉浸: {immersion[:100]}...")
+        log_phase(f"   沉浸: {immersion[:100]}...")
 
         primary_emotion = self._infer_emotion(topic, background)
         emotion_config = self.emotion_mixer.mix(primary_emotion, language=language)
-        print(
+        emotion_msg = (
             f"情绪配置: {emotion_config.primary}"
             + (f" + {emotion_config.secondary}" if emotion_config.secondary else "")
             + (f" (masked as {emotion_config.mask})" if emotion_config.mask else "")
         )
+        log_phase(emotion_msg)
 
         fewshot = ""
         if self.example_sampler:
@@ -255,7 +259,7 @@ class ScriptGeneratorV4_1:
             if max_units < min_units:
                 max_units = min_units
 
-        print("Phase 2: 生成剧本...")
+        log_phase("Phase 2: 生成初版剧本...")
         system = self.SYSTEM_PROMPT_V4 + "\n\n" + fewshot
 
         user_prompt = f"""{nucleus_prompt}
@@ -292,19 +296,19 @@ class ScriptGeneratorV4_1:
         lines = self._parse_response(response, trigger["type"])
         lines = self._ensure_min_units(lines, trigger["type"], min_units, max_units, user_prompt, system)
 
-        print("Phase 3: 结构破坏...")
+        log_phase("Phase 3: 结构破坏...")
         lines_dict = [self._line_to_dict(line) for line in lines]
         broken_lines_dict = self.structure_breaker.break_structure(
             lines_dict, topic, language, character_config
         )
         if len(broken_lines_dict) < min_units:
-            print("结构破坏后单元数过少，保留原始结构。")
+            log_phase("结构破坏后单元数过少，保留原始结构。")
         else:
             lines_dict = broken_lines_dict
 
         result = [self._dict_to_line(d) for d in lines_dict]
 
-        print(f"生成完成，共 {len(result)} 个单元")
+        log_phase(f"生成完成，共 {len(result)} 个单元")
         return result
 
     def _build_immersion(self, name: str, persona: str, topic: str, trigger: dict) -> str:

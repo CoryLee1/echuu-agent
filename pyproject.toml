@@ -1,0 +1,122 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "echuu"
+version = "0.1.0"
+description = "AI VTuber Auto-Live System - Learn from real streamers, generate natural content"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Echuu Team"}
+]
+keywords = [
+    "vtuber",
+    "ai",
+    "streaming",
+    "tts",
+    "llm",
+    "live-streaming",
+    "virtual-streamer"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "anthropic>=0.18.0",
+    "openai>=1.12.0",
+    "dashscope>=1.25.2",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "aiohttp>=3.9.0",
+    "asyncio-throttle>=1.0.0",
+    "rich>=13.0.0",
+    "tqdm>=4.65.0",
+]
+
+[project.optional-dependencies]
+web = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "python-multipart>=0.0.6",
+    "websockets>=11.0",
+]
+notebook = [
+    "jupyter>=1.0.0",
+    "ipykernel>=6.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+]
+all = [
+    "echuu[web,notebook,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-repo/echuu-agent"
+Documentation = "https://github.com/your-repo/echuu-agent#readme"
+Repository = "https://github.com/your-repo/echuu-agent"
+Issues = "https://github.com/your-repo/echuu-agent/issues"
+
+[project.scripts]
+echuu = "workflow.backend.echuu_interactive:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["echuu*"]
+exclude = ["echuu-web*", "workflow*", "data*", "output*", "docs*"]
+
+[tool.setuptools.package-data]
+echuu = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.venv
+    | __pycache__
+    | node_modules
+    | dist
+    | build
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip = [".venv", "node_modules", "__pycache__"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+exclude = [
+    "\.venv",
+    "node_modules",
+    "__pycache__",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]

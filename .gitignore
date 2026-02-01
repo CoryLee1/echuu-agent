@@ -179,3 +179,14 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Output files (keep directory structure)
+output/scripts/*
+!output/scripts/.gitkeep
+!output/.gitkeep
+*.mp3
+*.wav
+*.zip
+
+# Node modules (for echuu-web)
+node_modules/
