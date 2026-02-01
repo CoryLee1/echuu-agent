@@ -18,8 +18,25 @@ New-Item -ItemType Directory -Path $SDK_DIR | Out-Null
 # 复制文件
 Write-Host "📦 复制文件..." -ForegroundColor Yellow
 Copy-Item -Recurse echuu "$SDK_DIR\echuu"
+
+# 移除嵌入的 git 仓库（如果存在）
+if (Test-Path "$SDK_DIR\echuu\Echuu-AI-Vtuber-SDK\.git") {
+    Write-Host "⚠️  发现嵌入的 git 仓库，正在移除..." -ForegroundColor Yellow
+    Remove-Item -Recurse -Force "$SDK_DIR\echuu\Echuu-AI-Vtuber-SDK\.git"
+    if (Test-Path "$SDK_DIR\echuu\Echuu-AI-Vtuber-SDK\.gitattributes") {
+        Remove-Item -Force "$SDK_DIR\echuu\Echuu-AI-Vtuber-SDK\.gitattributes"
+    }
+}
+
 Copy-Item pyproject.toml "$SDK_DIR\"
-Copy-Item LICENSE "$SDK_DIR\"
+
+# LICENSE 文件（如果存在）
+if (Test-Path LICENSE) {
+    Copy-Item LICENSE "$SDK_DIR\"
+} else {
+    Write-Host "⚠️  LICENSE 文件不存在，跳过复制" -ForegroundColor Yellow
+}
+
 Copy-Item echuu\README.md "$SDK_DIR\README.md"
 
 # 创建 requirements.txt
