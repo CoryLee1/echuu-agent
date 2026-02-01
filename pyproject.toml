@@ -69,13 +69,13 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-repo/echuu-agent"
-Documentation = "https://github.com/your-repo/echuu-agent#readme"
-Repository = "https://github.com/your-repo/echuu-agent"
-Issues = "https://github.com/your-repo/echuu-agent/issues"
+Homepage = "https://github.com/CoryLee1/Echuu-AIVtuber-SDK"
+Documentation = "https://github.com/CoryLee1/Echuu-AIVtuber-SDK#readme"
+Repository = "https://github.com/CoryLee1/Echuu-AIVtuber-SDK"
+Issues = "https://github.com/CoryLee1/Echuu-AIVtuber-SDK/issues"
 
-[project.scripts]
-echuu = "workflow.backend.echuu_interactive:main"
+# [project.scripts]
+# echuu = "workflow.backend.echuu_interactive:main"  # 仅在完整项目中可用
 
 [tool.setuptools.packages.find]
 where = ["."]
