@@ -33,6 +33,25 @@ from .core.structure_breaker import StructureBreaker
 from .core.pattern_analyzer import PatternAnalyzer
 from .core.drama_amplifier import DramaAmplifier
 
+# PerformerCue - Expression and gesture annotation
+from .core.performer_cue import (
+    PerformerCue,
+    EmotionCue,
+    GestureCue,
+    LookCue,
+    BlinkCue,
+    LipsyncCue,
+    CameraCue,
+    EmotionKey,
+    LookTarget,
+    BlinkMode,
+    infer_emotion_from_text,
+)
+
+# VRM mapping
+from .vrm.mapper import VRMExpressionMapper, VRMVersion
+from .vrm.presets import GESTURE_PRESETS, GestureCategory, get_gesture_by_emotion
+
 # Generators
 from .generators.script_generator_v4 import ScriptGeneratorV4, ScriptGeneratorV4_1, ScriptLineV4
 from .generators.example_sampler import ExampleSampler
@@ -60,6 +79,24 @@ __all__ = [
     "StructureBreaker",
     "PatternAnalyzer",
     "DramaAmplifier",
+    # PerformerCue
+    "PerformerCue",
+    "EmotionCue",
+    "GestureCue",
+    "LookCue",
+    "BlinkCue",
+    "LipsyncCue",
+    "CameraCue",
+    "EmotionKey",
+    "LookTarget",
+    "BlinkMode",
+    "infer_emotion_from_text",
+    # VRM
+    "VRMExpressionMapper",
+    "VRMVersion",
+    "GESTURE_PRESETS",
+    "GestureCategory",
+    "get_gesture_by_emotion",
     # Generators
     "ScriptGeneratorV4",
     "ScriptGeneratorV4_1",

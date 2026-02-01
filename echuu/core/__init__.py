@@ -9,6 +9,7 @@ This module contains the fundamental building blocks:
 - StructureBreaker: Anti-perfection algorithms
 - PatternAnalyzer: Learn from real clips
 - DramaAmplifier: Emotional intensity control
+- PerformerCue: Expression and gesture annotation protocol
 """
 
 from .story_nucleus import StoryNucleus
@@ -18,6 +19,20 @@ from .digression_db import DigressionDB
 from .structure_breaker import StructureBreaker
 from .pattern_analyzer import PatternAnalyzer
 from .drama_amplifier import DramaAmplifier
+from .performer_cue import (
+    PerformerCue,
+    EmotionCue,
+    GestureCue,
+    LookCue,
+    BlinkCue,
+    LipsyncCue,
+    CameraCue,
+    EmotionKey,
+    LookTarget,
+    BlinkMode,
+    infer_emotion_from_text,
+    EMOTION_KEYWORD_MAP,
+)
 
 __all__ = [
     "StoryNucleus",
@@ -29,4 +44,17 @@ __all__ = [
     "StructureBreaker",
     "PatternAnalyzer",
     "DramaAmplifier",
+    # PerformerCue
+    "PerformerCue",
+    "EmotionCue",
+    "GestureCue",
+    "LookCue",
+    "BlinkCue",
+    "LipsyncCue",
+    "CameraCue",
+    "EmotionKey",
+    "LookTarget",
+    "BlinkMode",
+    "infer_emotion_from_text",
+    "EMOTION_KEYWORD_MAP",
 ]

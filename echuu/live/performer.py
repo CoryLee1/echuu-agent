@@ -115,6 +115,8 @@ class PerformerV3:
         output["step"] = state.current_step
         output["disfluencies"] = current_line.disfluencies
         output["emotion_break"] = current_line.emotion_break
+        # 添加表演标注
+        output["cue"] = current_line.cue.to_dict() if hasattr(current_line, 'cue') and current_line.cue else None
 
         if isinstance(current_line.emotion_break, dict):
             state.memory.emotion_track.append(

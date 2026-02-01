@@ -268,6 +268,7 @@ class EchuuLiveEngine:
                     "key_info": line.key_info,
                     "disfluencies": line.disfluencies,
                     "emotion_break": line.emotion_break,
+                    "cue": line.cue.to_dict() if hasattr(line, 'cue') and line.cue else None,
                 }
                 for line in script_lines
             ],

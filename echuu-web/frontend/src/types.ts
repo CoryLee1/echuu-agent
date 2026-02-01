@@ -131,3 +131,66 @@ export type SystemSetting = {
   description?: string;
   updated_at: string;
 };
+
+// ========== PerformerCue 表演标注 ==========
+export type EmotionCue = {
+  key: "neutral" | "happy" | "angry" | "sad" | "relaxed" | "surprised" | "fun" | "sorrow";
+  intensity: number;
+  attack: number;
+  release: number;
+};
+
+export type GestureCue = {
+  clip: string;
+  weight: number;
+  duration: number;
+  loop: boolean;
+};
+
+export type LookCue = {
+  target: "camera" | "chat" | "offscreen" | "down" | "up" | "left" | "right" | [number, number];
+  strength: number;
+};
+
+export type BlinkCue = {
+  mode: "auto" | "hold" | "none" | "wink_left" | "wink_right";
+  extra: number;
+};
+
+export type LipsyncCue = {
+  enabled: boolean;
+  aa: number;
+  ih: number;
+  ou: number;
+  ee: number;
+  oh: number;
+};
+
+export type CameraCue = {
+  preset?: string;
+  zoom?: number;
+};
+
+export type PerformerCue = {
+  emotion?: EmotionCue;
+  gesture?: GestureCue;
+  look?: LookCue;
+  blink?: BlinkCue;
+  lipsync?: LipsyncCue;
+  camera?: CameraCue;
+  beat?: number;
+  pause?: number;
+};
+
+// ========== VRM 控制指令 ==========
+export type VRMCommand = {
+  type: "expression" | "gesture" | "lookat";
+  blendShape?: string;
+  weight?: number;
+  fadeIn?: number;
+  fadeOut?: number;
+  clip?: string;
+  duration?: number;
+  target?: string | [number, number];
+  version?: "vrm0" | "vrm1";
+};

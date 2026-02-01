@@ -4,7 +4,7 @@ ScriptGeneratorV4 - 整合所有新组件的主生成器
 
 import json
 import re
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from dataclasses import dataclass, field
 
 from ..core.trigger_bank import TriggerBank
@@ -12,6 +12,19 @@ from ..core.digression_db import DigressionDB
 from ..core.structure_breaker import StructureBreaker
 from ..core.emotion_mixer import EmotionMixer
 from ..core.story_nucleus import StoryNucleus
+from ..core.performer_cue import (
+    PerformerCue,
+    EmotionCue,
+    GestureCue,
+    LookCue,
+    BlinkCue,
+    LipsyncCue,
+    EmotionKey,
+    LookTarget,
+    BlinkMode,
+    infer_emotion_from_text,
+)
+from ..vrm.presets import get_gesture_for_stage, GESTURE_PRESETS
 
 
 @dataclass
@@ -30,6 +43,13 @@ class ScriptLineV4:
     is_digression: bool = False
     has_digression: bool = False
     emotion_config: Optional[Dict] = None
+
+    # 新增：表演标注
+    cue: Optional[PerformerCue] = None
+
+    def cue_to_dict(self) -> Optional[Dict[str, Any]]:
+        """将 cue 转换为可序列化的字典"""
+        return self.cue.to_dict() if self.cue else None
 
 
 class ScriptGeneratorV4_1:
@@ -389,15 +409,22 @@ class ScriptGeneratorV4_1:
             lines = []
 
             for i, item in enumerate(data):
+                text = item.get("text", "")
+                stage = item.get("stage", "Build-up")
+
+                # 生成 PerformerCue
+                cue = self._generate_cue_for_line(text, stage, i)
+
                 line = ScriptLineV4(
                     id=item.get("id", f"line_{i}"),
-                    text=item.get("text", ""),
-                    stage=item.get("stage", "Build-up"),
+                    text=text,
+                    stage=stage,
                     interruption_cost=item.get("cost", 0.5),
                     key_info=item.get("key_info", []),
                     disfluencies=item.get("disfluencies", []),
                     emotion_break=item.get("emotion_break"),
                     trigger_type=trigger_type if i == 0 else "continuation",
+                    cue=cue,
                 )
                 lines.append(line)
 
@@ -406,6 +433,73 @@ class ScriptGeneratorV4_1:
         except json.JSONDecodeError as e:
             print(f"⚠️ JSON解析错误: {e}")
             return []
+
+    def _generate_cue_for_line(self, text: str, stage: str, line_idx: int) -> PerformerCue:
+        """
+        为单行台词生成表演标注
+
+        Args:
+            text: 台词文本
+            stage: 叙事阶段
+            line_idx: 台词索引
+
+        Returns:
+            PerformerCue 实例
+        """
+        # 1. 推断表情
+        emotion_cue = infer_emotion_from_text(text, stage)
+
+        # 2. 选择合适的动作
+        gesture_cue = None
+        gesture_preset = get_gesture_for_stage(stage, emotion_cue.key.value)
+        if gesture_preset:
+            gesture_cue = GestureCue(
+                clip=gesture_preset.name,
+                weight=gesture_preset.weight,
+                duration=gesture_preset.duration,
+                loop=gesture_preset.loop,
+            )
+
+        # 3. 视线目标 - 根据阶段调整
+        look_target = LookTarget.CAMERA
+        if stage == "Hook":
+            look_target = LookTarget.CAMERA
+        elif "弹幕" in text or "评论" in text or "有人问" in text:
+            look_target = LookTarget.CHAT
+        elif "..." in text or "…" in text:
+            look_target = LookTarget.DOWN  # 思考时看下方
+
+        look_cue = LookCue(
+            target=look_target,
+            strength=0.8 if stage in ["Hook", "Climax"] else 0.6,
+        )
+
+        # 4. 眨眼模式
+        blink_mode = BlinkMode.AUTO
+        if "！" in text or "!!" in text:
+            blink_mode = BlinkMode.HOLD  # 激动时保持睁眼
+        blink_cue = BlinkCue(mode=blink_mode)
+
+        # 5. 口型 - 预留，实际由音频驱动
+        lipsync_cue = LipsyncCue(enabled=True)
+
+        # 6. 节拍/暂停
+        beat = None
+        pause = None
+        if stage == "Climax":
+            beat = 0.5  # 高潮前的节拍点
+        if "..." in text or "…" in text:
+            pause = 0.3  # 省略号处暂停
+
+        return PerformerCue(
+            emotion=emotion_cue,
+            gesture=gesture_cue,
+            look=look_cue,
+            blink=blink_cue,
+            lipsync=lipsync_cue,
+            beat=beat,
+            pause=pause,
+        )
 
     def _ensure_min_units(
         self,
@@ -435,7 +529,7 @@ class ScriptGeneratorV4_1:
 
     def _line_to_dict(self, line: ScriptLineV4) -> dict:
         """ScriptLineV4 转 dict"""
-        return {
+        result = {
             "id": line.id,
             "text": line.text,
             "stage": line.stage,
@@ -446,9 +540,17 @@ class ScriptGeneratorV4_1:
             "trigger_type": line.trigger_type,
             "is_digression": line.is_digression,
         }
+        if line.cue:
+            result["cue"] = line.cue.to_dict()
+        return result
 
     def _dict_to_line(self, d: dict) -> ScriptLineV4:
         """dict 转 ScriptLineV4"""
+        # 解析 cue
+        cue = None
+        if "cue" in d and d["cue"]:
+            cue = PerformerCue.from_dict(d["cue"])
+
         return ScriptLineV4(
             id=d.get("id", ""),
             text=d.get("text", ""),
@@ -460,6 +562,7 @@ class ScriptGeneratorV4_1:
             trigger_type=d.get("trigger_type", ""),
             is_digression=d.get("is_digression", False),
             has_digression=d.get("has_digression", False),
+            cue=cue,
         )
 
 

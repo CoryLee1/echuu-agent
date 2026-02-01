@@ -93,7 +93,255 @@ echuu-agent/
 └── .cursor/
     └── rules/
         └── project.mdc              # 项目规范
-```## 核心概念### 标注维度| 维度 | 说明 | 取值 |
+```## Pipeline 示例：从输入到输出
+
+下面通过一个完整示例，展示 echuu 如何将用户输入转化为带表情标注的直播剧本。
+
+### 用户输入
+
+```python
+engine.setup(
+    name="六螺",
+    persona="爱吐槽的前上班族女主播，说话直接，经常自嘲",
+    topic="关于上司的超劲爆八卦",
+    background="在互联网公司工作3年后辞职做全职主播"
+)
+```
+
+---
+
+### Phase -1: 故事内核分析 (StoryNucleus)
+
+系统首先分析话题，确定故事的核心驱动力：
+
+```
+内核模式: 八卦爆料型
+分享欲: "我知道一个超级劲爆的秘密，不说出来会憋死"
+反常点: 身份反差 - 平时PUA别人的上司，居然被开除了
+开场意图: 制造悬念，吊胃口
+```
+
+**输出**: 确定叙事框架和情绪基调
+
+---
+
+### Phase 0: 触发方式选择 (TriggerBank)
+
+从触发库中选择自然的开场方式：
+
+```
+触发类型: thought_drift (思维漂移)
+开场模板: "诶，你们知道吗，我突然想起来一件事..."
+```
+
+**输出**: 自然的故事入口
+
+---
+
+### Phase 1: 沉浸状态构建
+
+模拟主播"边想边说"的状态：
+
+```
+我正在直播，刚才看到弹幕有人问我以前的工作，
+突然想起那个天天PUA我们的前上司...
+心情有点复杂，又想吐槽又觉得好笑。
+准备用"你们猜怎么着"开场吊一下胃口。
+```
+
+**输出**: 第一人称沉浸视角
+
+---
+
+### Phase 2: 剧本生成 (ScriptGeneratorV4)
+
+生成 8-10 个叙事单元，每个单元自动附带 PerformerCue：
+
+```json
+[
+  {
+    "id": "line_0",
+    "text": "诶，你们知道吗，我上周发现了一件超级劲爆的事！",
+    "stage": "Hook",
+    "cost": 0.3,
+    "cue": {
+      "emotion": {"key": "happy", "intensity": 0.85},
+      "gesture": {"clip": "react_surprised", "duration": 0.8},
+      "look": {"target": "camera", "strength": 0.8},
+      "blink": {"mode": "hold"}
+    }
+  },
+  {
+    "id": "line_1",
+    "text": "就是...我前上司啊，那个天天PUA我们的人，居然...",
+    "stage": "Build-up",
+    "cost": 0.5,
+    "cue": {
+      "emotion": {"key": "neutral", "intensity": 0.6},
+      "gesture": {"clip": "talk_gesture_medium", "duration": 2.0},
+      "look": {"target": "down", "strength": 0.6},
+      "pause": 0.3
+    }
+  },
+  {
+    "id": "line_2",
+    "text": "他被公司开除了！哈哈哈哈！太解气了！",
+    "stage": "Climax",
+    "cost": 0.8,
+    "cue": {
+      "emotion": {"key": "happy", "intensity": 1.0},
+      "gesture": {"clip": "react_laugh", "duration": 1.5},
+      "look": {"target": "camera", "strength": 0.9},
+      "blink": {"mode": "hold"},
+      "beat": 0.5
+    }
+  },
+  {
+    "id": "line_3",
+    "text": "好了不说了，反正就这么个事，看弹幕有人问什么...",
+    "stage": "Resolution",
+    "cost": 0.2,
+    "cue": {
+      "emotion": {"key": "relaxed", "intensity": 0.5},
+      "gesture": {"clip": "idle_sway", "duration": 4.0},
+      "look": {"target": "chat", "strength": 0.6}
+    }
+  }
+]
+```
+
+---
+
+### Phase 3: 结构破坏 (StructureBreaker)
+
+注入真实主播的"不完美"特征：
+
+- ❌ 删除升华结尾（"这件事让我明白..."）
+- ✅ 添加跑题片段（"说到PUA，我想起之前..."）
+- ✅ 数字模糊化（"500块" → "几百块吧"）
+- ✅ 草草收尾（"反正就这样，下一个话题"）
+
+---
+
+### Phase 4: 实时表演 (PerformerV3)
+
+逐行执行剧本，处理弹幕互动：
+
+```
+[Step 0] Hook [CONT]
+  Speech: 诶，你们知道吗，我上周发现了一件超级劲爆的事！
+  Cue: emotion=happy, gesture=react_surprised, look=camera
+
+[Step 1] Build-up [CONT]
+  Speech: 就是...我前上司啊，那个天天PUA我们的人，居然...
+  Cue: emotion=neutral, gesture=talk_gesture_medium, look=down, pause=0.3s
+
+[Step 2] Climax [CONT]
+  Speech: 他被公司开除了！哈哈哈哈！太解气了！
+  Cue: emotion=happy(1.0), gesture=react_laugh, beat=0.5s
+  情绪断点: 完全破防 - 积压的不满释放
+
+[Step 3] Resolution [TEASE]
+  Danmaku: "为什么被开除？"
+  Speech: 这个嘛...你们真想知道？那我下次直播详细说！好了不说了...
+  Cue: emotion=relaxed, gesture=idle_sway, look=chat
+```
+
+---
+
+### 输出：VRM 控制指令
+
+PerformerCue 通过 VRMExpressionMapper 转换为前端可消费的指令：
+
+```json
+{
+  "type": "expression",
+  "blendShape": "happy",
+  "weight": 1.0,
+  "fadeIn": 0.15,
+  "fadeOut": 0.25,
+  "version": "vrm1"
+}
+```
+
+```json
+{
+  "type": "gesture",
+  "clip": "react_laugh",
+  "duration": 1.5,
+  "loop": false
+}
+```
+
+前端（Unity/three-vrm）根据这些指令驱动虚拟形象的表情和动作。
+
+---
+
+### 完整流程图
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         用户输入                                 │
+│  name="六螺", persona="...", topic="关于上司的八卦"              │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase -1: StoryNucleus                                         │
+│  → 分析话题 → 确定故事模式(八卦爆料) → 提取反常点                  │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 0: TriggerBank                                           │
+│  → 选择触发类型(thought_drift) → 生成开场语                      │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 1: Immersion                                             │
+│  → 构建第一人称沉浸状态 → 确定情绪基调                            │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 2: ScriptGeneratorV4                                     │
+│  → LLM生成剧本 → 自动添加 PerformerCue (表情/动作/视线)          │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ infer_emotion_from_text("太开心了！")                     │   │
+│  │ → EmotionCue(key=HAPPY, intensity=1.0)                   │   │
+│  │                                                           │   │
+│  │ get_gesture_for_stage("Climax", "happy")                 │   │
+│  │ → GestureCue(clip="react_laugh", duration=1.5)           │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 3: StructureBreaker                                      │
+│  → 删除升华 → 注入跑题 → 模糊数字 → 真实化处理                    │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 4: PerformerV3 + TTS                                     │
+│  → 逐行执行 → 弹幕互动判断 → 语音合成                             │
+│  → 输出 speech + audio + cue                                    │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  输出: VRM 控制指令                                              │
+│  → VRMExpressionMapper 转换                                     │
+│  → 发送到 Unity/three-vrm 前端                                  │
+│  → 驱动虚拟形象表情、动作、视线、口型                             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 核心概念### 标注维度| 维度 | 说明 | 取值 |
 |------|------|------|
 | attention_focus | 注意力指向 | self, audience, specific, content, meta |
 | speech_act | 话语行为 | narrate, opine, respond, elicit, pivot, backchannel |

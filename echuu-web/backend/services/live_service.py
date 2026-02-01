@@ -175,7 +175,10 @@ class LiveService:
                     "promises": [p for p in memory.promises if not p["fulfilled"]],
                     "emotion_trend": [e["level"] for e in memory.emotion_track[-5:]]
                 }
-                
+
+                # cue 已经在 performer.step() 输出中包含，确保它被序列化
+                # result["cue"] 已由 PerformerV3.step() 设置
+
                 await state.broadcast({"type": "step", "data": result})
                 step_idx += 1
                 await asyncio.sleep(0.1)

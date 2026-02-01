@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Activity, Brain, MessageSquare, Volume2, VolumeX, Play, Download } from "lucide-react";
+import { Activity, Brain, MessageSquare, Volume2, VolumeX, Play, Download, Smile, Hand, Eye } from "lucide-react";
 import { audioUrl, downloadSessionUrl, sendDanmaku, startLive } from "../api/echuuApi";
-import type { MemorySnapshot } from "../types";
+import type { MemorySnapshot, PerformerCue } from "../types";
 import { useCharacters } from "../hooks/useCharacters";
 
 type StepPayload = {
@@ -13,6 +13,7 @@ type StepPayload = {
   memory_snapshot?: MemorySnapshot;
   inner_monologue?: string;
   emotion_break?: { level: number };
+  cue?: PerformerCue;
 };
 
 const LiveMonitor = () => {
@@ -247,15 +248,49 @@ const LiveMonitor = () => {
             <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-4">
               {steps.map((step, idx) => (
                 <div key={idx} className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                  <div className="text-xs text-slate-500 flex items-center gap-2">
+                  <div className="text-xs text-slate-500 flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-slate-700">{step.stage}</span>
                     {step.emotion_break?.level ? (
                       <span className="text-rose-500 font-semibold">破防 L{step.emotion_break.level}</span>
                     ) : null}
+                    {/* PerformerCue 显示 */}
+                    {step.cue?.emotion && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+                        <Smile size={12} />
+                        {step.cue.emotion.key} ({(step.cue.emotion.intensity * 100).toFixed(0)}%)
+                      </span>
+                    )}
+                    {step.cue?.gesture && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">
+                        <Hand size={12} />
+                        {step.cue.gesture.clip}
+                      </span>
+                    )}
+                    {step.cue?.look && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                        <Eye size={12} />
+                        {Array.isArray(step.cue.look.target) ? `(${step.cue.look.target.join(',')})` : step.cue.look.target}
+                      </span>
+                    )}
                   </div>
                   <div className="mt-2 text-sm text-slate-700 leading-relaxed">{step.speech}</div>
                   {step.danmaku && (
                     <div className="mt-2 text-xs text-indigo-500 font-semibold">弹幕：{step.danmaku}</div>
+                  )}
+                  {/* 节拍/暂停提示 */}
+                  {(step.cue?.beat || step.cue?.pause) && (
+                    <div className="mt-2 flex gap-2 text-xs">
+                      {step.cue.beat && (
+                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded">
+                          节拍 {step.cue.beat}s
+                        </span>
+                      )}
+                      {step.cue.pause && (
+                        <span className="px-2 py-0.5 bg-slate-200 text-slate-600 rounded">
+                          暂停 {step.cue.pause}s
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}
