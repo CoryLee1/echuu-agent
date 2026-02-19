@@ -1,17 +1,17 @@
-# Railway 部署用：Root Directory = echuu-agent 时使用此 Dockerfile
+# Railway 部署用：连 echuu-agent 仓库、Root 为空时使用
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# 复制依赖与代码（与 app.py 中 PROJECT_ROOT 对应）
+# 复制依赖与代码（仓库根即 echuu-agent，echuu 包在 ./echuu，后端在 ./workflow/backend）
 COPY requirements.txt /app/requirements.txt
-COPY public /app/public
+COPY echuu /app/echuu
 COPY workflow /app/workflow
 
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# echuu 包在 public/ 下，后端在 workflow/backend
-ENV PYTHONPATH=/app/public
+# app.py 中 PROJECT_ROOT = 仓库根，需能 import echuu
+ENV PYTHONPATH=/app
 WORKDIR /app/workflow/backend
 EXPOSE 8000
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
