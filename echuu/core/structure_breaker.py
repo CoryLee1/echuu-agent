@@ -12,6 +12,8 @@ import re
 import random
 from typing import List
 
+from echuu.core.unit import Rupture, ScriptLine, Unit
+
 
 class StructureBreaker:
 
@@ -222,3 +224,80 @@ class StructureBreaker:
         script_lines = self.insert_thread_loss(script_lines, probability=0.2)
 
         return script_lines
+
+    VALID_NUCLEUS_MODES: set[str] = {
+        "slippery_slope", "kindness_trap", "anger_armor",
+        "choice_cost", "tiny_shame", "contradiction_reveal",
+    }
+
+    # Heuristic mapping from persona.flaw keywords to nucleus modes.
+    # Order matters: first match wins. tiny_shame is universal fallback.
+    _FLAW_KEYWORDS: tuple[tuple[str, str], ...] = (
+        ("辞", "choice_cost"),
+        ("离职", "choice_cost"),
+        ("分手", "choice_cost"),
+        ("哭", "anger_armor"),
+        ("怒", "anger_armor"),
+        ("羞", "tiny_shame"),
+        ("尴", "tiny_shame"),
+        ("矛盾", "contradiction_reveal"),
+        ("骗", "contradiction_reveal"),
+        ("善良", "kindness_trap"),
+        ("好心", "kindness_trap"),
+        ("一点一点", "slippery_slope"),
+        ("越来越", "slippery_slope"),
+    )
+
+    def _select_nucleus_for_flaw(self, flaw: str) -> str:
+        for kw, mode in self._FLAW_KEYWORDS:
+            if kw in (flaw or ""):
+                return mode
+        return "tiny_shame"  # universal fallback (spec §5)
+
+    def inject_flaw_rupture(self, unit: Unit, persona) -> Unit:
+        """Mark unit's last 'turn' line as is_rupture=True and refine the
+        Unit[3] rupture slot's nucleus_mode using persona.flaw keywords.
+
+        Idempotent: safe to call multiple times.
+        """
+        # Find the last turn line
+        last_turn_idx = None
+        for i in range(len(unit.lines) - 1, -1, -1):
+            if unit.lines[i].stage == "turn":
+                last_turn_idx = i
+                break
+        if last_turn_idx is None and unit.lines:
+            # Force the last line to turn if no turn exists (degradation, spec §5)
+            unit.lines[-1].stage = "turn"
+            last_turn_idx = len(unit.lines) - 1
+        if last_turn_idx is not None:
+            unit.lines[last_turn_idx].is_rupture = True
+
+        # Refine the flaw-kind rupture slot's nucleus_mode
+        selected = self._select_nucleus_for_flaw(getattr(persona, "flaw", ""))
+        if selected not in self.VALID_NUCLEUS_MODES:
+            selected = "tiny_shame"
+        for slot in unit.rupture_slots:
+            if slot.kind == "flaw":
+                slot.nucleus_mode = selected
+        return unit
+
+    def delete_sublimation_in_unit(self, unit: Unit) -> Unit:
+        """Same logic as delete_sublimation but operating on Unit.lines,
+        and NEVER removing a line where is_rupture=True (spec §6)."""
+        kept: list[ScriptLine] = []
+        for line in unit.lines:
+            if line.is_rupture:
+                kept.append(line)
+                continue
+            if self._is_sublimation(line.text):
+                continue
+            kept.append(line)
+        unit.lines = kept
+        return unit
+
+    def _is_sublimation(self, text: str) -> bool:
+        for pat in self.SUBLIMATION_PATTERNS_ZH + self.SUBLIMATION_PATTERNS_EN:
+            if re.search(pat, text):
+                return True
+        return False
