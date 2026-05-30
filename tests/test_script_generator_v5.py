@@ -104,3 +104,54 @@ def test_generate_forces_last_line_to_turn(persona, planned_units):
     # u0's last line must now be turn + is_rupture
     assert units[0].lines[-1].stage == "turn"
     assert units[0].lines[-1].is_rupture is True
+
+
+def test_generate_invalid_json_falls_back_to_placeholder(persona, planned_units):
+    llm = FakeLLM("totally not json")
+    gen = ScriptGeneratorV5(llm=llm)
+    units = gen.generate(persona, planned_units)
+    assert len(units) == 4
+    for u in units:
+        assert len(u.lines) == 3
+        # Last line forced to turn + rupture even on full fallback
+        assert u.lines[-1].stage == "turn"
+        assert u.lines[-1].is_rupture is True
+
+
+def test_generate_retries_once_then_falls_back(persona, planned_units):
+    """LLM 第一次返回非法 JSON，第二次返回合法 → 用第二次结果。"""
+    class FlakyLLM:
+        def __init__(self):
+            self.calls = 0
+        def generate(self, prompt: str) -> str:
+            self.calls += 1
+            if self.calls == 1:
+                return "broken"
+            return _make_complete_llm_response()
+    flaky = FlakyLLM()
+    gen = ScriptGeneratorV5(llm=flaky)
+    units = gen.generate(persona, planned_units)
+    assert flaky.calls == 2
+    assert len(units) == 4
+    assert all(len(u.lines) == 3 for u in units)
+
+
+def test_generate_short_units_triggers_retry(persona, planned_units):
+    """LLM 第一次返回少于 4 unit → 重试 1 次 → 仍失败则占位。"""
+    short = json.dumps({"units": [{"index": 0, "lines": [
+        {"id": "x", "text": "y", "stage": "turn", "interruption_cost": 0.5}
+    ]}]})
+    class ShortLLM:
+        def __init__(self):
+            self.calls = 0
+        def generate(self, prompt):
+            self.calls += 1
+            return short
+    s = ShortLLM()
+    gen = ScriptGeneratorV5(llm=s)
+    units = gen.generate(persona, planned_units)
+    assert s.calls == 2  # one retry
+    # Fallback to placeholder for all 4
+    for u in units:
+        assert len(u.lines) == 3
+        assert u.lines[-1].is_rupture is True
