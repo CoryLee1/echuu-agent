@@ -15,8 +15,12 @@ from typing import Dict, List, Optional
 from dotenv import load_dotenv
 
 from ..core.pattern_analyzer import PatternAnalyzer
+from ..core.persona_model import PersonaModel
+from ..core.unit import Show
+from ..core.unit_planner import UnitPlanner
+from ..core.structure_breaker import StructureBreaker
 from ..generators.example_sampler import ExampleSampler
-from ..generators.script_generator_v4 import ScriptGeneratorV4
+from ..generators.script_generator_v5 import ScriptGeneratorV5
 from .danmaku import DanmakuEvaluator, DanmakuHandler
 from .llm_factory import create_llm_client
 from .performer import PerformerV3
@@ -66,7 +70,9 @@ class EchuuLiveEngine:
         clips_file = self.project_root / "data" / "vtuber_raw_clips_for_notebook_full_30_cleaned.jsonl"
         self.example_sampler = ExampleSampler(str(clips_file)) if clips_file.exists() else None
 
-        self.script_gen = ScriptGeneratorV4(self.llm, self.example_sampler)
+        self.unit_planner = UnitPlanner()
+        self.structure_breaker = StructureBreaker()
+        self.script_gen = ScriptGeneratorV5(self.llm, self.example_sampler)
         self.danmaku_handler = DanmakuHandler(DanmakuEvaluator())
         self.performer = PerformerV3(self.llm, self.tts, self.danmaku_handler)
 
@@ -111,52 +117,58 @@ class EchuuLiveEngine:
         character_config: Optional[dict] = None,
         on_phase_callback: Optional[callable] = None,
     ) -> PerformanceState:
-        """创建表演（预生成完整剧本）。"""
-        # 从topic检测并设置直播语言
+        """V5: PersonaModel → UnitPlanner → ScriptGeneratorV5 → StructureBreaker."""
         self.stream_lang_context = setup_stream_language_from_topic(topic, persona)
         print(f"🌐 语言设置: {self.stream_lang_context.greeting_style}")
 
-        # 如果有回调，发送初始信息
         if on_phase_callback:
-            on_phase_callback("Phase 0: 正在初始化创作环境...")
+            on_phase_callback("Phase A: 提取人设三轴...")
+        persona_model = PersonaModel.from_persona_text(persona, self.llm)
 
-        script_lines = self.script_gen.generate(
-            name=name,
-            persona=persona,
-            background=background,
-            topic=topic,
-            language=language,
-            character_config=character_config or {},
-            on_phase_callback=on_phase_callback, # 传递回调给生成器
-        )
+        if on_phase_callback:
+            on_phase_callback("Phase B: 排 4 单元结构...")
+        units = self.unit_planner.plan(persona_model, topic)
 
-        self._save_script(script_lines, name, topic)
-        self._print_script_preview(script_lines)
+        if on_phase_callback:
+            on_phase_callback("Phase C: 单次 LLM 调用生成剧本...")
+        units = self.script_gen.generate(persona_model, units, topic=topic)
+
+        if on_phase_callback:
+            on_phase_callback("Phase D: 注入 flaw rupture + 清洗升华...")
+        units[3] = self.structure_breaker.inject_flaw_rupture(units[3], persona_model)
+        for u in units:
+            self.structure_breaker.delete_sublimation_in_unit(u)
+
+        show = Show(persona=persona_model, topic=topic, units=units)
+
+        # Flatten units → script_lines for V4-compat consumers (PerformerV3, _save_script)
+        flat_lines = [line for u in show.units for line in u.lines]
 
         catchphrases = []
         if self.analyzer:
             catchphrases = [cp for cp, _ in self.analyzer.extract_catchphrases(language)[:5]]
 
         memory = PerformerMemory()
-        memory.script_progress["total_lines"] = len(script_lines)
-        memory.script_progress["current_stage"] = script_lines[0].stage if script_lines else "Unknown"
-        for line in script_lines:
-            memory.story_points["upcoming"].extend(line.key_info)
+        memory.script_progress["total_lines"] = len(flat_lines)
+        memory.script_progress["current_stage"] = flat_lines[0].stage if flat_lines else "hook"
 
-        # 更新performer以使用语言上下文
         self.performer = PerformerV3(
             self.llm,
             self.tts,
             self.danmaku_handler,
-            stream_lang_context=self.stream_lang_context
+            stream_lang_context=self.stream_lang_context,
         )
+
+        self._save_script_v5(show, name, topic)
+        self._print_script_preview_v5(show)
 
         return PerformanceState(
             name=name,
             persona=persona,
             background=background,
             topic=topic,
-            script_lines=script_lines,
+            show=show,
+            script_lines=flat_lines,  # compat
             memory=memory,
             catchphrases=catchphrases,
         )
@@ -316,8 +328,9 @@ class EchuuLiveEngine:
             audio_path = self.scripts_dir / f"{timestamp}_{self.state.name}_{self.state.topic[:20].replace(' ', '_')}_live{ext}"
             self.tts.save_recording(str(audio_path), convert_to_mp3=convert_to_mp3, keep_wav=False)
 
-    def _save_script(self, script_lines, name: str, topic: str):
-        """保存剧本到 JSON 文件。"""
+    def _save_script_v5(self, show, name: str, topic: str):
+        """V5 Show → JSON dump."""
+        from dataclasses import asdict
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         safe_topic = topic[:30].replace(" ", "_").replace("/", "_")
         filename = f"{timestamp}_{name}_{safe_topic}.json"
@@ -328,35 +341,46 @@ class EchuuLiveEngine:
                 "timestamp": timestamp,
                 "name": name,
                 "topic": topic,
-                "total_lines": len(script_lines),
+                "total_units": len(show.units),
+                "total_lines": sum(len(u.lines) for u in show.units),
             },
-            "script": [
+            "persona": asdict(show.persona),
+            "units": [
                 {
-                    "id": line.id,
-                    "text": line.text,
-                    "stage": line.stage,
-                    "cost": line.interruption_cost,
-                    "key_info": line.key_info,
-                    "disfluencies": line.disfluencies,
-                    "emotion_break": line.emotion_break,
-                    "cue": line.cue.to_dict() if hasattr(line, 'cue') and line.cue else None,
+                    "index": u.index,
+                    "time_window": list(u.time_window),
+                    "axis": u.axis,
+                    "density": u.density,
+                    "acoustic": asdict(u.acoustic),
+                    "rupture_slots": [asdict(r) for r in u.rupture_slots],
+                    "lines": [
+                        {
+                            "id": l.id,
+                            "text": l.text,
+                            "stage": l.stage,
+                            "is_rupture": l.is_rupture,
+                            "interruption_cost": l.interruption_cost,
+                        }
+                        for l in u.lines
+                    ],
                 }
-                for line in script_lines
+                for u in show.units
             ],
         }
 
         with filepath.open("w", encoding="utf-8") as f:
             json.dump(script_data, f, ensure_ascii=False, indent=2)
-        print(f"剧本已保存: {filepath}")
+        print(f"V5 剧本已保存: {filepath}")
 
-    def _print_script_preview(self, script_lines):
-        """打印剧本预览。"""
-        print("\n生成的剧本：")
+    def _print_script_preview_v5(self, show):
+        """V5 Show → console preview."""
+        print("\n生成的剧本（V5）：")
         print("=" * 60)
-        for i, line in enumerate(script_lines):
-            cost_bar = "#" * int(line.interruption_cost * 5) + "-" * (5 - int(line.interruption_cost * 5))
-            print(f"\n[{i}] {line.stage} {cost_bar} cost={line.interruption_cost:.1f}")
-            preview = line.text[:80] + ("..." if len(line.text) > 80 else "")
-            print(f"    {preview}")
-            print(f"    key_info: {', '.join(line.key_info)}")
+        for u in show.units:
+            print(f"\n--- Unit {u.index + 1} / 4 · axis={u.axis} · density={u.density} ---")
+            print(f"  acoustic: pitch={u.acoustic.pitch_rate}, rate={u.acoustic.speech_rate}, vol={u.acoustic.volume}")
+            for i, line in enumerate(u.lines):
+                rupture_marker = " 💥" if line.is_rupture else ""
+                preview = line.text[:80] + ("..." if len(line.text) > 80 else "")
+                print(f"  [{i}] {line.stage}{rupture_marker}  {preview}")
         print("\n" + "=" * 60 + "\n")
