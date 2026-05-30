@@ -181,104 +181,50 @@ class EchuuLiveEngine:
         save_audio: bool = False,
         convert_to_mp3: bool = True,
     ):
-        """
-        运行表演（生成器）。
+        """V5 实时表演（按 unit 渲染，per-unit acoustic switching）。"""
+        if not self.state or not getattr(self.state, "show", None):
+            raise RuntimeError("请先调用 setup() — Show 未生成")
 
-        Args:
-            max_steps: 最大步数
-            danmaku_sim: 弹幕模拟数据
-            play_audio: 是否播放音频
-            save_audio: 是否保存音频
-            convert_to_mp3: 是否转换为 MP3（默认 True，减小文件大小）
-        """
-        if not self.state:
-            raise RuntimeError("请先调用 setup() 或 create_performance()")
-
-        danmaku_by_step = defaultdict(list)
+        # Pre-populate danmaku queue (sim mode)
         if danmaku_sim:
             for dm in danmaku_sim:
-                step = dm.get("step", 0)
                 text = dm.get("text", "")
                 user = dm.get("user", "观众")
-                danmaku_by_step[step].append(Danmaku.from_text(text, user=user))
+                self.state.danmaku_queue.append(Danmaku.from_text(text, user=user))
 
         if save_audio and self.tts.enabled:
             self.tts.start_recording()
 
         print(f"\n{'='*60}")
-        print("开始实时表演")
+        print("开始实时表演 (V5)")
         if save_audio and self.tts.enabled:
             print(f"正在录制... (输出格式: {'MP3' if convert_to_mp3 else 'WAV'})")
         print(f"{'='*60}\n")
 
-        total_steps = min(max_steps, len(self.state.script_lines))
-        for step in range(total_steps):
-            new_danmaku = danmaku_by_step.get(step, [])
-            result = self.performer.step(self.state, new_danmaku)
+        for ev in self._render_show():
+            self.state.current_unit_idx = ev["unit"]["index"]
+            self.state.current_line_in_unit = ev["line"]["index_in_unit"]
+            self.state.current_step += 1
+            # Update legacy memory cursor (used by display)
+            self.state.memory.script_progress["current_line"] = self.state.current_step
+            self.state.memory.script_progress["current_stage"] = ev["line"]["stage"]
 
-            step_num = result.get("step", 0)
-            stage = result.get("stage", "?")
-            action = result.get("action", "continue")
-            speech = result.get("speech", "")
+            print(f"[Unit {ev['unit']['index']+1}/4 · {ev['line']['stage']}] {ev['line']['text'][:80]}{'...' if len(ev['line']['text']) > 80 else ''}")
+            if ev["line"]["is_rupture"]:
+                print(f"  💥 rupture_kind={ev['unit']['rupture_kind']}")
 
-            action_icons = {
-                "continue": "[CONT]",
-                "tease": "[TEASE]",
-                "jump": "[JUMP]",
-                "improvise": "[IMPROV]",
-                "end": "[END]",
-            }
-            icon = action_icons.get(action, "[CONT]")
+            yield ev
 
-            print(f"[Step {step_num}] {stage} {icon} {action.upper()}")
-            print(f"  Speech: {speech[:100]}{'...' if len(speech) > 100 else ''}")
-
-            if result.get("danmaku"):
-                print(f"  Danmaku: {result['danmaku']}")
-                print(
-                    "  priority={:.2f}, cost={:.2f}, relevance={:.2f}".format(
-                        result.get("priority", 0),
-                        result.get("cost", 0),
-                        result.get("relevance", 0),
-                    )
-                )
-
-            if isinstance(result.get("emotion_break"), dict):
-                level = result["emotion_break"].get("level", 0)
-                level_name = {1: "微破防", 2: "明显破防", 3: "完全破防"}.get(level, f"L{level}")
-                trigger = result["emotion_break"].get("trigger", "")
-                print(f"  情绪断点: {level_name} - {trigger}")
-            if result.get("disfluencies"):
-                print(f"  认知特征: {', '.join(result['disfluencies'])}")
-
-            if step_num % 3 == 0:
-                print(f"\n{result.get('memory_display', '')}")
-
-            if play_audio and result.get("audio"):
-                print("  语音已生成")
-
-            print()
-
-            yield result
-
-            if action == "end":
+            if self.state.current_step >= max_steps:
                 break
 
         if save_audio and self.tts.enabled:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            # 默认使用 .wav 扩展名（会自动转换为 mp3）
             ext = ".mp3" if convert_to_mp3 else ".wav"
             audio_path = self.scripts_dir / f"{timestamp}_{self.state.name}_{self.state.topic[:20].replace(' ', '_')}_live{ext}"
-
-            # 保存并转换
             self.tts.save_recording(str(audio_path), convert_to_mp3=convert_to_mp3, keep_wav=False)
 
-        print(f"\n{'='*60}")
-        print("表演结束！")
-        print(f"{'='*60}\n")
-
-        print("最终记忆状态：")
-        print(self.state.memory.to_display())
+        print(f"\n{'='*60}\n表演结束！\n{'='*60}\n")
 
     def _render_show(self):
         """Iterate through Show.units, switching acoustic per unit.
