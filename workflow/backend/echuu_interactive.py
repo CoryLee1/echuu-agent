@@ -4,12 +4,6 @@ echuu 交互式直播入口
 """
 
 from pathlib import Path
-import sys
-
-# 确保项目根目录可导入
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
 
 from echuu.live.engine import EchuuLiveEngine
 

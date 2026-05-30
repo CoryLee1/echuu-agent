@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import base64
 import asyncio
@@ -14,9 +13,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from pathlib import Path
 
-# 将项目根目录添加到路径
+# Project root (still used for SCRIPTS_DIR below)
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(PROJECT_ROOT))
 
 from echuu.live.engine import EchuuLiveEngine
 

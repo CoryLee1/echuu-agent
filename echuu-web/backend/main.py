@@ -1,4 +1,15 @@
 """ECHUU Web 后端主入口"""
+# Fail fast if echuu package is not installed. The canonical install is
+# `pip install -e ../../echuu-agent` (or `pip install -e .` from the
+# echuu-agent root). No more sys.path shims.
+try:
+    from echuu import __version__ as _echuu_version
+except ImportError as exc:
+    raise SystemExit(
+        f"FATAL: cannot import echuu package: {exc}. "
+        f"Run 'pip install -e ../../echuu-agent' from echuu-web/backend"
+    ) from exc
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles

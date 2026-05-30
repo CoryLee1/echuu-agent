@@ -4,12 +4,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 import os
-import sys
 from pathlib import Path
-
-# 添加项目路径
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(PROJECT_ROOT))
 
 # 导入数据库模型
 from database.models import Base

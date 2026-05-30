@@ -1,14 +1,9 @@
 """数据库连接和会话管理"""
 import os
-import sys
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
-# 项目根目录
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(PROJECT_ROOT))
 
 # 数据库路径
 DB_DIR = Path(__file__).resolve().parent.parent / "data"

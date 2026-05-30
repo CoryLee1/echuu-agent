@@ -1,11 +1,9 @@
 """后端配置"""
 import os
-import sys
 from pathlib import Path
 
-# 项目根目录
+# 项目根目录 (still used for SCRIPTS_DIR / DB_DIR below)
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(PROJECT_ROOT))
 
 # 脚本输出目录
 SCRIPTS_DIR = PROJECT_ROOT / "output" / "scripts"
