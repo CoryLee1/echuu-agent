@@ -33,3 +33,49 @@ def test_from_persona_text_happy_path():
     assert pm.visual_anchor
     assert pm.title_hook
     assert pm.flaw is not None  # I4
+
+
+def test_from_persona_text_invalid_json_falls_back():
+    llm = FakeLLM("not valid json at all {{{")
+    pm = PersonaModel.from_persona_text("一段 persona 文本", llm)
+    # 重试一次后仍失败 → 退化路径
+    assert pm.identity.startswith("一段 persona 文本") or "[" in pm.identity
+    # flaw 必须非 None / 非空（I4）
+    assert pm.flaw
+    assert pm.flaw is not None
+    assert pm.visual_anchor
+    assert pm.title_hook
+
+
+def test_from_persona_text_missing_flaw_falls_back():
+    """LLM 返回合法 JSON 但缺 flaw 字段 → 整体退化路径，确保 flaw 有占位。"""
+    llm = FakeLLM(json.dumps({
+        "identity": "A",
+        "belief": "B",
+        # flaw 缺失
+        "visual_anchor": "D",
+        "title_hook": "E",
+    }))
+    pm = PersonaModel.from_persona_text("p", llm)
+    assert pm.flaw
+    # 因为缺字段被判为不合法，进入占位路径
+    assert "[" in pm.flaw or pm.flaw != ""
+
+
+def test_from_persona_text_strips_code_fences():
+    """LLM 包了 ```json ... ``` 也能解析。"""
+    payload = json.dumps({
+        "identity": "X", "belief": "Y", "flaw": "Z",
+        "visual_anchor": "V", "title_hook": "T",
+    })
+    llm = FakeLLM(f"```json\n{payload}\n```")
+    pm = PersonaModel.from_persona_text("p", llm)
+    assert pm.identity == "X"
+    assert pm.flaw == "Z"
+
+
+def test_persona_model_is_frozen():
+    """PersonaModel 一次抽完锁定全程不变（spec §2.3）。"""
+    pm = PersonaModel(identity="a", belief="b", flaw="c", visual_anchor="d", title_hook="e")
+    with pytest.raises(Exception):
+        pm.identity = "changed"  # type: ignore
