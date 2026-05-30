@@ -282,6 +282,13 @@ class ScriptGeneratorV4_1:
         log_phase("Phase 2: 生成初版剧本...")
         system = self.SYSTEM_PROMPT_V4 + "\n\n" + fewshot
 
+        # Language instructions for LLM
+        language_instructions = {
+            "zh": "- 所有对话内容必须用中文（简体）生成\n- 使用自然口语化的中文表达",
+            "en": "- Generate ALL dialogue content in English\n- Use natural, casual English expressions",
+            "ja": "- すべての対話内容を日本語で生成\n- 自然な口語的な日本語表現を使用",
+        }
+
         user_prompt = f"""{nucleus_prompt}
 
 ## 当前状态
@@ -296,6 +303,9 @@ class ScriptGeneratorV4_1:
 - 背景: {background}
 - 话题: {topic}
 
+## 语言要求（重要）
+{language_instructions.get(language, language_instructions['zh'])}
+
 ## 情绪配置
 - 主情绪: {emotion_config.primary}
 - 副情绪: {emotion_config.secondary or '无'}
@@ -304,7 +314,7 @@ class ScriptGeneratorV4_1:
 ## 生成要求（以本次为准，覆盖系统数量提示）
 - {min_units}-{max_units}个单元，每个80-120字
 - 开场必须用上面的触发
-- 开场必须体现“为什么现在要说”
+- 开场必须体现"为什么现在要说"
 - 至少1段严重跑题（50字+）
 - 必须有反常点（行为/反应/逻辑/身份/结果/认知落差）
 - 至少一处内心独白 + 一处身体记忆 + 一处笨拙失控

@@ -1,10 +1,12 @@
 """
-echuu 实时引擎（解耦版）。
+echuu 实时引擎（解耦版，支持多语言）。
+支持 MP3 转换和实时流式播放。
 """
 
 from __future__ import annotations
 
 import json
+import os
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -16,10 +18,12 @@ from ..core.pattern_analyzer import PatternAnalyzer
 from ..generators.example_sampler import ExampleSampler
 from ..generators.script_generator_v4 import ScriptGeneratorV4
 from .danmaku import DanmakuEvaluator, DanmakuHandler
-from .llm_client import LLMClient
+from .llm_factory import create_llm_client
 from .performer import PerformerV3
 from .state import Danmaku, PerformanceState, PerformerMemory
 from .tts_client import TTSClient
+from .language import setup_stream_language_from_topic, StreamLanguageContext
+from .audio_player import StreamSimulator
 
 
 def _find_project_root() -> Path:
@@ -37,11 +41,19 @@ class EchuuLiveEngine:
     - Phase 2: 实时表演 + 记忆系统 + 弹幕互动
     """
 
-    def __init__(self, data_path: Optional[str] = None):
+    def __init__(self, data_path: Optional[str] = None, llm_provider: Optional[str] = None):
+        """
+        初始化 echuu 实时引擎。
+
+        Args:
+            data_path: 数据文件路径（可选）。
+            llm_provider: LLM 提供商 ("gemini", "claude", "openai")。
+                          如果未指定，根据可用的 API Key 自动选择。
+        """
         self.project_root = _find_project_root()
         load_dotenv(self.project_root / ".env")
 
-        self.llm = LLMClient()
+        self.llm = create_llm_client(provider=llm_provider)
         self.tts = TTSClient()
 
         self.analyzer = None
@@ -62,6 +74,7 @@ class EchuuLiveEngine:
         self.scripts_dir.mkdir(parents=True, exist_ok=True)
 
         self.state: Optional[PerformanceState] = None
+        self.stream_lang_context: Optional[StreamLanguageContext] = None
 
     def setup(
         self,
@@ -99,6 +112,10 @@ class EchuuLiveEngine:
         on_phase_callback: Optional[callable] = None,
     ) -> PerformanceState:
         """创建表演（预生成完整剧本）。"""
+        # 从topic检测并设置直播语言
+        self.stream_lang_context = setup_stream_language_from_topic(topic, persona)
+        print(f"🌐 语言设置: {self.stream_lang_context.greeting_style}")
+
         # 如果有回调，发送初始信息
         if on_phase_callback:
             on_phase_callback("Phase 0: 正在初始化创作环境...")
@@ -126,6 +143,14 @@ class EchuuLiveEngine:
         for line in script_lines:
             memory.story_points["upcoming"].extend(line.key_info)
 
+        # 更新performer以使用语言上下文
+        self.performer = PerformerV3(
+            self.llm,
+            self.tts,
+            self.danmaku_handler,
+            stream_lang_context=self.stream_lang_context
+        )
+
         return PerformanceState(
             name=name,
             persona=persona,
@@ -142,9 +167,17 @@ class EchuuLiveEngine:
         danmaku_sim: Optional[List[Dict]] = None,
         play_audio: bool = False,
         save_audio: bool = False,
+        convert_to_mp3: bool = True,
     ):
         """
         运行表演（生成器）。
+
+        Args:
+            max_steps: 最大步数
+            danmaku_sim: 弹幕模拟数据
+            play_audio: 是否播放音频
+            save_audio: 是否保存音频
+            convert_to_mp3: 是否转换为 MP3（默认 True，减小文件大小）
         """
         if not self.state:
             raise RuntimeError("请先调用 setup() 或 create_performance()")
@@ -163,7 +196,7 @@ class EchuuLiveEngine:
         print(f"\n{'='*60}")
         print("开始实时表演")
         if save_audio and self.tts.enabled:
-            print("正在录制...")
+            print(f"正在录制... (输出格式: {'MP3' if convert_to_mp3 else 'WAV'})")
         print(f"{'='*60}\n")
 
         total_steps = min(max_steps, len(self.state.script_lines))
@@ -221,22 +254,12 @@ class EchuuLiveEngine:
 
         if save_audio and self.tts.enabled:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            # 根据TTS实际格式选择扩展名
-            import os
-            response_format = os.getenv("TTS_RESPONSE_FORMAT", "pcm").lower()
-            if response_format == "pcm":
-                ext = ".wav"  # PCM转换为WAV保存
-            elif response_format == "mp3":
-                ext = ".mp3"
-            elif response_format == "wav":
-                ext = ".wav"
-            elif response_format == "opus":
-                ext = ".opus"
-            else:
-                ext = ".wav"  # 默认WAV
-            
+            # 默认使用 .wav 扩展名（会自动转换为 mp3）
+            ext = ".mp3" if convert_to_mp3 else ".wav"
             audio_path = self.scripts_dir / f"{timestamp}_{self.state.name}_{self.state.topic[:20].replace(' ', '_')}_live{ext}"
-            self.tts.save_recording(str(audio_path))
+
+            # 保存并转换
+            self.tts.save_recording(str(audio_path), convert_to_mp3=convert_to_mp3, keep_wav=False)
 
         print(f"\n{'='*60}")
         print("表演结束！")
@@ -244,6 +267,54 @@ class EchuuLiveEngine:
 
         print("最终记忆状态：")
         print(self.state.memory.to_display())
+
+    def run_streaming(
+        self,
+        max_steps: int = 12,
+        danmaku_sim: Optional[List[Dict]] = None,
+        save_audio: bool = True,
+        convert_to_mp3: bool = True,
+    ):
+        """
+        实时流式直播模式 - 串行播放音频，段落间有自然停顿（1-5秒）
+
+        Args:
+            max_steps: 最大步数
+            danmaku_sim: 弹幕模拟数据
+            save_audio: 是否保存音频
+            convert_to_mp3: 是否转换为 MP3（默认 True）
+        """
+        if not self.state:
+            raise RuntimeError("请先调用 setup() 或 create_performance()")
+
+        # 使用 StreamSimulator 进行流式播放
+        simulator = StreamSimulator()
+
+        # 设置录制
+        if save_audio and self.tts.enabled:
+            self.tts.start_recording()
+
+        # 获取生成器
+        generator = self.run(
+            max_steps=max_steps,
+            danmaku_sim=danmaku_sim,
+            play_audio=False,  # 不在 run 中播放
+            save_audio=False,  # 不在 run 中保存
+        )
+
+        # 模拟流式直播
+        total_duration = simulator.simulate_live_stream(
+            generator,
+            show_progress=True,
+            show_memory=True
+        )
+
+        # 保存音频
+        if save_audio and self.tts.enabled:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            ext = ".mp3" if convert_to_mp3 else ".wav"
+            audio_path = self.scripts_dir / f"{timestamp}_{self.state.name}_{self.state.topic[:20].replace(' ', '_')}_live{ext}"
+            self.tts.save_recording(str(audio_path), convert_to_mp3=convert_to_mp3, keep_wav=False)
 
     def _save_script(self, script_lines, name: str, topic: str):
         """保存剧本到 JSON 文件。"""

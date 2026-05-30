@@ -1,5 +1,5 @@
 """
-表演执行器（实时弹幕互动 + 记忆系统）。
+表演执行器（实时弹幕互动 + 记忆系统 + 多语言支持）。
 """
 
 from __future__ import annotations
@@ -12,18 +12,25 @@ from .llm_client import LLMClient
 from .response_generator import DanmakuResponseGenerator
 from .state import Danmaku, PerformanceState
 from .tts_client import TTSClient
+from .language import StreamLanguageContext
 
 
 class PerformerV3:
     """
-    表演引擎 V3 - 带记忆系统和统一弹幕处理。
+    表演引擎 V3 - 带记忆系统、统一弹幕处理和多语言支持。
     """
 
-    def __init__(self, llm: LLMClient, tts: TTSClient, danmaku_handler: DanmakuHandler):
+    def __init__(
+        self,
+        llm: LLMClient,
+        tts: TTSClient,
+        danmaku_handler: DanmakuHandler,
+        stream_lang_context: Optional[StreamLanguageContext] = None
+    ):
         self.llm = llm
         self.tts = tts
         self.danmaku_handler = danmaku_handler
-        self.response_generator = DanmakuResponseGenerator(llm)
+        self.response_generator = DanmakuResponseGenerator(llm, stream_lang_context)
 
     def step(self, state: PerformanceState, new_danmaku: Optional[List[Danmaku]] = None) -> Dict:
         """
@@ -33,6 +40,8 @@ class PerformerV3:
             state.danmaku_queue.extend(new_danmaku)
             for dm in new_danmaku:
                 state.memory.danmaku_memory["received"].append(dm.text)
+                # 更新用户档案（自动记录互动）
+                state.memory.update_user_from_danmaku(dm)
 
         if state.current_line_idx >= len(state.script_lines):
             return self._generate_ending(state)
@@ -139,7 +148,7 @@ class PerformerV3:
         current_line,
         state: PerformanceState,
     ) -> Dict:
-        """处理弹幕回应 - 使用 LLM 生成自然回应。"""
+        """处理弹幕回应 - 使用 LLM 基于用户档案生成自然回应。"""
         next_line = None
         if state.current_line_idx < len(state.script_lines) - 1:
             next_line = state.script_lines[state.current_line_idx + 1]
@@ -150,6 +159,8 @@ class PerformerV3:
             next_line=next_line,
             memory=state.memory,
             name=state.name,
+            persona=state.persona,
+            background=state.background,
         )
 
         response = llm_result.get("response", "")

@@ -60,6 +60,8 @@ from .generators.example_sampler import ExampleSampler
 from .live.state import Danmaku, PerformerMemory, PerformanceState
 from .live.performer import PerformerV3
 from .live.llm_client import LLMClient
+from .live.gemini_client import GeminiClient
+from .live.llm_factory import create_llm_client
 from .live.tts_client import TTSClient
 from .live.danmaku import DanmakuHandler, DanmakuEvaluator
 from .live.response_generator import DanmakuResponseGenerator
@@ -108,6 +110,8 @@ __all__ = [
     "PerformanceState",
     "PerformerV3",
     "LLMClient",
+    "GeminiClient",
+    "create_llm_client",
     "TTSClient",
     "DanmakuHandler",
     "DanmakuEvaluator",
