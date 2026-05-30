@@ -71,7 +71,11 @@ class PersonaModel:
     def from_persona_text(cls, persona: str, llm: _LLM) -> "PersonaModel":
         prompt = _PROMPT_TEMPLATE.format(persona=persona)
         for attempt in range(2):  # one retry
-            raw = llm.generate(prompt)
+            try:
+                raw = llm.generate(prompt)
+            except Exception as exc:  # LLM outage / API error → degrade, don't crash (spec §5)
+                print(f"[PersonaModel] LLM 调用失败 (attempt {attempt + 1}): {exc}")
+                continue
             obj = _parse_json(raw)
             if obj and all(k in obj and isinstance(obj[k], str) and obj[k].strip()
                            for k in ("identity", "belief", "flaw", "visual_anchor", "title_hook")):

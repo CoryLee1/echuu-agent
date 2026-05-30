@@ -103,15 +103,23 @@ class ScriptGeneratorV5:
             units_json=json.dumps(units_meta, ensure_ascii=False, indent=2),
         )
 
+    def _try_generate(self, prompt: str) -> str | None:
+        """Call the LLM, returning None on any API/outage error (spec §5)."""
+        try:
+            return self.llm.generate(prompt)
+        except Exception as exc:
+            print(f"[ScriptGeneratorV5] LLM 调用失败: {exc}")
+            return None
+
     def generate(self, persona: PersonaModel, units: list[Unit], topic: str = "") -> list[Unit]:
         prompt = self._build_prompt(persona, units, topic)
-        raw = self.llm.generate(prompt)
-        parsed = _parse(raw)
+        raw = self._try_generate(prompt)
+        parsed = _parse(raw) if raw is not None else None
 
         if parsed is None or not self._is_complete(parsed, units):
             # Retry once
-            raw = self.llm.generate(prompt)
-            parsed = _parse(raw)
+            raw = self._try_generate(prompt)
+            parsed = _parse(raw) if raw is not None else None
 
         if parsed is None or not self._is_complete(parsed, units):
             # Final degradation: fall back to placeholder content

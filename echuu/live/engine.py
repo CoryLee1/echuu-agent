@@ -37,6 +37,28 @@ def _find_project_root() -> Path:
     return root
 
 
+class _LLMGenerateAdapter:
+    """Bridge the engine's LLM client (`.call(prompt, system=, max_tokens=)`)
+    to the `.generate(prompt) -> str` contract that PersonaModel and
+    ScriptGeneratorV5 expect.
+
+    The V5 modules were unit-tested against a `.generate` stub; real clients
+    (Gemini / Claude / OpenAI) only expose `.call`. This adapter keeps the
+    modules client-agnostic without leaking the LLM interface into them.
+    """
+
+    def __init__(self, client, max_tokens: int = 8000) -> None:
+        self._client = client
+        self._max_tokens = max_tokens
+
+    def generate(self, prompt: str) -> str:
+        # Prefer a native .generate if a future client provides one.
+        native = getattr(self._client, "generate", None)
+        if callable(native):
+            return native(prompt)
+        return self._client.call(prompt, max_tokens=self._max_tokens)
+
+
 class EchuuLiveEngine:
     """
     echuu 实时直播引擎（整合版）。
@@ -70,9 +92,13 @@ class EchuuLiveEngine:
         clips_file = self.project_root / "data" / "vtuber_raw_clips_for_notebook_full_30_cleaned.jsonl"
         self.example_sampler = ExampleSampler(str(clips_file)) if clips_file.exists() else None
 
+        # V5 modules expect a `.generate(prompt)` LLM contract; real clients
+        # expose `.call(...)`. Adapt once, here, at the engine boundary.
+        self.llm_gen = _LLMGenerateAdapter(self.llm)
+
         self.unit_planner = UnitPlanner()
         self.structure_breaker = StructureBreaker()
-        self.script_gen = ScriptGeneratorV5(self.llm, self.example_sampler)
+        self.script_gen = ScriptGeneratorV5(self.llm_gen, self.example_sampler)
         self.danmaku_handler = DanmakuHandler(DanmakuEvaluator())
         self.performer = PerformerV3(self.llm, self.tts, self.danmaku_handler)
 
@@ -123,7 +149,7 @@ class EchuuLiveEngine:
 
         if on_phase_callback:
             on_phase_callback("Phase A: 提取人设三轴...")
-        persona_model = PersonaModel.from_persona_text(persona, self.llm)
+        persona_model = PersonaModel.from_persona_text(persona, self.llm_gen)
 
         if on_phase_callback:
             on_phase_callback("Phase B: 排 4 单元结构...")
