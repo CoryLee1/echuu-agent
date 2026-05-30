@@ -280,6 +280,50 @@ class EchuuLiveEngine:
         print("最终记忆状态：")
         print(self.state.memory.to_display())
 
+    def _render_show(self):
+        """Iterate through Show.units, switching acoustic per unit.
+
+        Yields one step-event dict per line. TTS failures yield audio=None
+        but do NOT abort the loop (spec §5)."""
+        from dataclasses import asdict as _asdict
+        show = self.state.show
+        for unit in show.units:
+            self.tts.update_session(**_asdict(unit.acoustic))
+            for line_in_unit, line in enumerate(unit.lines):
+                try:
+                    audio = self.tts.synthesize(line.text)
+                except Exception:
+                    audio = None
+                yield self._build_step_event(unit, line_in_unit, line, audio)
+
+    def _build_step_event(self, unit, line_in_unit: int, line, audio):
+        """Construct WS-bound step event payload. v2 schema (spec §3.2)."""
+        from dataclasses import asdict as _asdict
+        return {
+            "type": "step",
+            "show": {
+                "total_units": len(self.state.show.units),
+                "total_lines": sum(len(u.lines) for u in self.state.show.units),
+            },
+            "unit": {
+                "index": unit.index,
+                "axis": unit.axis,
+                "density": unit.density,
+                "time_window": list(unit.time_window),
+                "acoustic": _asdict(unit.acoustic),
+                "rupture_kind": next((r.kind for r in unit.rupture_slots), None) if line.is_rupture else None,
+            },
+            "line": {
+                "index_in_unit": line_in_unit,
+                "stage": line.stage,
+                "text": line.text,
+                "is_rupture": line.is_rupture,
+                "cue": _asdict(line.cue) if hasattr(line.cue, "__dataclass_fields__") and line.cue else None,
+            },
+            "speech": line.text,  # compat alias for audio-caption sync (spec §3.2)
+            "audio": audio,
+        }
+
     def run_streaming(
         self,
         max_steps: int = 12,

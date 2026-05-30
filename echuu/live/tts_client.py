@@ -136,6 +136,23 @@ class TTSClient:
         spec.loader.exec_module(module)
         return getattr(module, "CosyVoiceTTS", None)
 
+    def update_session(self, *, pitch_rate: float = 1.0, speech_rate: float = 1.0, volume: int = 50) -> None:
+        """Pass segment-level acoustic settings to the underlying CosyVoiceTTS.
+
+        Qwen3-TTS-Flash-Realtime only — silently no-op on non-realtime models.
+        Clipping to legal ranges is defensive (spec §5)."""
+        if not self.enabled or not self.tts:
+            return
+        pitch_rate  = max(0.7, min(1.3, pitch_rate))
+        speech_rate = max(0.7, min(1.3, speech_rate))
+        volume      = max(0,   min(100, volume))
+        try:
+            self.tts.pitch_rate = pitch_rate
+            self.tts.speech_rate = speech_rate
+            self.tts.volume = volume
+        except Exception as exc:
+            print(f"[TTS] update_session failed: {exc}")
+
     def synthesize(self, text: str, emotion_boost: float = 0.0) -> Optional[bytes]:
         """
         合成语音。
