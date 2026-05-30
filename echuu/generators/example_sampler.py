@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import random
+import re
 from pathlib import Path
 from typing import Dict, List
 
@@ -132,6 +133,116 @@ class ExampleSampler:
 
         random.shuffle(samples)
         return samples
+
+    # ---- V2: 真·相关性采样（修 sample_diverse 的三个根因） -------------------
+    @staticmethod
+    def _tokens(text: str) -> set:
+        """粗分词：英文按词，中文按 2-gram + 单字，够 mockup 用。"""
+        text = (text or "").lower()
+        out: set = set()
+        for w in re.findall(r"[a-z0-9]+", text):
+            if len(w) >= 2:
+                out.add(w)
+        zh = re.findall(r"[一-鿿]+", text)
+        for run in zh:
+            out.update(run)  # 单字
+            for i in range(len(run) - 1):
+                out.add(run[i:i + 2])  # 2-gram
+        return out
+
+    def _clip_text(self, clip: Dict) -> str:
+        notes = clip.get("notes", {}) or {}
+        parts = [
+            clip.get("title", ""),
+            notes.get("emotion", ""),
+            notes.get("feature", ""),
+            notes.get("structure", ""),
+            notes.get("trigger", ""),
+        ]
+        for seg in clip.get("transcript", [])[:6]:
+            parts.append(seg.get("text", ""))
+        return " ".join(p for p in parts if p)
+
+    def _relevance(self, clip: Dict, query_tokens: set, emotion: str, language: str) -> float:
+        clip_tokens = self._tokens(self._clip_text(clip))
+        if not clip_tokens:
+            return 0.0
+        overlap = len(query_tokens & clip_tokens)
+        score = overlap / (len(query_tokens) ** 0.5 + 1.0)  # 长查询不至于碾压
+        # 软语言偏好（根因 A：不再硬切，只加权）
+        if language and clip.get("language") == language:
+            score += 0.5
+        # 软情绪偏好
+        if emotion:
+            notes = clip.get("notes", {}) or {}
+            blob = (notes.get("emotion", "") + notes.get("feature", "")).lower()
+            if emotion.lower() in blob:
+                score += 0.3
+        return score
+
+    def sample_relevant(
+        self,
+        topic: str,
+        persona: str = "",
+        emotion: str = None,
+        n: int = 3,
+        language: str = None,
+        hard_language: bool = False,
+        temperature: float = 0.6,
+        seed: int = None,
+    ) -> List[Dict]:
+        """按 topic/persona/emotion 与 clip 内容的相关性加权采样。
+
+        修三个根因：
+          A. hard_language=False → 语言只作软加权，英文池(后 20 条)可达。
+          B. 不依赖死掉的 by_structure["digressive"] 桶，对全池打分。
+          C. 真·相关性（token 重叠），temperature 控制相关 vs 多样，seed 可复现。
+        零重叠时优雅退化为近似随机（不崩）。
+        """
+        rng = random.Random(seed)
+        pool = self.clips
+        if hard_language and language:
+            pool = [c for c in pool if c.get("language") == language] or self.clips
+        if not pool:
+            return []
+
+        query_tokens = self._tokens(f"{topic} {persona}")
+        scored = [(self._relevance(c, query_tokens, emotion or "", language), c) for c in pool]
+
+        # temperature=0 → 纯按相关性 top-n；>0 → 相关性为主的加权随机
+        if temperature <= 0:
+            scored.sort(key=lambda x: x[1] is not None)  # stable
+            scored.sort(key=lambda x: x[0], reverse=True)
+            return [c for _, c in scored[:n]]
+
+        chosen: List[Dict] = []
+        remaining = scored[:]
+        for _ in range(min(n, len(remaining))):
+            weights = [max(s, 0.0) ** (1.0 / temperature) + 0.01 for s, _ in remaining]
+            total = sum(weights)
+            r = rng.random() * total
+            acc = 0.0
+            pick = len(remaining) - 1
+            for i, w in enumerate(weights):
+                acc += w
+                if r <= acc:
+                    pick = i
+                    break
+            chosen.append(remaining.pop(pick)[1])
+        return chosen
+
+    def get_relevant_examples(
+        self, topic: str, persona: str = "", emotion: str = None,
+        n: int = 3, language: str = "zh", seed: int = None,
+    ) -> str:
+        """一键获取按相关性采样、格式化好的 few-shot examples。"""
+        samples = self.sample_relevant(
+            topic=topic, persona=persona, emotion=emotion, n=n,
+            language=language, hard_language=False, seed=seed,
+        )
+        if not samples:
+            return "（无可用的 few-shot examples）"
+        return self.format_as_fewshot(samples)
 
     def extract_transcript_segments(self, clip: Dict, max_segments: int = 3) -> str:
         """从一个 clip 中提取有代表性的 transcript 片段。"""

@@ -5,7 +5,7 @@ See docs/superpowers/specs/2026-05-30-echuu-rupture-engine-design.md §2.1.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Literal, Optional
 
 
 @dataclass
@@ -37,12 +37,17 @@ class ScriptLine:
 
 @dataclass
 class Unit:
-    """A 60-90s self-contained slice with axis / density / acoustic / ruptures."""
+    """A 60-90s self-contained time/acoustic slice.
+
+    V2: `axis` is a deprecated soft label (no longer drives generation); the
+    narrative is authored by ScriptWriter from the StoryCore. `density` is now
+    just an energy hint (high/medium/low) for pacing. `rupture_slots` are no
+    longer pre-allocated (kept for backward compat)."""
     index: int                              # 0..3
     time_window: tuple[float, float]        # seconds
-    axis: Literal["identity", "belief", "flaw"]
-    density: Literal["high", "medium", "low"]
     acoustic: AcousticHint
+    axis: Optional[str] = None              # deprecated soft label (V1: identity/belief/flaw)
+    density: Literal["high", "medium", "low"] = "medium"  # energy hint
     rupture_slots: list[Rupture] = field(default_factory=list)
     lines: list[ScriptLine] = field(default_factory=list)
 
@@ -50,6 +55,7 @@ class Unit:
 @dataclass
 class Show:
     """A complete 5-min show. Unit count is always 4 (I1)."""
-    persona: object                          # PersonaModel — avoid cycle
+    persona: object                          # RichPersona / PersonaModel — avoid cycle
     topic: str
     units: list[Unit] = field(default_factory=list)
+    story_core: object | None = None         # StoryCore — avoid cycle

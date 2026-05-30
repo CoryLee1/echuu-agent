@@ -15,12 +15,14 @@ from typing import Dict, List, Optional
 from dotenv import load_dotenv
 
 from ..core.pattern_analyzer import PatternAnalyzer
-from ..core.persona_model import PersonaModel
+from ..core.persona_model import PersonaModel, RichPersona
+from ..core.persona_analyst import PersonaAnalyst
+from ..core.story_core import StoryCore
 from ..core.unit import Show
 from ..core.unit_planner import UnitPlanner
 from ..core.structure_breaker import StructureBreaker
 from ..generators.example_sampler import ExampleSampler
-from ..generators.script_generator_v5 import ScriptGeneratorV5
+from ..generators.script_writer import ScriptWriter
 from .danmaku import DanmakuEvaluator, DanmakuHandler
 from .llm_factory import create_llm_client
 from .performer import PerformerV3
@@ -96,9 +98,10 @@ class EchuuLiveEngine:
         # expose `.call(...)`. Adapt once, here, at the engine boundary.
         self.llm_gen = _LLMGenerateAdapter(self.llm)
 
+        self.persona_analyst = PersonaAnalyst()
         self.unit_planner = UnitPlanner()
         self.structure_breaker = StructureBreaker()
-        self.script_gen = ScriptGeneratorV5(self.llm_gen, self.example_sampler)
+        self.script_writer = ScriptWriter(self.llm_gen, self.example_sampler)
         self.danmaku_handler = DanmakuHandler(DanmakuEvaluator())
         self.performer = PerformerV3(self.llm, self.tts, self.danmaku_handler)
 
@@ -148,24 +151,33 @@ class EchuuLiveEngine:
         print(f"🌐 语言设置: {self.stream_lang_context.greeting_style}")
 
         if on_phase_callback:
-            on_phase_callback("Phase A: 提取人设三轴...")
-        persona_model = PersonaModel.from_persona_text(persona, self.llm_gen)
+            on_phase_callback("Phase A: 分析人设三轴 + 故事内核...")
+        rich_persona, story_core = self.persona_analyst.analyze(
+            name=name, persona=persona, topic=topic, background=background, llm=self.llm_gen,
+        )
 
         if on_phase_callback:
-            on_phase_callback("Phase B: 排 4 单元结构...")
-        units = self.unit_planner.plan(persona_model, topic)
+            on_phase_callback("Phase B: 排时间/音色骨架...")
+        units = self.unit_planner.plan()
 
         if on_phase_callback:
-            on_phase_callback("Phase C: 单次 LLM 调用生成剧本...")
-        units = self.script_gen.generate(persona_model, units, topic=topic)
+            on_phase_callback("Phase C: 抽相关 few-shot + 编剧创作...")
+        examples = ""
+        if self.example_sampler:
+            lang = "en" if str(language).lower().startswith("en") else "zh"
+            examples = self.example_sampler.get_relevant_examples(
+                topic=topic, persona=persona, n=3, language=lang,
+            )
+        units = self.script_writer.write(
+            rich_persona, story_core, units, examples=examples, topic=topic,
+        )
 
         if on_phase_callback:
-            on_phase_callback("Phase D: 注入 flaw rupture + 清洗升华...")
-        units[3] = self.structure_breaker.inject_flaw_rupture(units[3], persona_model)
+            on_phase_callback("Phase D: 清洗升华...")
         for u in units:
             self.structure_breaker.delete_sublimation_in_unit(u)
 
-        show = Show(persona=persona_model, topic=topic, units=units)
+        show = Show(persona=rich_persona, topic=topic, units=units, story_core=story_core)
 
         # Flatten units → script_lines for V4-compat consumers (PerformerV3, _save_script)
         flat_lines = [line for u in show.units for line in u.lines]

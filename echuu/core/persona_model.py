@@ -7,12 +7,30 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 
 class _LLM(Protocol):
     def generate(self, prompt: str) -> str: ...
+
+
+@dataclass(frozen=True)
+class RichPersona:
+    """V2 人设锚——在三轴之外补足「好讲故事」所需的活人感素材。
+
+    由 PersonaAnalyst 从用户设定自动推导；一次抽完锁定全程不变。
+    See docs/superpowers/specs/2026-05-31-rupture-engine-content-quality-design.md §3.1.
+    """
+    identity: str
+    belief: str
+    flaw: str                                  # I4: 永不为空
+    verbal_tics: tuple[str, ...] = field(default_factory=tuple)            # 语癖
+    situational_weaknesses: tuple[str, ...] = field(default_factory=tuple) # 情境弱点
+    contrast_hook: str = ""                     # 反差/悬疑
+    life_anchors: tuple[str, ...] = field(default_factory=tuple)          # 生活化具体物品/场景
+    title_hook: str = ""
+    visual_anchor: str = ""
 
 
 _PROMPT_TEMPLATE = """\

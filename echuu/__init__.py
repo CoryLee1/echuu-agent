@@ -54,10 +54,13 @@ from .vrm.presets import GESTURE_PRESETS, GestureCategory, get_gesture_by_emotio
 
 # Generators
 from .generators.script_generator_v5 import ScriptGeneratorV5
+from .generators.script_writer import ScriptWriter
 from .generators.example_sampler import ExampleSampler
 
 # V5 core
-from .core.persona_model import PersonaModel
+from .core.persona_model import PersonaModel, RichPersona
+from .core.persona_analyst import PersonaAnalyst
+from .core.story_core import StoryCore
 from .core.unit import Show, Unit, Rupture, ScriptLine, AcousticHint
 from .core.unit_planner import UnitPlanner
 
@@ -106,9 +109,13 @@ __all__ = [
     "get_gesture_by_emotion",
     # Generators
     "ScriptGeneratorV5",
+    "ScriptWriter",
     "ExampleSampler",
-    # V5 core
+    # V5/V2 core
     "PersonaModel",
+    "RichPersona",
+    "PersonaAnalyst",
+    "StoryCore",
     "Show",
     "Unit",
     "Rupture",

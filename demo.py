@@ -115,21 +115,20 @@ def demo_acceptance():
         language="zh",
     )
 
-    # --- Show JSON dump + acceptance asserts (spec §6 / §9) ---
+    # --- Show JSON dump + acceptance asserts (V2 内容质感) ---
     show = engine.state.show
     show_json = {
-        "persona": asdict(show.persona),
+        "rich_persona": asdict(show.persona),
+        "story_core": asdict(show.story_core) if show.story_core else None,
         "topic": show.topic,
         "units": [
             {
                 "index": u.index,
                 "time_window": list(u.time_window),
-                "axis": u.axis,
                 "density": u.density,
                 "acoustic": asdict(u.acoustic),
-                "rupture_slots": [asdict(r) for r in u.rupture_slots],
                 "lines": [
-                    {"id": l.id, "text": l.text, "stage": l.stage, "is_rupture": l.is_rupture}
+                    {"id": l.id, "text": l.text, "stage": l.stage}
                     for l in u.lines
                 ],
             }
@@ -143,13 +142,12 @@ def demo_acceptance():
         json.dump(show_json, f, ensure_ascii=False, indent=2)
     print(f"📄 Show JSON: {show_path}")
 
-    assert len(show.units) == 4, "I1: expected exactly 4 units"
-    assert [u.axis for u in show.units] == ["identity", "belief", "belief", "flaw"], \
-        "axis sequence must be identity/belief/belief/flaw"
-    assert show.units[3].rupture_slots and \
-        any(r.kind == "flaw" for r in show.units[3].rupture_slots), \
-        "I3: Unit[3] must carry a flaw rupture"
-    print("✅ Acceptance JSON checks passed (I1 / axis sequence / I3).\n")
+    assert len(show.units) == 4, "I1: expected exactly 4 time/acoustic units"
+    assert all(len(u.lines) >= 2 for u in show.units), "每个 unit 至少 2 行台词"
+    assert show.persona.flaw, "I4: persona.flaw 必须非空"
+    print("✅ 结构校验通过 (I1 / 每段有台词 / I4 flaw 非空)。")
+    print(f"   故事主线: {show.story_core.spine if show.story_core else '-'}")
+    print(f"   语癖: {'、'.join(show.persona.verbal_tics) or '-'}\n")
 
     # --- Live render + MP3 recording (run() records & saves internally) ---
     for ev in engine.run(max_steps=12, play_audio=False, save_audio=True, convert_to_mp3=True):
