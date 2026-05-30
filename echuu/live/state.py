@@ -7,8 +7,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TYPE_CHECKING
 from collections import defaultdict
+
+if TYPE_CHECKING:
+    from echuu.core.unit import Show
 
 
 @dataclass
@@ -304,17 +307,23 @@ class PerformerMemory:
 
 @dataclass
 class PerformanceState:
-    """表演状态。"""
+    """表演状态（V5: 围绕 Show 组织；V4 字段保留为兼容）。"""
 
     name: str
     persona: str
     background: str
     topic: str
 
+    # V5: structured Show with 4 units
+    show: "Show | None" = None
+    current_unit_idx: int = 0
+    current_line_in_unit: int = 0
+
+    # V4 compat (used by PerformerV3 + legacy save_script) — populated from show.units when V5 path is used
     script_lines: List = field(default_factory=list)
     current_line_idx: int = 0
-    current_step: int = 0
 
+    current_step: int = 0
     memory: PerformerMemory = field(default_factory=PerformerMemory)
     danmaku_queue: List[Danmaku] = field(default_factory=list)
     catchphrases: List[str] = field(default_factory=list)
