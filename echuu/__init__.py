@@ -53,8 +53,13 @@ from .vrm.mapper import VRMExpressionMapper, VRMVersion
 from .vrm.presets import GESTURE_PRESETS, GestureCategory, get_gesture_by_emotion
 
 # Generators
-from .generators.script_generator_v4 import ScriptGeneratorV4, ScriptGeneratorV4_1, ScriptLineV4
+from .generators.script_generator_v5 import ScriptGeneratorV5
 from .generators.example_sampler import ExampleSampler
+
+# V5 core
+from .core.persona_model import PersonaModel
+from .core.unit import Show, Unit, Rupture, ScriptLine, AcousticHint
+from .core.unit_planner import UnitPlanner
 
 # Live performance components
 from .live.state import Danmaku, PerformerMemory, PerformanceState
@@ -100,10 +105,16 @@ __all__ = [
     "GestureCategory",
     "get_gesture_by_emotion",
     # Generators
-    "ScriptGeneratorV4",
-    "ScriptGeneratorV4_1",
-    "ScriptLineV4",
+    "ScriptGeneratorV5",
     "ExampleSampler",
+    # V5 core
+    "PersonaModel",
+    "Show",
+    "Unit",
+    "Rupture",
+    "ScriptLine",
+    "AcousticHint",
+    "UnitPlanner",
     # Live
     "Danmaku",
     "PerformerMemory",
