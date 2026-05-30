@@ -9,7 +9,8 @@
 
 - [x] PR 0–8 implemented (PR 0–6 committed earlier; PR 7 backend + FE; PR 8 here).
 - [x] `tests/` green: `python -m pytest tests/ -q` → **66 passed**.
-- [x] `python demo.py --acceptance` runs without errors (LLM-degraded — see note).
+- [x] `ECHUU_LLM_PROVIDER=claude python demo.py --acceptance` runs end-to-end with
+      **real LLM-generated content** (Anthropic Claude) + real Qwen-TTS audio.
 - [x] Output JSON `output/example_runs/demo_show.json` — 4 units; axes
       `["identity","belief","belief","flaw"]`; density `["high","high","medium","low"]`;
       Unit[3] carries a `flaw` rupture; Unit[3] last line `stage="turn"`, `is_rupture=True`.
@@ -22,37 +23,38 @@
 
 ## Soft indicators
 
-- **5-min MP3:** `output/scripts/20260531_030235_小梅_转行_6_个月的真实体感_live.mp3`
-  (404 KB, 12 segments merged). Acoustic profile descends across units
-  (U1 highest pitch/rate, U4 lowest) — segment-to-segment difference is audible.
-- **U3 flaw line:** content was the degraded placeholder (`[unit3 turn 占位]`) because no
-  live LLM was reachable (see note); the *structure* — flaw rupture on the final turn —
-  is correct and verified.
+- **5-min MP3 (real content):** `output/scripts/20260531_032232_小梅_转行_6_个月的真实体感_live.mp3`
+  (1.2 MB, 12 segments merged). Acoustic profile descends across units (U1 highest
+  pitch/rate, U4 lowest) — segment-to-segment difference is audible.
+- **PersonaModel extraction:** `flaw = "辞职那天哭了一整夜，其实内心很脆弱不安"` — extracted
+  by the LLM from the persona text, then carried through to Unit[4].
+- **U4 flaw rupture:** `nucleus_mode = choice_cost` (StructureBreaker keyword-matched "辞职"),
+  final `turn` line `is_rupture=True`:
+  > 但我想说的是——脆弱不丢人，真正的勇敢就是带着恐惧继续走下去
+  And U4's opener lands the vulnerable beat: "说到这里...我想起辞职那天晚上，我其实哭了一整夜".
 - **Frontend progress:** `LiveUnitProgress` renders top-center while
   `streamState === 'performing'`, with unit pips + `Unit N/total · axis · L#` and a
   `✦` marker on flaw-rupture lines.
 
-## ⚠️ LLM provider note (live run blocker)
+## LLM provider note
 
-A true live run with real LLM-generated script content could **not** be completed in this
-environment — all three configured providers were externally unavailable:
+The live run succeeded with **Anthropic Claude** (`ECHUU_LLM_PROVIDER=claude`). Provider
+availability observed in this dev environment:
 
 | Provider | Status |
 |---|---|
-| Gemini (`gemini-3-flash-preview`) | `400 FAILED_PRECONDITION: User location is not supported for the API use` (geo-block) |
-| Anthropic Claude (`claude-sonnet-4`) | `400 invalid_request_error: This organization has been disabled` |
-| OpenAI | `NotImplementedError` — client not implemented in `llm_factory.py` |
-
-Qwen TTS (DashScope) **is** reachable and was used to render real audio. The acceptance
-run therefore exercised the **full engine + TTS pipeline with the spec §5 degradation
-path** (placeholder script lines), proving structure + acoustic switching end-to-end.
-Re-run with a reachable LLM (VPN for Gemini, an enabled Anthropic org, or an implemented
-OpenAI client) to populate real line content:
+| Anthropic Claude (`claude-sonnet-4`) | ✅ working (used for this acceptance run) |
+| Gemini (`gemini-3-flash-preview`) | ❌ `400 FAILED_PRECONDITION: User location is not supported` (geo-block) |
+| OpenAI | ❌ `NotImplementedError` — client not implemented in `llm_factory.py` |
 
 ```bash
 cd echuu-agent
-ECHUU_LLM_PROVIDER=claude python demo.py --acceptance   # or gemini / (openai once impl'd)
+ECHUU_LLM_PROVIDER=claude python demo.py --acceptance
 ```
+
+The spec §5 degradation path (placeholder script + real TTS) was also verified earlier when
+no provider was reachable — a provider outage degrades gracefully instead of crashing
+`engine.setup()`.
 
 ## Fixes made during acceptance
 
@@ -70,7 +72,8 @@ ECHUU_LLM_PROVIDER=claude python demo.py --acceptance   # or gemini / (openai on
 ## Known gaps / V2 follow-ups
 
 - Implement the OpenAI client in `llm_factory.py` (currently `NotImplementedError`).
-- Re-run acceptance with a reachable LLM and append the real U3 flaw line + an A/B note
-  on acoustic feel with genuine content.
+- Add **Doubao (豆包) via 火山引擎 / Volcano Engine** as a bottom-tier LLM fallback in
+  `llm_factory.py` (planned, pending Volcano Engine access).
+- Gemini is geo-blocked in this environment; needs a VPN/region to use as a provider.
 - `test_step_event_schema.py` lives in `tests/` rather than the planned
   `echuu-web/backend/tests/` — harmless, but note the divergence from the plan.
