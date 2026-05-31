@@ -26,39 +26,48 @@ class _LLM(Protocol):
 
 _PROMPT_TEMPLATE = """\
 你是金牌综艺编剧（詹仁雄 / 王伟忠那一挂的功力）。给一个 5 分钟单人直播写完整剧本。
-目标：金句精彩、故事有活人感和综艺感，让观众忍不住截图做表情包。
+目标：讲【一个具体、好笑、有起承转合的故事】，金句精彩，让观众忍不住截图做表情包。
+最怕的就是：泛泛而谈、车轱辘话来回绕、听完不知道他到底讲了件什么事。
 
 【这个人是谁】
 - 身份：{identity}
 - 信念：{belief}（会被现实打脸）
 - 弱点：{flaw}
-- 语癖（必须自然织进台词）：{verbal_tics}
+- 语癖（必须自然织进台词，每段都用一点）：{verbal_tics}
 - 情境弱点：{situational_weaknesses}
 - 反差/悬疑：{contrast_hook}
 - 生活化锚点（拿来做具体细节）：{life_anchors}
 
-【今天讲什么 · 故事内核】
+【今天讲的那件事 · 内核】（就讲这一件事，讲透，别贪多）
 - 话题：{topic}
-- 主线：{spine}
+- 主线（一件具体的事）：{spine}
+- 核心纠结/矛盾点（故事的心脏，全程围着它转）：{core_struggle}
+- 翻转/转折（重头戏，必须炸）：{twist}
 - 核心反差：{central_contrast}
 - 情绪暗线：{emotional_undercurrent}
 - 金句种子（打磨成真金句）：{punchline_seeds}
 - 开场钩子角度：{hook_angle}
 
-【真实主播是怎么讲话的（模仿这种活人节奏，不是抄内容）】
+【真实主播是怎么讲话的（模仿这种活人节奏和吐槽口吻，不是抄内容）】
 {examples}
 
-【硬要求】
-1. 前 60 秒内必须抛出钩子/爆梗，一上来就让人想留下。
-2. 整体是**一个连贯的故事**，起承转合，段与段自然衔接——不是 4 段拼贴。
-3. 自然用上这个人的语癖；写**碎碎念**（自我嘀咕、跑神）和**自我拉扯的纠结点**。
-4. 生活化的**具体细节**：具体到身边的物品、与话题相关、对当时状况的实际描写。
-5. 抖金句：至少几句让人想截图的话。
-6. filler（嗯/那个/诶）和停顿（——、…）直接写进台词文本里。
-7. 绝不写情绪标签或括号说明；绝不写「升华/总结人生道理」那种说教结尾。
-
-【节奏护栏：4 个时间/音色桶（把故事铺进去，能量从高走到低）】
+【这是一个有结构的故事，按节点往前推进 —— 起 / 承 / 转(爆点) / 合】
 {unit_rails}
+
+【硬要求】
+1. **就讲这一件事**：四段是【同一件事】的四个阶段（起承转合），围绕"核心纠结点"层层推进、
+   有跌宕起伏。每段把这件事往前讲、往深挖；**绝不**原地把上一段换个说法再绕一遍
+   （车轱辘话是最大的扣分项），也不要东拉西扯讲好几件不相干的事。
+2. **转折要炸**：第三段（转）是全场最炸的一下，就是上面那个"翻转/转折"——
+   前两段都在为它蓄力。让观众在这里"噗"地笑出来或"卧槽"一下。这一拍决定成败。
+3. **开场先勾观众（互动钩子）**：整段第一句先用【一句向观众提问/求共鸣的话】抛给弹幕——
+   "有没有人也……？""说真的，你们会不会……？""你们遇到过……吗？"——带一点点语癖，
+   先把观众勾进来、邀请他们参与，**然后再**开始讲这件事。绝不要"大家好欢迎来到我的直播间"这种模板腔。
+4. **结束**：最后一段最后一句用【人设化的下播语】收，留个具体画面或小钩子，别喊口号升华。
+5. 自然用语癖；写**碎碎念**（自我嘀咕、跑神）和**自我拉扯的纠结**。
+6. 具体细节：开头多铺具体场景/身边物品/当时心情，与话题相关、对当时状况的实际描写——别说空话。
+7. filler（嗯/那个/诶）和停顿（——、…）直接写进台词文本里。
+8. 绝不写情绪标签或括号说明；绝不写「升华/总结人生道理」那种说教结尾。
 
 严格输出 JSON（不要任何额外文字、不要 markdown 围栏）：
 {{
@@ -100,13 +109,18 @@ class ScriptWriter:
         self.llm = llm
         self.example_sampler = example_sampler
 
-    def _unit_rails(self, units: list[Unit]) -> str:
-        labels = ["开场/钩", "递进/铺垫", "缠结/纠结", "收束/翻转"]
+    def _unit_rails(self, units: list[Unit], core: StoryCore) -> str:
+        labels = ["起·开场+设置", "承·升级", "转·爆点（全场最炸）", "合·落点+下播"]
+        beats = list(core.story_beats)
         out = []
         for i, u in enumerate(units):
             t0, t1 = u.time_window
             label = labels[i] if i < len(labels) else f"段{i}"
-            out.append(f"- Unit{i} [{int(t0)}-{int(t1)}s] {label}，能量={u.density}")
+            beat = beats[i] if i < len(beats) else "（自行承接上一段往前推进）"
+            out.append(
+                f"- Unit{i} [{int(t0)}-{int(t1)}s] {label}，能量={u.density}\n"
+                f"    本段推进到剧情节点：{beat}"
+            )
         return "\n".join(out)
 
     def _build_prompt(self, persona: RichPersona, core: StoryCore,
@@ -121,12 +135,14 @@ class ScriptWriter:
             life_anchors=_join(persona.life_anchors),
             topic=topic,
             spine=core.spine,
+            core_struggle=core.core_struggle or "（无）",
+            twist=core.twist or "（无）",
             central_contrast=core.central_contrast or "（无）",
             emotional_undercurrent=core.emotional_undercurrent or "（无）",
             punchline_seeds=_join(core.punchline_seeds),
             hook_angle=core.hook_angle or "（无）",
             examples=examples or "（无示例）",
-            unit_rails=self._unit_rails(units),
+            unit_rails=self._unit_rails(units, core),
         )
 
     def _try_generate(self, prompt: str) -> str | None:

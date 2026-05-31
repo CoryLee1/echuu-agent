@@ -180,7 +180,8 @@ class TTSClient:
         self._recording = True
         self._recording_buffer = []
 
-    def save_recording(self, path: str, convert_to_mp3: bool = True, keep_wav: bool = False):
+    def save_recording(self, path: str, convert_to_mp3: bool = True, keep_wav: bool = False,
+                       gap_ms: int = 0):
         """
         保存录制音频（支持自动转换为 MP3）
 
@@ -188,6 +189,7 @@ class TTSClient:
             path: 保存路径
             convert_to_mp3: 是否转换为 MP3 格式（默认 True）
             keep_wav: 转换后是否保留 WAV 文件（默认 False）
+            gap_ms: 段与段之间插入的静音（毫秒），让合并后的音频有喘气停顿（默认 0）
         """
         if not self._recording_buffer:
             print("没有可保存的录制音频")
@@ -203,10 +205,13 @@ class TTSClient:
             print(f"  正在合并 {len(self._recording_buffer)} 个音频片段...")
 
             combined = AudioSegment.empty()
+            gap = AudioSegment.silent(duration=gap_ms) if gap_ms > 0 else None
             for i, chunk in enumerate(self._recording_buffer):
                 # 从 WAV 数据加载音频
                 import io
                 audio = AudioSegment.from_wav(io.BytesIO(chunk))
+                if gap is not None and i > 0:
+                    combined += gap  # 段间插静音，制造喘气停顿
                 combined += audio
                 if (i + 1) % 5 == 0:
                     print(f"    已合并 {i+1}/{len(self._recording_buffer)}...")

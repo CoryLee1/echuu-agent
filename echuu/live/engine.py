@@ -168,6 +168,8 @@ class EchuuLiveEngine:
             examples = self.example_sampler.get_relevant_examples(
                 topic=topic, persona=persona, n=3, language=lang,
             )
+        n_ex = examples.count("真实案例") if examples else 0
+        print(f"📚 few-shot 示例注入: {n_ex} 条 (sampler={'on' if self.example_sampler else 'off'})")
         units = self.script_writer.write(
             rich_persona, story_core, units, examples=examples, topic=topic,
         )
@@ -218,6 +220,7 @@ class EchuuLiveEngine:
         play_audio: bool = False,
         save_audio: bool = False,
         convert_to_mp3: bool = True,
+        segment_gap_ms: int = 0,
     ):
         """V5 实时表演（按 unit 渲染，per-unit acoustic switching）。"""
         if not self.state or not getattr(self.state, "show", None):
@@ -260,7 +263,8 @@ class EchuuLiveEngine:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             ext = ".mp3" if convert_to_mp3 else ".wav"
             audio_path = self.scripts_dir / f"{timestamp}_{self.state.name}_{self.state.topic[:20].replace(' ', '_')}_live{ext}"
-            self.tts.save_recording(str(audio_path), convert_to_mp3=convert_to_mp3, keep_wav=False)
+            self.tts.save_recording(str(audio_path), convert_to_mp3=convert_to_mp3,
+                                    keep_wav=False, gap_ms=segment_gap_ms)
 
         print(f"\n{'='*60}\n表演结束！\n{'='*60}\n")
 

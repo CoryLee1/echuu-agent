@@ -37,9 +37,12 @@ def _good_response() -> str:
             "visual_anchor": "腕上便签",
         },
         "story": {
-            "spine": "转行 6 个月，热爱被生计磨出真相",
+            "spine": "上周接了个甲方稿子，改到第八版崩溃的那一晚",
+            "core_struggle": "到底是坚持自己的画风，还是为了恰饭妥协",
+            "twist": "甲方最后说还是用第一版，那版我画了十分钟",
             "central_contrast": "做喜欢的事反而更累",
             "emotional_undercurrent": "兴奋 → 自我怀疑 → 脆弱坦白",
+            "story_beats": ["起：接到稿子很兴奋", "承：改到第八版", "转：甲方要第一版", "合：对着屏幕笑出声"],
             "punchline_seeds": ["热爱是有 KPI 的", "我把热爱过成了加班"],
             "hook_angle": "辞职那天我哭了一整夜，但没人知道",
         },
@@ -57,6 +60,9 @@ def test_analyze_happy_path():
     assert rp.life_anchors
     assert sc.spine and sc.hook_angle
     assert sc.punchline_seeds
+    assert sc.core_struggle           # 核心纠结点
+    assert sc.twist                   # 翻转
+    assert len(sc.story_beats) == 4   # 一件事的四个阶段
     assert rp.flaw  # I4
 
 

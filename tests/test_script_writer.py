@@ -39,9 +39,12 @@ def persona() -> RichPersona:
 @pytest.fixture
 def core() -> StoryCore:
     return StoryCore(
-        spine="转行 6 个月，热爱被生计磨出真相",
+        spine="改到第八版崩溃的那一晚",
+        core_struggle="坚持画风还是恰饭妥协",
+        twist="甲方最后要的是我十分钟画的第一版",
         central_contrast="做喜欢的事反而更累",
         emotional_undercurrent="兴奋→怀疑→坦白",
+        story_beats=("起：接稿很兴奋", "承：改到第八版", "转：甲方要第一版", "合：笑出声"),
         punchline_seeds=("热爱是有 KPI 的",),
         hook_angle="辞职那天我哭了一整夜",
     )
@@ -84,10 +87,14 @@ def test_prompt_contains_persona_and_core(persona, core, units):
     assert persona.identity in p
     assert "我跟你讲" in p              # 语癖注入
     assert core.spine in p              # 故事内核
+    assert core.core_struggle in p      # 核心纠结点
+    assert core.twist in p              # 翻转
+    assert "起：接稿很兴奋" in p         # story_beats 进了 rails
     assert core.hook_angle in p
     assert "热爱是有 KPI 的" in p        # 金句种子
     assert "真实案例" in p              # few-shot 注入
     assert "碎碎念" in p                # 硬要求出现在 prompt
+    assert "求共鸣" in p or "提问" in p  # 提问式互动开场
 
 
 def test_write_invalid_json_degrades(persona, core, units):

@@ -150,7 +150,9 @@ def demo_acceptance():
     print(f"   语癖: {'、'.join(show.persona.verbal_tics) or '-'}\n")
 
     # --- Live render + MP3 recording (run() records & saves internally) ---
-    for ev in engine.run(max_steps=12, play_audio=False, save_audio=True, convert_to_mp3=True):
+    # 段间插 1.5s 静音让 MP3 有喘气感（实时直播由前端 gap 控制，更长）
+    for ev in engine.run(max_steps=12, play_audio=False, save_audio=True,
+                         convert_to_mp3=True, segment_gap_ms=1500):
         pass  # progress is printed inside run()
 
     print("\n✅ 验收演示完成。MP3 已保存到 output/scripts/（见上方录制路径）。")
