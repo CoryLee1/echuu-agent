@@ -24,6 +24,7 @@ from ..core.structure_breaker import StructureBreaker
 from ..generators.example_sampler import ExampleSampler
 from ..generators.script_writer import ScriptWriter
 from .danmaku import DanmakuEvaluator, DanmakuHandler
+from .danmaku_interleave import DanmakuInterleaver
 from .llm_factory import create_llm_client
 from .performer import PerformerV3
 from .state import Danmaku, PerformanceState, PerformerMemory
@@ -103,6 +104,7 @@ class EchuuLiveEngine:
         self.structure_breaker = StructureBreaker()
         self.script_writer = ScriptWriter(self.llm_gen, self.example_sampler)
         self.danmaku_handler = DanmakuHandler(DanmakuEvaluator())
+        self.danmaku_interleaver = DanmakuInterleaver(self.llm_gen)
         self.performer = PerformerV3(self.llm, self.tts, self.danmaku_handler)
 
         self.scripts_dir = self.project_root / "output" / "scripts"
@@ -242,22 +244,45 @@ class EchuuLiveEngine:
             print(f"正在录制... (输出格式: {'MP3' if convert_to_mp3 else 'WAV'})")
         print(f"{'='*60}\n")
 
+        # 弹幕穿插的节奏控制：每讲完一行后可能插一条回应（冷却+每单元上限）
+        lines_since_resp = 0
+        resp_in_unit = 0
+        last_unit_idx = -1
+        last_line_text = ""
+
         for ev in self._render_show():
-            self.state.current_unit_idx = ev["unit"]["index"]
+            unit_idx = ev["unit"]["index"]
+            if unit_idx != last_unit_idx:
+                resp_in_unit = 0          # 进新单元，回应额度重置
+                last_unit_idx = unit_idx
+            self.state.current_unit_idx = unit_idx
             self.state.current_line_in_unit = ev["line"]["index_in_unit"]
             self.state.current_step += 1
-            # Update legacy memory cursor (used by display)
             self.state.memory.script_progress["current_line"] = self.state.current_step
             self.state.memory.script_progress["current_stage"] = ev["line"]["stage"]
+            last_line_text = ev["line"]["text"]
 
-            print(f"[Unit {ev['unit']['index']+1}/4 · {ev['line']['stage']}] {ev['line']['text'][:80]}{'...' if len(ev['line']['text']) > 80 else ''}")
+            print(f"[Unit {unit_idx+1}/4 · {ev['line']['stage']}] {last_line_text[:80]}{'...' if len(last_line_text) > 80 else ''}")
             if ev["line"]["is_rupture"]:
                 print(f"  💥 rupture_kind={ev['unit']['rupture_kind']}")
 
             yield ev
+            lines_since_resp += 1
 
             if self.state.current_step >= max_steps:
                 break
+
+            # 自然断点：穿插一条弹幕回应（冷却 ≥2 行、每单元 ≤1 条）
+            if lines_since_resp >= 2 and resp_in_unit < 1 and self.state.danmaku_queue:
+                resp_ev = self._maybe_interleave_danmaku(unit_idx, last_line_text)
+                if resp_ev is not None:
+                    resp_in_unit += 1
+                    lines_since_resp = 0
+                    self.state.current_step += 1
+                    print(f"  💬 回应弹幕[{resp_ev['danmaku']['user']}]: {resp_ev['speech'][:60]}")
+                    yield resp_ev
+                    if self.state.current_step >= max_steps:
+                        break
 
         if save_audio and self.tts.enabled:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -309,6 +334,71 @@ class EchuuLiveEngine:
                 "cue": _asdict(line.cue) if hasattr(line.cue, "__dataclass_fields__") and line.cue else None,
             },
             "speech": line.text,  # compat alias for audio-caption sync (spec §3.2)
+            "audio": audio,
+        }
+
+    def _pick_danmaku(self):
+        """从队列里挑一条最该回应的弹幕（SC > 问题 > 其它），并移除它。"""
+        q = self.state.danmaku_queue
+        if not q:
+            return None
+        # 稳定优先级：SC 优先，其次问题，其余按到达顺序
+        best_i, best_key = 0, (-1, -1)
+        for i, d in enumerate(q):
+            key = (1 if getattr(d, "is_sc", False) else 0,
+                   1 if d.is_question() else 0)
+            if key > best_key:
+                best_key, best_i = key, i
+        return q.pop(best_i)
+
+    def _maybe_interleave_danmaku(self, unit_idx: int, last_line: str):
+        """生成一条人设化弹幕回应并构造 step 事件；失败返回 None（跳过穿插）。"""
+        dm = self._pick_danmaku()
+        if dm is None:
+            return None
+        persona = getattr(self.state.show, "persona", None)
+        identity = getattr(persona, "identity", "") if persona else ""
+        verbal_tics = getattr(persona, "verbal_tics", ()) if persona else ()
+        reply = self.danmaku_interleaver.respond(
+            identity=identity, verbal_tics=verbal_tics, topic=self.state.topic,
+            last_line=last_line, danmaku_text=dm.text, user=dm.user,
+        )
+        if not reply:
+            return None
+        try:
+            audio = self.tts.synthesize(reply) if getattr(self, "tts", None) else None
+        except Exception:
+            audio = None
+        unit = self.state.show.units[unit_idx]
+        return self._build_danmaku_event(unit, dm, reply, audio)
+
+    def _build_danmaku_event(self, unit, danmaku, reply: str, audio):
+        """弹幕回应的 step 事件（v2 形状 + danmaku 字段，line.stage='danmaku'）。"""
+        from dataclasses import asdict as _asdict
+        return {
+            "type": "step",
+            "show": {
+                "total_units": len(self.state.show.units),
+                "total_lines": sum(len(u.lines) for u in self.state.show.units),
+            },
+            "unit": {
+                "index": unit.index,
+                "axis": unit.axis,
+                "density": unit.density,
+                "time_window": list(unit.time_window),
+                "acoustic": _asdict(unit.acoustic),
+                "rupture_kind": None,
+            },
+            "line": {
+                "index_in_unit": -1,
+                "stage": "danmaku",
+                "text": reply,
+                "is_rupture": False,
+                "cue": None,
+            },
+            "speech": reply,
+            "danmaku": {"text": danmaku.text, "user": danmaku.user},
+            "is_danmaku_response": True,
             "audio": audio,
         }
 
