@@ -67,6 +67,22 @@ def test_closing_goes_through_structure_breaker():
     assert last["speech"] != "所以说这次经历真的教会了我很多人生道理"
 
 
+def test_opening_invokes_thread_loss_mechanism():
+    """自然感硬约束回归锁：opening 必须实际调用 insert_thread_loss。"""
+    engine = FakeEngine('[{"text":"诶，来了","emotion":"joy"},{"text":"今天聊点事","emotion":"joy"}]')
+    calls = []
+    original = engine.structure_breaker.insert_thread_loss
+
+    def spy(lines, probability=0.2):
+        calls.append((len(lines), probability))
+        return original(lines, probability)
+
+    engine.structure_breaker.insert_thread_loss = spy
+    produce_opening_events(engine, "小回", "毒舌主播", "话题", "storytelling")
+    assert calls, "opening 没有经过 insert_thread_loss"
+    assert calls[0][0] == 2
+
+
 def test_tts_instruction_uses_natural_casual():
     engine = FakeEngine('[{"text":"哈喽哈喽","emotion":"joy"}]')
     produce_opening_events(engine, "小回", "毒舌主播", "话题", "storytelling")
