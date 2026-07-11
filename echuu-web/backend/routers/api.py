@@ -93,6 +93,15 @@ class InlineStartRequest(BaseModel):
     room_id: str
     owner_token: str
     max_steps: int = 15
+    # 三模式：storytelling（默认）/ reaction / singing_learn
+    mode: str = "storytelling"
+    # 模式专属输入（尽量简单）：
+    #   reaction:      {"video_url": "..."}  公网可访问的视频 URL
+    #   singing_learn: {"song_path": "...", "song_title": "...", "lyrics": "...(可选)"}
+    source: Optional[dict] = None
+    # 结构化人设卡（Phase 2-①，可选）：speech_tics/audience_nickname/stances/fears/
+    # prides/running_gags/metaphor_domain 等，见 echuu/core/persona_card.py
+    persona_card: Optional[dict] = None
 
 
 @router.post("/start")
@@ -181,9 +190,12 @@ async def start_live_inline(
         session_id,
         request.room_id,
         request.max_steps,
+        request.mode,
+        request.source,
+        request.persona_card,
     )
 
-    return {"session_id": session_id, "message": "直播已启动"}
+    return {"session_id": session_id, "mode": request.mode, "message": "直播已启动"}
 
 
 # ============================================================

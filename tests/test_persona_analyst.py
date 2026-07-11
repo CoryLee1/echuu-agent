@@ -62,7 +62,7 @@ def test_analyze_happy_path():
     assert sc.punchline_seeds
     assert sc.core_struggle           # 核心纠结点
     assert sc.twist                   # 翻转
-    assert len(sc.story_beats) == 4   # 一件事的四个阶段
+    assert 2 <= len(sc.story_beats) <= 4  # 一件事的若干阶段（自适应 2~4）
     assert rp.flaw  # I4
 
 

@@ -17,7 +17,12 @@ except ImportError:
     from database.models import User, UserRole
 
 # 密码加密上下文
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# 使用 bcrypt 作为主要方案，如果失败则使用 sha256_crypt 作为后备
+try:
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+except Exception:
+    # 如果 bcrypt 不可用，使用 sha256_crypt 作为后备（仅开发环境）
+    pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
 # OAuth2 密码流
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")

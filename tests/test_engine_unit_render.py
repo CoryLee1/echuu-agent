@@ -18,6 +18,9 @@ class FakeTTS:
             "pitch_rate": pitch_rate, "speech_rate": speech_rate, "volume": volume,
         })
 
+    def set_instruction(self, instruction: str):
+        pass
+
     def synthesize(self, text: str, emotion_boost: float = 0.0):
         self.synth_calls.append(text)
         if self.fail_on_text and self.fail_on_text in text:

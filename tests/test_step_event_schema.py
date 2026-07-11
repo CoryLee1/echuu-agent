@@ -4,6 +4,8 @@ from __future__ import annotations
 from echuu.core.persona_model import PersonaModel
 from echuu.core.unit import AcousticHint, Rupture, ScriptLine, Show, Unit
 from echuu.live.engine import EchuuLiveEngine
+from echuu.live.motion import DANMAKU_CLIPS, RUPTURE_CLIPS
+from echuu.live.state import Danmaku
 
 
 def _show():
@@ -35,6 +37,9 @@ def test_step_event_v2_shape():
     assert ev["line"]["stage"] in ("hook", "pad", "turn")
     assert ev["line"]["is_rupture"] is True
     assert ev["speech"] == "t"  # compat alias
+    assert ev["motion"]["state"] == "reacting"
+    assert ev["motion"]["clip"] in RUPTURE_CLIPS
+    assert ev["motion"]["loop"] is False
 
 
 def test_step_event_audio_field_present_for_broadcast_pop():
@@ -48,6 +53,7 @@ def test_step_event_audio_field_present_for_broadcast_pop():
     ev = engine._build_step_event(unit, 0, line, audio=None)
     assert "audio" in ev
     assert ev["audio"] is None
+    assert "motion" in ev
 
 
 def test_step_event_rupture_kind_only_on_rupture_lines():
@@ -64,3 +70,15 @@ def test_step_event_rupture_kind_only_on_rupture_lines():
     rupture = ScriptLine(id="r", text="critical", stage="turn", is_rupture=True)
     ev_r = engine._build_step_event(unit, 0, rupture, audio=None)
     assert ev_r["unit"]["rupture_kind"] == "meme"  # matches unit[0]'s rupture slot
+
+
+def test_danmaku_event_has_motion_hint():
+    engine = EchuuLiveEngine.__new__(EchuuLiveEngine)
+    engine.tts = None
+    engine.state = type("S", (), {"show": _show()})()
+    unit = engine.state.show.units[0]
+    ev = engine._build_danmaku_event(unit, Danmaku.from_text("你好", user="u"), "hello", audio=None)
+
+    assert ev["line"]["stage"] == "danmaku"
+    assert ev["motion"]["state"] == "danmaku"
+    assert ev["motion"]["clip"] in DANMAKU_CLIPS

@@ -142,7 +142,7 @@ def demo_acceptance():
         json.dump(show_json, f, ensure_ascii=False, indent=2)
     print(f"📄 Show JSON: {show_path}")
 
-    assert len(show.units) == 4, "I1: expected exactly 4 time/acoustic units"
+    assert 2 <= len(show.units) <= 4, "节目段数应在 2~4（长度自适应）"
     assert all(len(u.lines) >= 2 for u in show.units), "每个 unit 至少 2 行台词"
     assert show.persona.flaw, "I4: persona.flaw 必须非空"
     print("✅ 结构校验通过 (I1 / 每段有台词 / I4 flaw 非空)。")

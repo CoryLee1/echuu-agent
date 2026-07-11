@@ -27,6 +27,7 @@ class RaisingLLM:
 
 class FakeTTS:
     def update_session(self, **kw): pass
+    def set_instruction(self, instruction): pass
     def synthesize(self, text, emotion_boost: float = 0.0):
         return b"audio"
 

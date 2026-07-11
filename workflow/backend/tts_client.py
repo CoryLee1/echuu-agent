@@ -6,10 +6,127 @@
 import base64
 import io
 import os
+import re
 import struct
 import threading
 from datetime import datetime
 from typing import Callable, List, Optional
+
+
+def detect_language(text: str) -> str:
+    """
+    自动检测文本主要语言。
+
+    Returns:
+        "Chinese", "English", "Japanese", "Korean", or "auto"
+    """
+    if not text:
+        return "auto"
+
+    # Count character types
+    chinese_count = len(re.findall(r'[\u4e00-\u9fff]', text))
+    japanese_count = len(re.findall(r'[\u3040-\u309f\u30a0-\u30ff]', text))  # Hiragana + Katakana
+    korean_count = len(re.findall(r'[\uac00-\ud7af]', text))
+    english_count = len(re.findall(r'[a-zA-Z]', text))
+
+    total = chinese_count + japanese_count + korean_count + english_count
+    if total == 0:
+        return "auto"
+
+    # Determine primary language (>40% threshold)
+    if japanese_count / total > 0.2:  # Japanese often mixed with kanji
+        return "Japanese"
+    if korean_count / total > 0.3:
+        return "Korean"
+    if chinese_count / total > 0.3:
+        return "Chinese"
+    if english_count / total > 0.4:
+        return "English"
+
+    # Mixed content - use auto
+    return "auto"
+
+
+# Multilingual voice mapping - voices that support specific languages
+# For Qwen3-TTS-Flash-Realtime / qwen-tts-realtime（与 docs/qwen_tts_voices.md 一致）
+QWEN3_TTS_VOICES = {
+    # 通义千问3-TTS-Flash-Realtime 支持的全部音色（多语种）
+    "multilingual": [
+        "Cherry", "Serena", "Ethan", "Chelsie", "Momo", "Vivian", "Moon", "Maia", "Kai",
+        "Nofish", "Bella", "Jennifer", "Ryan", "Katerina", "Aiden", "Eldric Sage", "Mia",
+        "Mochi", "Bellona", "Vincent", "Bunny", "Neil", "Elias", "Arthur", "Nini", "Ebona",
+        "Seren", "Pip", "Stella", "Bodega", "Sonrisa", "Alek", "Dolce", "Sohee", "Ono Anna",
+        "Lenn", "Emilien", "Andre", "Radio Gol",
+        "Jada", "Dylan", "Li", "Marcus", "Roy", "Peter", "Sunny", "Eric", "Rocky", "Kiki",
+    ],
+    # English-sounding voices (preferred for English content)
+    "english_preferred": [
+        "Jennifer", "Ryan", "Dylan", "Marcus", "Eric", "Jada", "Peter",
+    ],
+    # Chinese-sounding voices (preferred for Chinese content)
+    "chinese_preferred": [
+        "Cherry", "Li", "Sunny", "Kiki", "Serena", "Bella", "Chelsie",
+    ],
+}
+
+# For CosyVoice models (cosyvoice-v3-flash, etc.)
+COSYVOICE_VOICES = {
+    "bilingual": [
+        "longanyang", "longanhuan", "longhuhu_v3", "longyingxun",
+        "longyingjing_v3", "longxiaochun_v2",
+    ],
+    "chinese_only": [
+        "Bella", "Serena", "Chelsie", "Aura",
+    ],
+}
+
+
+def get_multilingual_voice(preferred_voice: str, language: str, model: str = "") -> str:
+    """
+    获取支持指定语言的音色。
+
+    如果首选音色不支持目标语言，自动切换到支持该语言的音色。
+
+    Args:
+        preferred_voice: 首选音色
+        language: 目标语言 ("Chinese", "English", "Japanese", "Korean")
+        model: TTS 模型名称
+
+    Returns:
+        支持目标语言的音色名称
+    """
+    # Determine model type
+    is_qwen3_tts = "qwen" in model.lower() and "tts" in model.lower()
+
+    # For Qwen3-TTS models, all listed voices support multilingual
+    if is_qwen3_tts:
+        all_voices = [v.lower() for v in QWEN3_TTS_VOICES["multilingual"]]
+        if preferred_voice.lower() in all_voices:
+            return preferred_voice
+        # If voice not in list, use a default multilingual voice
+        if language == "English":
+            fallback = "Jennifer"  # Good English voice
+        else:
+            fallback = "Cherry"  # Good general voice
+        print(f"[TTS] 音色 {preferred_voice} 不在 Qwen3-TTS 列表中，使用 {fallback}")
+        return fallback
+
+    # For CosyVoice models
+    if language in ("Chinese", "auto", "Auto"):
+        return preferred_voice
+
+    # Check if preferred voice is bilingual
+    if preferred_voice.lower() in [v.lower() for v in COSYVOICE_VOICES["bilingual"]]:
+        return preferred_voice
+
+    # For non-Chinese languages, switch to a bilingual voice
+    if language in ("English", "Japanese", "Korean"):
+        if preferred_voice in COSYVOICE_VOICES["chinese_only"]:
+            fallback = "longanyang"
+            print(f"[TTS] 音色 {preferred_voice} 不支持 {language}，切换到 {fallback}")
+            return fallback
+
+    return preferred_voice
 
 # 尝试导入 dashscope
 try:
@@ -249,6 +366,8 @@ class CosyVoiceTTS:
 
         self.mode = os.getenv("TTS_MODE", "server_commit")
         self.language_type = os.getenv("TTS_LANGUAGE_TYPE", "Chinese")
+        # 自然语言情绪/语速指令，仅 instruct 系列模型生效（如 qwen3-tts-instruct-flash-realtime）
+        self.instruction = ""
         self.response_format = os.getenv("TTS_RESPONSE_FORMAT", "pcm")
         self.sample_rate = int(os.getenv("TTS_SAMPLE_RATE", "24000"))
         self.speech_rate = float(os.getenv("TTS_SPEECH_RATE", "1.0"))
@@ -317,12 +436,22 @@ class CosyVoiceTTS:
         )
         qwen_tts_realtime.connect()
 
+        # Auto-detect language if set to "auto" or empty
+        language = self.language_type
+        if language.lower() in ("auto", ""):
+            language = detect_language(text)
+            if language == "auto":
+                language = "Chinese"  # Fallback
+
+        # Auto-select voice that supports the detected language
+        voice = get_multilingual_voice(self.voice, language, self.model)
+
         response_format = self._resolve_realtime_audio_format()
         kwargs = {
-            "voice": self.voice,
+            "voice": voice,
             "response_format": response_format,
             "mode": self.mode,
-            "language_type": self.language_type,
+            "language_type": language,
         }
         # 只有qwen3-tts-flash-realtime支持这些参数，旧版qwen-tts-realtime不支持
         if "qwen3" in self.model:
@@ -333,6 +462,8 @@ class CosyVoiceTTS:
             })
         if self.response_format.lower() == "opus":
             kwargs["bit_rate"] = self.bit_rate
+        if "instruct" in self.model and self.instruction:
+            kwargs["instructions"] = self.instruction
 
         qwen_tts_realtime.update_session(**kwargs)
         qwen_tts_realtime.append_text(text)

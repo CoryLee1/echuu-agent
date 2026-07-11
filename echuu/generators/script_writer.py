@@ -38,6 +38,9 @@ _PROMPT_TEMPLATE = """\
 - 反差/悬疑：{contrast_hook}
 - 生活化锚点（拿来做具体细节）：{life_anchors}
 
+【人设卡（用户钉死的硬约束，优先级最高）】
+{persona_card}
+
 【今天讲的那件事 · 内核】（就讲这一件事，讲透，别贪多）
 - 话题：{topic}
 - 主线（一件具体的事）：{spine}
@@ -73,16 +76,22 @@ _PROMPT_TEMPLATE = """\
 6. 具体细节：开头多铺具体场景/身边物品/当时心情，与话题相关、对当时状况的实际描写——别说空话。
 7. filler（嗯/那个/诶）和停顿（——、…）直接写进台词文本里。
 8. 绝不写情绪标签或括号说明；绝不写「升华/总结人生道理」那种说教结尾。
+9. **埋梗-回收（call-back）**：在前 1/3 的台词里自然埋 1-2 个【具体意象】（一个物件/一个说法/
+   一个数字，例："猫罐头汇率"），最后一段必须自然回收其中至少一个——直接把意象接回来用，
+   🚫 不准点破"还记得吗/前面说过"。把埋的意象原文列进输出的 planted_gags。
+10. **互动点**：中段（非首非末的某个 unit）的最后一行，向观众抛一个【具体的问题】
+   （二选一/报数/说亲身经历，别问"你们觉得呢"这种空问题），把这一行的 interact 标为 true。
 
 严格输出 JSON（不要任何额外文字、不要 markdown 围栏）：
 {{
   "units": [
     {{"index": 0, "lines": [
       {{"text": "...", "interruption_cost": 0.5}},
-      {{"text": "...", "interruption_cost": 0.4}}
+      {{"text": "...", "interruption_cost": 0.4, "interact": false}}
     ]}},
-    ... (共 4 个 unit，每个 3-4 行)
-  ]
+    ... (共 {n_units} 个 unit，对齐上面的节奏护栏，每个 3-4 行)
+  ],
+  "planted_gags": ["<埋下的意象原文，1-2 个>"]
 }}
 """
 
@@ -113,15 +122,25 @@ class ScriptWriter:
     def __init__(self, llm: _LLM, example_sampler=None) -> None:
         self.llm = llm
         self.example_sampler = example_sampler
+        self.last_planted_gags: list[str] = []
 
     def _unit_rails(self, units: list[Unit], core: StoryCore) -> str:
-        labels = ["起·开场+设置", "承·升级", "转·爆点（全场最炸）", "合·落点+下播"]
+        n = len(units)
         beats = list(core.story_beats)
         out = []
         for i, u in enumerate(units):
             t0, t1 = u.time_window
-            label = labels[i] if i < len(labels) else f"段{i}"
-            beat = beats[i] if i < len(beats) else "（自行承接上一段往前推进）"
+            if n <= 2:
+                label = "起·真·开播+铺垫" if i == 0 else "转(爆点)+收束·真·下播"
+            elif i == 0:
+                label = "起·真·开播+设置"
+            elif i == n - 1:
+                label = "合·收束+真·下播"
+            elif i == n - 2:
+                label = "转·爆点（全场最炸）"
+            else:
+                label = "承·升级"
+            beat = beats[i] if i < len(beats) else "（承接上一段往前推进）"
             out.append(
                 f"- Unit{i} [{int(t0)}-{int(t1)}s] {label}，能量={u.density}\n"
                 f"    本段推进到剧情节点：{beat}"
@@ -129,8 +148,11 @@ class ScriptWriter:
         return "\n".join(out)
 
     def _build_prompt(self, persona: RichPersona, core: StoryCore,
-                      units: list[Unit], examples: str, topic: str) -> str:
+                      units: list[Unit], examples: str, topic: str,
+                      card=None) -> str:
+        card_text = card.render_for_prompt() if card and not card.is_empty() else "（无——按上面的人设发挥）"
         return _PROMPT_TEMPLATE.format(
+            persona_card=card_text,
             identity=persona.identity,
             belief=persona.belief,
             flaw=persona.flaw,
@@ -148,6 +170,7 @@ class ScriptWriter:
             hook_angle=core.hook_angle or "（无）",
             examples=examples or "（无示例）",
             unit_rails=self._unit_rails(units, core),
+            n_units=len(units),
         )
 
     def _try_generate(self, prompt: str) -> str | None:
@@ -158,8 +181,9 @@ class ScriptWriter:
             return None
 
     def write(self, persona: RichPersona, core: StoryCore, units: list[Unit],
-              examples: str = "", topic: str = "") -> list[Unit]:
-        prompt = self._build_prompt(persona, core, units, examples, topic)
+              examples: str = "", topic: str = "", card=None) -> list[Unit]:
+        self.last_planted_gags: list[str] = []  # call-back 埋梗，engine 读走登记进 ledger
+        prompt = self._build_prompt(persona, core, units, examples, topic, card=card)
         raw = self._try_generate(prompt)
         parsed = _parse(raw) if raw is not None else None
 
@@ -169,6 +193,10 @@ class ScriptWriter:
 
         if parsed is None or not self._is_complete(parsed, units):
             return self._fill_placeholder(units)
+
+        gags = parsed.get("planted_gags")
+        if isinstance(gags, list):
+            self.last_planted_gags = [str(g).strip() for g in gags if str(g).strip()][:2]
 
         index_to_unit = {u.index: u for u in units}
         for u in units:
@@ -180,10 +208,13 @@ class ScriptWriter:
             target = index_to_unit[idx]
             for line in u_payload.get("lines", []):
                 n = len(target.lines)
+                is_interact = bool(line.get("interact"))
                 target.lines.append(ScriptLine(
                     id=f"u{idx}l{n}",
                     text=str(line.get("text", "")).strip(),
-                    stage=self._stage_for(n, len(u_payload.get("lines", []))),
+                    # interact 行标进 stage：engine 据此开互动窗口，前端也可做问题高亮
+                    stage="interact" if is_interact
+                          else self._stage_for(n, len(u_payload.get("lines", []))),
                     is_rupture=False,  # 不再硬塞 rupture（弱点有机浮现）
                     interruption_cost=float(line.get("interruption_cost", 0.5)),
                 ))

@@ -30,6 +30,18 @@ _PROMPT = """\
 - 点一下这位观众（用名字或"这位"），简短反应，然后一句话拉回你正在讲的事。
 - 绝不改变你故事的重点和走向，别开新话题、别长篇大论。
 - 只输出你要说的话，不要任何解释、不要引号、不要括号说明。
+{card_rules}"""
+
+_QUIP_PROMPT = """\
+你在演一个正在直播的主播。你刚向观众抛了一个问题，结果弹幕没人理你。
+自嘲一句（1 句，带你的语癖，别卖惨），然后半句话接回你正在讲的事。
+
+你是谁：{identity}
+你的语癖（用一个）：{verbal_tics}
+你刚问的：{question}
+你正在讲的事：{topic}
+
+只输出你要说的话，不要任何解释、不要引号、不要括号说明。
 """
 
 
@@ -38,8 +50,23 @@ class DanmakuInterleaver:
         self.llm = llm
 
     def respond(self, *, identity: str, verbal_tics, topic: str,
-                last_line: str, danmaku_text: str, user: str) -> str | None:
+                last_line: str, danmaku_text: str, user: str,
+                card=None, gags=None) -> str | None:
         tics = "、".join(verbal_tics) if verbal_tics else "（自然口语）"
+        # 人设卡加成：固定称呼；雷点被戳 → 破防加倍；骄傲点被夸/被质疑 → 反应加倍；顺手挂已埋的梗
+        card_rules = ""
+        if card is not None:
+            rules = []
+            if getattr(card, "audience_nickname", ""):
+                rules.append(f"- 提到观众整体时用固定称呼「{card.audience_nickname}」。")
+            if getattr(card, "fears", ()):
+                rules.append(f"- 若弹幕戳中你的雷点（{'；'.join(card.fears)}），反应要明显破防/炸毛，加倍！")
+            if getattr(card, "prides", ()):
+                rules.append(f"- 若弹幕夸到/质疑你的骄傲点（{'；'.join(card.prides)}），要明显得意/不服，加倍！")
+            if rules:
+                card_rules += "\n".join(rules) + "\n"
+        if gags:
+            card_rules += f"- 如果能自然接上你前面埋的梗（{'；'.join(gags)}），优先顺手接一下。\n"
         prompt = _PROMPT.format(
             identity=identity or "一个主播",
             verbal_tics=tics,
@@ -47,11 +74,30 @@ class DanmakuInterleaver:
             last_line=last_line or "",
             user=user or "观众",
             danmaku=danmaku_text or "",
+            card_rules=card_rules,
         )
         try:
             reply = self.llm.generate(prompt)
         except Exception as exc:
             print(f"[DanmakuInterleaver] LLM 调用失败，跳过本次穿插: {exc}")
+            return None
+        reply = (reply or "").strip().strip('"“”')
+        return reply or None
+
+    def no_reaction_quip(self, *, identity: str, verbal_tics, topic: str,
+                         question: str) -> str | None:
+        """互动点没人理时的自嘲兜底（不写死台词，人设化生成）。"""
+        tics = "、".join(verbal_tics) if verbal_tics else "（自然口语）"
+        prompt = _QUIP_PROMPT.format(
+            identity=identity or "一个主播",
+            verbal_tics=tics,
+            question=question or "",
+            topic=topic or "（正在讲的事）",
+        )
+        try:
+            reply = self.llm.generate(prompt)
+        except Exception as exc:
+            print(f"[DanmakuInterleaver] 自嘲兜底生成失败，跳过: {exc}")
             return None
         reply = (reply or "").strip().strip('"“”')
         return reply or None

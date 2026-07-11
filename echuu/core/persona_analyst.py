@@ -13,6 +13,7 @@ import json
 import re
 from typing import Any, Protocol
 
+from echuu.core.persona_card import PersonaCard
 from echuu.core.persona_model import RichPersona
 from echuu.core.story_core import StoryCore
 
@@ -51,18 +52,21 @@ _PROMPT = """\
     "central_contrast": "<这件事里最大的反差/悬念>",
     "emotional_undercurrent": "<情绪暗线：从什么情绪走到什么情绪>",
     "story_beats": [
-      "<起：用具体场景/物品/心情把人带进这件事（这一拍负责铺，别急着翻）>",
-      "<承：纠结/矛盾升级，把张力顶上去（仍是同一件事，往深里走）>",
-      "<转：翻转/转折发生的【具体一刻】——全场最炸，对应上面的 twist>",
-      "<合：这件事如何落地，留个具体画面或选择，不要喊口号升华>"
+      "<起：用具体场景/物品/心情把人带进这件事（铺，别急着翻）>",
+      "<...：纠结/矛盾升级（可有可无，看故事撑不撑得起）>",
+      "<转：翻转/转折的【具体一刻】——全场最炸，对应上面的 twist（必有）>",
+      "<合：这件事如何落地，留个具体画面或选择，不要喊口号升华（必有）>"
     ],
     "punchline_seeds": ["<金句种子，2-4个，粗胚即可，编剧会再打磨>"],
     "hook_angle": "<开场前30-60秒怎么抓人，一句话>"
   }}
 }}
 
-要点：story_beats 是【同一件事】的四个阶段（起承转合），围绕 core_struggle 推进、有跌宕起伏。
-不是四件不同的事，也不是同一个点绕四遍。第 3 拍(转)=twist，是重头戏，要做到精彩。
+要点：
+- story_beats 是【同一件事】的几个阶段，围绕 core_struggle 推进、有跌宕起伏；不是几件不同的事，
+  也不是同一个点绕几遍。其中【转(twist)】是重头戏，必须精彩。
+- **按这件事本身撑得起多少来定阶段数：2 到 4 个**。内容薄的小事就 2-3 个，别注水硬凑；
+  内容厚、有反复的事才用 4 个。宁可短而精，不要长而水（节目 2.5~5 分钟自适应）。
 """
 
 
@@ -128,10 +132,18 @@ class PersonaAnalyst:
         topic: str,
         background: str,
         llm: _LLM,
+        card: "PersonaCard | None" = None,
     ) -> tuple[RichPersona, StoryCore]:
         prompt = _PROMPT.format(
             name=name or "", persona=persona or "", background=background or "", topic=topic or "",
         )
+        if card and not card.is_empty():
+            # 用户人设卡是硬约束：口癖/称呼/雷点等直接采用，不许 analyst 自己发明
+            prompt += (
+                "\n\n【用户人设卡（硬约束，分析结果必须与之一致）】\n"
+                f"{card.render_for_prompt()}\n"
+                "verbal_tics 直接输出卡中口癖；雷点/骄傲点可作为 situational_weaknesses 与 flaw 的素材。"
+            )
         for _ in range(2):  # one retry
             try:
                 raw = llm.generate(prompt)
@@ -151,7 +163,9 @@ class PersonaAnalyst:
                 identity=identity,
                 belief=belief,
                 flaw=flaw,
-                verbal_tics=_as_tuple(p.get("verbal_tics")),
+                # 卡片口癖钉死（跨场稳定是"角色认得出来"的根基）
+                verbal_tics=(card.speech_tics if card and card.speech_tics
+                             else _as_tuple(p.get("verbal_tics"))),
                 situational_weaknesses=_as_tuple(p.get("situational_weaknesses")),
                 contrast_hook=str(p.get("contrast_hook", "")).strip(),
                 life_anchors=_as_tuple(p.get("life_anchors")),

@@ -80,19 +80,39 @@ def _to_events(lines: List[dict], mode: str, stage: str, tts_client,
     return events
 
 
+def _card_rules(card) -> str:
+    """人设卡硬约束段（口癖/观众称呼），空卡返回空串。"""
+    if card is None or getattr(card, "is_empty", lambda: True)():
+        return ""
+    rules = []
+    if card.speech_tics:
+        rules.append(f"- 口癖必须从这里选用：{'、'.join(card.speech_tics)}")
+    if card.audience_nickname:
+        rules.append(f"- 称呼观众必须用「{card.audience_nickname}」")
+    return ("\n" + "\n".join(rules)) if rules else ""
+
+
 def produce_opening_events(engine, name: str, persona: str, topic: str, mode: str,
                            on_phase: Optional[Callable[[str], None]] = None,
-                           tts=None) -> List[dict]:
+                           tts=None, card=None) -> List[dict]:
     intent = _MODE_INTENT.get(mode, _MODE_INTENT["storytelling"]).format(topic=topic)
-    lines = _generate_lines(engine, _OPENING_PROMPT.format(name=name, persona=persona, intent=intent))[:3]
+    prompt = _OPENING_PROMPT.format(name=name, persona=persona, intent=intent) + _card_rules(card)
+    lines = _generate_lines(engine, prompt)[:3]
     lines = engine.structure_breaker.insert_thread_loss(lines, probability=0.2)
     return _to_events(lines, mode, "opening", tts or engine.tts, on_phase)
 
 
 def produce_closing_events(engine, name: str, persona: str, topic: str, mode: str,
                            on_phase: Optional[Callable[[str], None]] = None,
-                           tts=None) -> List[dict]:
+                           tts=None, card=None) -> List[dict]:
     intent = _MODE_INTENT.get(mode, _MODE_INTENT["storytelling"]).format(topic=topic)
-    lines = _generate_lines(engine, _CLOSING_PROMPT.format(name=name, persona=persona, intent=intent))[:2]
+    prompt = _CLOSING_PROMPT.format(name=name, persona=persona, intent=intent) + _card_rules(card)
+    # call-back：把开场/正文埋的未回收意象自然接回来（综艺"啪地接上"的收尾感）
+    gags = engine.gag_ledger.unrecalled() if getattr(engine, "gag_ledger", None) else []
+    if gags:
+        prompt += f"\n- 感想里自然把「{gags[0]}」这个前面提过的意象接回来用，🚫 不准点破'还记得吗/前面说过'"
+    lines = _generate_lines(engine, prompt)[:2]
     lines = engine.structure_breaker.break_structure(lines, topic=topic, language="zh")
+    if gags:
+        engine.gag_ledger.mark_recalled(gags[0])
     return _to_events(lines, mode, "closing", tts or engine.tts, on_phase)

@@ -53,7 +53,6 @@ from .vrm.mapper import VRMExpressionMapper, VRMVersion
 from .vrm.presets import GESTURE_PRESETS, GestureCategory, get_gesture_by_emotion
 
 # Generators
-from .generators.script_generator_v5 import ScriptGeneratorV5
 from .generators.script_writer import ScriptWriter
 from .generators.example_sampler import ExampleSampler
 
@@ -108,7 +107,6 @@ __all__ = [
     "GestureCategory",
     "get_gesture_by_emotion",
     # Generators
-    "ScriptGeneratorV5",
     "ScriptWriter",
     "ExampleSampler",
     # V5/V2 core

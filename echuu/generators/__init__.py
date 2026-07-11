@@ -2,14 +2,14 @@
 Generators for Echuu - script and content generation.
 
 This module contains:
-- ScriptGeneratorV5: Unit-based single-call script generation (current)
-- ExampleSampler: Few-shot learning from real clips
+- ScriptWriter: 综艺编剧 — authors the show from RichPersona + StoryCore + few-shot
+- ExampleSampler: Few-shot learning from real clips (relevance-sampled)
 """
 
-from .script_generator_v5 import ScriptGeneratorV5
+from .script_writer import ScriptWriter
 from .example_sampler import ExampleSampler
 
 __all__ = [
-    "ScriptGeneratorV5",
+    "ScriptWriter",
     "ExampleSampler",
 ]

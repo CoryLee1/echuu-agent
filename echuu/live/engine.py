@@ -30,6 +30,7 @@ from .performer import PerformerV3
 from .state import Danmaku, PerformanceState, PerformerMemory
 from .tts_client import TTSClient
 from .language import setup_stream_language_from_topic, StreamLanguageContext
+from .motion import pick_motion_for_danmaku, pick_motion_for_step
 from .audio_player import StreamSimulator
 
 
@@ -43,7 +44,7 @@ def _find_project_root() -> Path:
 class _LLMGenerateAdapter:
     """Bridge the engine's LLM client (`.call(prompt, system=, max_tokens=)`)
     to the `.generate(prompt) -> str` contract that PersonaModel and
-    ScriptGeneratorV5 expect.
+    ScriptWriter / PersonaAnalyst expect.
 
     The V5 modules were unit-tested against a `.generate` stub; real clients
     (Gemini / Claude / OpenAI) only expose `.call`. This adapter keeps the
@@ -102,6 +103,10 @@ class EchuuLiveEngine:
         self.persona_analyst = PersonaAnalyst()
         self.unit_planner = UnitPlanner()
         self.structure_breaker = StructureBreaker()
+        # Phase 2-①：用户人设卡 + call-back 埋梗账本（create_performance 里填充）
+        self.persona_card = None
+        from ..core.gag_ledger import GagLedger as _GagLedger
+        self.gag_ledger = _GagLedger()
         self.script_writer = ScriptWriter(self.llm_gen, self.example_sampler)
         self.danmaku_handler = DanmakuHandler(DanmakuEvaluator())
         self.danmaku_interleaver = DanmakuInterleaver(self.llm_gen)
@@ -122,6 +127,7 @@ class EchuuLiveEngine:
         language: str = "zh",
         character_config: Optional[dict] = None,
         on_phase_callback: Optional[callable] = None,
+        persona_card: Optional[dict] = None,
     ) -> PerformanceState:
         """设置表演参数并生成剧本。"""
         # 在这里我们可以捕获推理过程并传给回调
@@ -133,6 +139,7 @@ class EchuuLiveEngine:
             language=language,
             character_config=character_config,
             on_phase_callback=on_phase_callback,
+            persona_card=persona_card,
         )
         print(f"\n表演设置完成: {name} - {topic}")
         print(f"剧本行数: {len(self.state.script_lines)}")
@@ -147,20 +154,33 @@ class EchuuLiveEngine:
         language: str = "zh",
         character_config: Optional[dict] = None,
         on_phase_callback: Optional[callable] = None,
+        persona_card: Optional[dict] = None,
     ) -> PerformanceState:
-        """V5: PersonaModel → UnitPlanner → ScriptGeneratorV5 → StructureBreaker."""
+        """V2: PersonaAnalyst → UnitPlanner(自适应段数) → ScriptWriter → 去升华。"""
+        from echuu.core.persona_card import PersonaCard
+
         self.stream_lang_context = setup_stream_language_from_topic(topic, persona)
         print(f"🌐 语言设置: {self.stream_lang_context.greeting_style}")
+
+        # 用户人设卡（可选）：口癖/称呼/雷点等硬约束，贯穿 analyst/writer/弹幕回应
+        self.persona_card = PersonaCard.from_dict(persona_card)
+        if self.persona_card:
+            print(f"🎴 人设卡已加载: 口癖={list(self.persona_card.speech_tics)}, "
+                  f"观众称呼={self.persona_card.audience_nickname or '（无）'}")
 
         if on_phase_callback:
             on_phase_callback("Phase A: 分析人设三轴 + 故事内核...")
         rich_persona, story_core = self.persona_analyst.analyze(
             name=name, persona=persona, topic=topic, background=background, llm=self.llm_gen,
+            card=self.persona_card,
         )
 
         if on_phase_callback:
             on_phase_callback("Phase B: 排时间/音色骨架...")
-        units = self.unit_planner.plan()
+        # 节目长度自适应：故事撑得起几段就播几段（2~4 段 ≈ 2.5~5 分钟）
+        n_units = max(2, min(4, len(story_core.story_beats) or 4))
+        units = self.unit_planner.plan(n_units)
+        print(f"🎚️ 节目长度: {len(units)} 段 (~{int(len(units) * 75 / 60)}min，按故事自适应)")
 
         if on_phase_callback:
             on_phase_callback("Phase C: 抽相关 few-shot + 编剧创作...")
@@ -174,7 +194,17 @@ class EchuuLiveEngine:
         print(f"📚 few-shot 示例注入: {n_ex} 条 (sampler={'on' if self.example_sampler else 'off'})")
         units = self.script_writer.write(
             rich_persona, story_core, units, examples=examples, topic=topic,
+            card=self.persona_card,
         )
+
+        # call-back 埋梗账本：writer 埋的意象优先，兜底用生活化锚点（closing 回收用）
+        from echuu.core.gag_ledger import GagLedger
+        self.gag_ledger = GagLedger()
+        self.gag_ledger.register(
+            self.script_writer.last_planted_gags or list(rich_persona.life_anchors[:1]),
+        )
+        if len(self.gag_ledger):
+            print(f"🪃 已埋梗: {self.gag_ledger.unrecalled()}")
 
         if on_phase_callback:
             on_phase_callback("Phase D: 清洗升华...")
@@ -249,6 +279,11 @@ class EchuuLiveEngine:
         resp_in_unit = 0
         last_unit_idx = -1
         last_line_text = ""
+        # 互动窗口（Phase 2-①）：interact 行抛出问题后 N 行内冷却减半、上限翻倍；
+        # 一行之后弹幕仍空 → 自嘲兜底一句（人设化生成，不写死）
+        interact_window = 0
+        interact_question = ""
+        quip_armed = False
 
         for ev in self._render_show():
             unit_idx = ev["unit"]["index"]
@@ -257,30 +292,60 @@ class EchuuLiveEngine:
                 last_unit_idx = unit_idx
             self.state.current_unit_idx = unit_idx
             self.state.current_line_in_unit = ev["line"]["index_in_unit"]
-            self.state.current_step += 1
+            # 切块后 max_steps 仍按"行"计：只在行首块 +1，行中间不 break
+            is_first_chunk = ev["line"].get("chunk_index", 0) == 0
+            is_last_chunk = ev["line"].get("chunk_last", True)
+            if is_first_chunk:
+                self.state.current_step += 1
             self.state.memory.script_progress["current_line"] = self.state.current_step
             self.state.memory.script_progress["current_stage"] = ev["line"]["stage"]
             last_line_text = ev["line"]["text"]
 
-            print(f"[Unit {unit_idx+1}/4 · {ev['line']['stage']}] {last_line_text[:80]}{'...' if len(last_line_text) > 80 else ''}")
-            if ev["line"]["is_rupture"]:
+            print(f"[Unit {unit_idx+1}/{len(self.state.show.units)} · {ev['line']['stage']}] {last_line_text[:80]}{'...' if len(last_line_text) > 80 else ''}")
+            if ev["line"]["is_rupture"] and is_first_chunk:
                 print(f"  💥 rupture_kind={ev['unit']['rupture_kind']}")
 
             yield ev
+            if not is_last_chunk:
+                continue  # 行没播完不计弹幕冷却、不判停
             lines_since_resp += 1
+
+            # interact 行落地 → 开互动窗口
+            if ev["line"]["stage"] == "interact":
+                interact_window = 4
+                interact_question = last_line_text
+                quip_armed = True
+                print(f"  🙋 互动点已抛出，窗口开启: {interact_question[:40]}")
+            elif interact_window > 0:
+                interact_window -= 1
 
             if self.state.current_step >= max_steps:
                 break
 
-            # 自然断点：穿插一条弹幕回应（冷却 ≥2 行、每单元 ≤1 条）
-            if lines_since_resp >= 2 and resp_in_unit < 1 and self.state.danmaku_queue:
+            # 自然断点：穿插一条弹幕回应（常规：冷却 ≥2 行、每单元 ≤1 条；
+            # 互动窗口内：冷却减半、每单元上限翻倍）
+            in_window = interact_window > 0
+            cooldown_ok = lines_since_resp >= (1 if in_window else 2)
+            quota_ok = resp_in_unit < (2 if in_window else 1)
+            if cooldown_ok and quota_ok and self.state.danmaku_queue:
                 resp_ev = self._maybe_interleave_danmaku(unit_idx, last_line_text)
                 if resp_ev is not None:
                     resp_in_unit += 1
                     lines_since_resp = 0
+                    quip_armed = False  # 有人理了，不用自嘲
                     self.state.current_step += 1
                     print(f"  💬 回应弹幕[{resp_ev['danmaku']['user']}]: {resp_ev['speech'][:60]}")
                     yield resp_ev
+                    if self.state.current_step >= max_steps:
+                        break
+            # 互动点抛出一行之后弹幕仍空 → 自嘲兜底（只一次）
+            elif quip_armed and interact_window == 3 and not self.state.danmaku_queue:
+                quip_armed = False
+                quip_ev = self._maybe_no_reaction_quip(unit_idx, interact_question)
+                if quip_ev is not None:
+                    self.state.current_step += 1
+                    print(f"  🫥 没人理，自嘲兜底: {quip_ev['speech'][:50]}")
+                    yield quip_ev
                     if self.state.current_step >= max_steps:
                         break
 
@@ -299,19 +364,36 @@ class EchuuLiveEngine:
         Yields one step-event dict per line. TTS failures yield audio=None
         but do NOT abort the loop (spec §5)."""
         from dataclasses import asdict as _asdict
+        from .tts_instruction import build_instruction, infer_cls
+        from .breath import chunk_text
         show = self.state.show
         for unit in show.units:
             self.tts.update_session(**_asdict(unit.acoustic))
             for line_in_unit, line in enumerate(unit.lines):
-                try:
-                    audio = self.tts.synthesize(line.text)
-                except Exception:
-                    audio = None
-                yield self._build_step_event(unit, line_in_unit, line, audio)
+                self.tts.set_instruction(build_instruction(unit, line))
+                # 长台词按呼吸组切成短 step：字幕短、动作切换勤、step 间自带换气
+                chunks = chunk_text(line.text) or [line.text]
+                for ci, chunk in enumerate(chunks):
+                    try:
+                        audio = self.tts.synthesize(chunk)
+                    except Exception:
+                        audio = None
+                    ev = self._build_step_event(
+                        unit, line_in_unit, line, audio,
+                        text=chunk, chunk_index=ci, chunk_last=(ci == len(chunks) - 1),
+                    )
+                    ev["cls"] = infer_cls(unit, line)
+                    yield ev
 
-    def _build_step_event(self, unit, line_in_unit: int, line, audio):
-        """Construct WS-bound step event payload. v2 schema (spec §3.2)."""
+    def _build_step_event(self, unit, line_in_unit: int, line, audio,
+                          text: str = None, chunk_index: int = 0, chunk_last: bool = True):
+        """Construct WS-bound step event payload. v2 schema (spec §3.2).
+
+        text/chunk_*：长台词切块时本 step 的实际文本与块位置；
+        续块不重发动作 hint（保持 idle，前端文本语义匹配仍可触发手势）。
+        """
         from dataclasses import asdict as _asdict
+        speech = text if text is not None else line.text
         return {
             "type": "step",
             "show": {
@@ -329,11 +411,15 @@ class EchuuLiveEngine:
             "line": {
                 "index_in_unit": line_in_unit,
                 "stage": line.stage,
-                "text": line.text,
+                "text": speech,
                 "is_rupture": line.is_rupture,
+                "chunk_index": chunk_index,
+                "chunk_last": chunk_last,
                 "cue": _asdict(line.cue) if hasattr(line.cue, "__dataclass_fields__") and line.cue else None,
             },
-            "speech": line.text,  # compat alias for audio-caption sync (spec §3.2)
+            "speech": speech,  # compat alias for audio-caption sync (spec §3.2)
+            "motion": pick_motion_for_step(unit, line, line_in_unit) if chunk_index == 0
+                      else {"state": "idle", "loop": True},
             "audio": audio,
         }
 
@@ -362,6 +448,8 @@ class EchuuLiveEngine:
         reply = self.danmaku_interleaver.respond(
             identity=identity, verbal_tics=verbal_tics, topic=self.state.topic,
             last_line=last_line, danmaku_text=dm.text, user=dm.user,
+            card=getattr(self, "persona_card", None),
+            gags=self.gag_ledger.unrecalled() if getattr(self, "gag_ledger", None) else None,
         )
         if not reply:
             return None
@@ -371,6 +459,28 @@ class EchuuLiveEngine:
             audio = None
         unit = self.state.show.units[unit_idx]
         return self._build_danmaku_event(unit, dm, reply, audio)
+
+    def _maybe_no_reaction_quip(self, unit_idx: int, question: str):
+        """互动点没人理时的自嘲兜底 step（人设化生成，失败返回 None 直接跳过）。"""
+        persona = getattr(self.state.show, "persona", None)
+        quip = self.danmaku_interleaver.no_reaction_quip(
+            identity=getattr(persona, "identity", "") if persona else "",
+            verbal_tics=getattr(persona, "verbal_tics", ()) if persona else (),
+            topic=self.state.topic,
+            question=question,
+        )
+        if not quip:
+            return None
+        try:
+            audio = self.tts.synthesize(quip) if getattr(self, "tts", None) else None
+        except Exception:
+            audio = None
+        unit = self.state.show.units[unit_idx]
+        ev = self._build_danmaku_event(unit, None, quip, audio)
+        ev.pop("danmaku", None)
+        ev["is_danmaku_response"] = False
+        ev["line"]["stage"] = "interact_quip"
+        return ev
 
     def _build_danmaku_event(self, unit, danmaku, reply: str, audio):
         """弹幕回应的 step 事件（v2 形状 + danmaku 字段，line.stage='danmaku'）。"""
@@ -397,8 +507,9 @@ class EchuuLiveEngine:
                 "cue": None,
             },
             "speech": reply,
-            "danmaku": {"text": danmaku.text, "user": danmaku.user},
-            "is_danmaku_response": True,
+            "danmaku": {"text": danmaku.text, "user": danmaku.user} if danmaku else None,
+            "is_danmaku_response": danmaku is not None,
+            "motion": pick_motion_for_danmaku(unit, danmaku) if danmaku else {"state": "speaking"},
             "audio": audio,
         }
 

@@ -60,15 +60,38 @@ def test_planner_acoustic_descends():
     assert pitches[0] > pitches[-1]
 
 
-def test_planner_time_windows_partition_300s():
-    units = UnitPlanner().plan()
-    assert units[0].time_window == (0, 90)
-    assert units[1].time_window == (90, 180)
-    assert units[2].time_window == (180, 240)
-    assert units[3].time_window == (240, 300)
+def test_planner_time_windows_75s_each():
+    units = UnitPlanner().plan()  # default 4
+    assert units[0].time_window == (0, 75)
+    assert units[1].time_window == (75, 150)
+    assert units[2].time_window == (150, 225)
+    assert units[3].time_window == (225, 300)
+
+
+def test_planner_variable_length():
+    """节目长度自适应：2~4 段 ≈ 2.5~5 分钟。"""
+    assert len(UnitPlanner().plan(2)) == 2
+    assert len(UnitPlanner().plan(3)) == 3
+    assert len(UnitPlanner().plan(4)) == 4
+    # 2 段 ≈ 150s = 2.5min
+    u2 = UnitPlanner().plan(2)
+    assert u2[-1].time_window[1] == 150
+    # 末段总是 low 能量，首段 high
+    assert u2[0].density == "high" and u2[-1].density == "low"
+
+
+def test_planner_clamps_to_2_4():
+    assert len(UnitPlanner().plan(1)) == 2    # 下限
+    assert len(UnitPlanner().plan(9)) == 4    # 上限
+
+
+def test_planner_acoustic_descends_any_length():
+    for n in (2, 3, 4):
+        units = UnitPlanner().plan(n)
+        assert units[0].acoustic.pitch_rate > units[-1].acoustic.pitch_rate
 
 
 def test_planner_signature_back_compat():
-    """旧签名 plan(persona, topic) 仍可调（参数被忽略）。"""
-    units = UnitPlanner().plan(persona=object(), topic="随便")
+    """旧签名（含 persona/topic kwargs）仍可调（参数被忽略）。"""
+    units = UnitPlanner().plan(4, persona=object(), topic="随便")
     assert len(units) == 4

@@ -48,7 +48,11 @@ def create_llm_client(
     # 如果指定了 provider，直接使用
     if provider:
         provider = provider.lower()
-        if provider in ("gemini", "google"):
+        if provider in ("qwen", "dashscope", "alibaba"):
+            from .qwen_client import QwenClient
+
+            return QwenClient(api_key=api_key, model=model)
+        elif provider in ("gemini", "google"):
             from .gemini_client import GeminiClient
 
             # Default to Gemini 3 Flash if no model specified
@@ -65,6 +69,12 @@ def create_llm_client(
             raise ValueError(f"Unknown LLM provider: {provider}")
 
     # 自动选择：根据可用的 API Key
+    # Qwen 优先：三模式改造后 DashScope 是主力栈（LLM + TTS + Omni 同一个 key）
+    if os.getenv("DASHSCOPE_API_KEY"):
+        from .qwen_client import QwenClient
+
+        return QwenClient(api_key=api_key, model=model)
+
     if os.getenv("GEMINI_API_KEY"):
         from .gemini_client import GeminiClient
 
@@ -82,6 +92,7 @@ def create_llm_client(
 
     raise ValueError(
         "未找到可用的 LLM API Key。请设置以下环境变量之一：\n"
+        "  - DASHSCOPE_API_KEY (Alibaba Qwen)\n"
         "  - GEMINI_API_KEY (Google Gemini)\n"
         "  - ANTHROPIC_API_KEY (Anthropic Claude)\n"
         "  - OPENAI_API_KEY (OpenAI)"

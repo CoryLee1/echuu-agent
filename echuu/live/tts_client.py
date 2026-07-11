@@ -143,8 +143,10 @@ class TTSClient:
         Clipping to legal ranges is defensive (spec §5)."""
         if not self.enabled or not self.tts:
             return
+        # 直播听感限速：引擎的 HYPER_FLUENT 会推 1.1x，叠加长句会盖掉呼吸停顿
+        rate_cap = float(os.getenv("TTS_SPEECH_RATE_CAP", "1.0"))
         pitch_rate  = max(0.7, min(1.3, pitch_rate))
-        speech_rate = max(0.7, min(1.3, speech_rate))
+        speech_rate = max(0.7, min(1.3, min(speech_rate, rate_cap)))
         volume      = max(0,   min(100, volume))
         try:
             self.tts.pitch_rate = pitch_rate
@@ -153,9 +155,21 @@ class TTSClient:
         except Exception as exc:
             print(f"[TTS] update_session failed: {exc}")
 
+    def set_instruction(self, instruction: str) -> None:
+        """设置下一次合成的自然语言情绪指令（仅 instruct 系列模型生效）。"""
+        if not self.enabled or not self.tts:
+            return
+        try:
+            self.tts.instruction = instruction or ""
+        except Exception as exc:
+            print(f"[TTS] set_instruction failed: {exc}")
+
     def synthesize(self, text: str, emotion_boost: float = 0.0) -> Optional[bytes]:
         """
-        合成语音。
+        合成语音（带规则化喘气停顿）。
+
+        长句按句末标点切呼吸组分段合成，PCM 层拼接静音；
+        （…）舞台指示在合成前剥离，不会被朗读。见 echuu/live/breath.py。
 
         Args:
             text: 合成文本
@@ -164,8 +178,11 @@ class TTSClient:
         if not self.enabled or not self.tts:
             return None
 
+        from .breath import synthesize_with_breath
+
+        sample_rate = int(os.getenv("TTS_SAMPLE_RATE", "24000"))
         try:
-            audio = self.tts.synthesize(text)
+            audio = synthesize_with_breath(self.tts.synthesize, text, sample_rate=sample_rate)
         except Exception as exc:
             print(f"[TTS] 合成错误: {exc}")
             return None
