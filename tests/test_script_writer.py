@@ -21,6 +21,17 @@ class FakeLLM:
         return self.response
 
 
+class FakeLLMSequence:
+    def __init__(self, responses: list[str]):
+        self.responses = responses
+        self.calls: list[str] = []
+
+    def generate(self, prompt: str) -> str:
+        self.calls.append(prompt)
+        index = min(len(self.calls) - 1, len(self.responses) - 1)
+        return self.responses[index]
+
+
 @pytest.fixture
 def persona() -> RichPersona:
     return RichPersona(
@@ -111,6 +122,59 @@ def test_write_short_units_degrades(persona, core, units):
     out = ScriptWriter(llm).write(persona, core, units, topic="转行")
     assert len(out) == 4
     assert all(len(u.lines) >= 2 for u in out)
+
+
+def test_write_rejects_ungrounded_high_concept_turns(persona, core, units):
+    """没被 topic/persona/core 铺垫的病历/协议式硬转弯应重试。"""
+    bad = json.dumps({
+        "units": [
+            {"index": 0, "lines": [
+                {"text": "我在便利店门口等甲方，手里攥着热豆浆。"},
+                {"text": "他迟到十分钟，我已经把杯套抠成纸屑。"},
+            ]},
+            {"index": 1, "lines": [
+                {"text": "然后平台弹出实体化过渡协议，右下角是我三年前住院病历号。"},
+                {"text": "我突然明白这不是约稿，是命运系统在结算。"},
+            ]},
+            {"index": 2, "lines": [
+                {"text": "协议开始扫描我的灵魂 KPI，我连豆浆都不敢喝。"},
+                {"text": "这时候甲方说第一版像人画的，后面像服务器加班。"},
+            ]},
+            {"index": 3, "lines": [
+                {"text": "最后我把协议锁进抽屉，继续画第一版。"},
+                {"text": "热豆浆凉透了，但命运系统说可以报销。"},
+            ]},
+        ]
+    })
+    good = json.dumps({
+        "units": [
+            {"index": 0, "lines": [
+                {"text": "我在便利店门口等甲方，热豆浆烫得我换了三次手。"},
+                {"text": "他迟到十分钟，我已经把杯套抠成纸屑。"},
+            ]},
+            {"index": 1, "lines": [
+                {"text": "他一开口说第八版很好，就是少了第一版那股傻劲。"},
+                {"text": "我说那股傻劲已经被您七轮意见腌入味了。"},
+            ]},
+            {"index": 2, "lines": [
+                {"text": "我当场笑出声：原来我熬夜修掉的，全是他要买的。"},
+                {"text": "更离谱的是，他还夸我第一版有松弛感。"},
+            ]},
+            {"index": 3, "lines": [
+                {"text": "最后我把第一版文件名改成热豆浆，不然太像工伤证明。"},
+                {"text": "下次谁再说松弛感，我先给他递杯凉的。"},
+            ]},
+        ]
+    })
+    llm = FakeLLMSequence([bad, good])
+
+    out = ScriptWriter(llm).write(persona, core, units, topic="转行")
+
+    assert len(llm.calls) == 2
+    joined = "\n".join(line.text for unit in out for line in unit.lines)
+    assert "实体化过渡协议" not in joined
+    assert "住院病历号" not in joined
+    assert "热豆浆" in joined
 
 
 def test_write_first_line_hook_last_line_turn(persona, core, units):

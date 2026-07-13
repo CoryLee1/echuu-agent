@@ -72,6 +72,15 @@ def test_analyze_single_call_on_success():
     assert len(llm.calls) == 1
 
 
+def test_prompt_asks_for_grounded_variety_twist():
+    llm = FakeLLM(_good_response())
+    PersonaAnalyst().analyze("n", "p", "t", "b", llm)
+    prompt = llm.calls[0]
+    assert "接地气" in prompt
+    assert "生活化" in prompt
+    assert "禁止" in prompt and "实体化协议" in prompt
+
+
 def test_analyze_strips_code_fence():
     llm = FakeLLM(f"```json\n{_good_response()}\n```")
     rp, sc = PersonaAnalyst().analyze("n", "p", "t", "b", llm)
