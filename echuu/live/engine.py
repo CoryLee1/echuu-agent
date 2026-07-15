@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+import random
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -391,9 +392,17 @@ class EchuuLiveEngine:
 
         text/chunk_*：长台词切块时本 step 的实际文本与块位置；
         续块不重发动作 hint（保持 idle，前端文本语义匹配仍可触发手势）。
+        pause_after：本行播完后的"思考停顿"秒数——interact 行等观众反应、
+        unit 收尾行喘口气想下一段；前端在换气间隙上叠加，避免连珠炮输出。
         """
         from dataclasses import asdict as _asdict
         speech = text if text is not None else line.text
+        pause_after = 0.0
+        if chunk_last:
+            if line.stage == "interact":
+                pause_after = round(random.uniform(6.0, 10.0), 1)
+            elif line_in_unit == len(unit.lines) - 1:
+                pause_after = round(random.uniform(5.0, 8.0), 1)
         return {
             "type": "step",
             "show": {
@@ -418,6 +427,7 @@ class EchuuLiveEngine:
                 "cue": _asdict(line.cue) if hasattr(line.cue, "__dataclass_fields__") and line.cue else None,
             },
             "speech": speech,  # compat alias for audio-caption sync (spec §3.2)
+            "pause_after": pause_after,
             "motion": pick_motion_for_step(unit, line, line_in_unit) if chunk_index == 0
                       else {"state": "idle", "loop": True},
             "audio": audio,

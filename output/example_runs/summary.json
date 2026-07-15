@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-02-07 20:51:30.499809",
+  "results": {
+    "example_chinese_canteen.json": {
+      "metadata": {
+        "name": "小梅",
+        "persona": "温柔治愈型，喜欢分享生活细节",
+        "background": "大学生，喜欢在食堂吃饭，经常遇到有趣的人和事",
+        "topic": "食堂打饭遇到的有趣故事",
+        "language": "zh"
+      },
+      "first_speech": "嗓子有点不舒服...咳，其实刚才肚子还咕噜叫了一声，不好意思啊。诶我之前也这样过，那次是...大二还是大三吧？记不清了。就是那天我也嗓子疼，去食堂想喝点热的。我这人就这样，一不舒服就想吃点带汤水的。那次真挺怪的，有个事我一直想不明白，到现在想起来还觉得，哎呀，我当时到底在干嘛啊。"
+    },
+    "example_japanese_akihabara.json": {
+      "metadata": {
+        "name": "さくら",
+        "persona": "オタク系VTuber、アニメとゲームが大好き",
+        "background": "秋葉原によく行く、コレクション好き",
+        "topic": "秋葉原でグッズを買いに行ったら同好の士に出会った話",
+        "language": "ja"
+      },
+      "first_speech": "お腹空いたぁ…配信終わったら何か食べに行こうかな。あ、食べ物と言えばさ、こないだ秋葉原にグッズ買いに行った時の話、みんなに聞いてほしいんだよね。もうね、ありえないっていうか、本当にびっくりしたことがあって…。今思い出しても心臓がバクバクするんだけど、ちょっとこれ、聞いてくれる？"
+    },
+    "example_english_dance_video.json": {
+      "metadata": {
+        "name": "Luna",
+        "persona": "Energetic content creator, loves dancing and sharing life",
+        "background": "Social media influencer, posts dance videos regularly",
+        "topic": "Complaining about platform algorithm limiting my dance video because of weird camera angle",
+        "language": "en"
+      },
+      "first_speech": "So sleepy... but I suddenly remembered something I have to tell you guys. I was just adjusting this tripod for the low-angle dance shot, right? And this stupid platform notification pops up—again!—war"
+    }
+  }
+}

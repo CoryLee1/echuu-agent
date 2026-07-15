@@ -1,7 +1,33 @@
 {
   "permissions": {
     "allow": [
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "WebSearch",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "WebFetch(domain:help.aliyun.com)",
+      "WebFetch(domain:www.alibabacloud.com)",
+      "WebFetch(domain:docs.aimlapi.com)",
+      "Bash(copy \"D:\\\\vtuberclip\\\\echuu-agent\\\\workflow\\\\backend\\\\tts_client.py\" \"D:\\\\vtuberclip\\\\echuu-agent\\\\echuu-sdk-release\\\\workflow\\\\backend\"\" 2>nul || mkdir \"D:vtuberclipechuu-agentechuu-sdk-releaseworkflowbackend\" && copy \"D:vtuberclipechuu-agentworkflowbackendtts_client.py\" \"D:vtuberclipechuu-agentechuu-sdk-releaseworkflowbackend\"\")",
+      "Bash(cmd /c \"if not exist \"\"D:\\\\vtuberclip\\\\echuu-agent\\\\echuu-sdk-release\\\\workflow\\\\backend\"\" mkdir \"\"D:\\\\vtuberclip\\\\echuu-agent\\\\echuu-sdk-release\\\\workflow\\\\backend\"\" && copy \"\"D:\\\\vtuberclip\\\\echuu-agent\\\\workflow\\\\backend\\\\tts_client.py\"\" \"\"D:\\\\vtuberclip\\\\echuu-agent\\\\echuu-sdk-release\\\\workflow\\\\backend\\\\tts_client.py\"\"\")",
+      "Bash(test:*)",
+      "Bash(findstr:*)",
+      "Bash(dir:*)",
+      "Bash(ls:*)",
+      "Bash(pip show:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git config:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout:*)",
+      "Bash(select -First 20)"
     ]
   }
 }
