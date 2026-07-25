@@ -18,6 +18,8 @@ from dotenv import load_dotenv
 from ..core.pattern_analyzer import PatternAnalyzer
 from ..core.persona_model import PersonaModel, RichPersona
 from ..core.persona_analyst import PersonaAnalyst
+from ..core.persona_expander import PersonaExpander
+from ..core.persona_dossier import CharacterDossier
 from ..core.story_core import StoryCore
 from ..core.unit import Show
 from ..core.unit_planner import UnitPlanner
@@ -102,6 +104,8 @@ class EchuuLiveEngine:
         self.llm_gen = _LLMGenerateAdapter(self.llm)
 
         self.persona_analyst = PersonaAnalyst()
+        self.persona_expander = PersonaExpander()
+        self.dossier: Optional[CharacterDossier] = None
         self.unit_planner = UnitPlanner()
         self.structure_breaker = StructureBreaker()
         # Phase 2-①：用户人设卡 + call-back 埋梗账本（create_performance 里填充）
@@ -129,6 +133,7 @@ class EchuuLiveEngine:
         character_config: Optional[dict] = None,
         on_phase_callback: Optional[callable] = None,
         persona_card: Optional[dict] = None,
+        enable_dossier: bool = True,
     ) -> PerformanceState:
         """设置表演参数并生成剧本。"""
         # 在这里我们可以捕获推理过程并传给回调
@@ -141,10 +146,22 @@ class EchuuLiveEngine:
             character_config=character_config,
             on_phase_callback=on_phase_callback,
             persona_card=persona_card,
+            enable_dossier=enable_dossier,
         )
         print(f"\n表演设置完成: {name} - {topic}")
         print(f"剧本行数: {len(self.state.script_lines)}")
         return self.state
+
+    def _maybe_expand(self, name, persona, background, enable_dossier: bool):
+        """按开关决定是否扩充人物小传（eval 的'无扩充'变体走 False）。"""
+        if not enable_dossier:
+            return None
+        try:
+            return self.persona_expander.expand(
+                name, persona, background, self.persona_card, self.llm_gen)
+        except Exception as exc:  # noqa: BLE001 — 扩充失败不阻塞开播
+            print(f"[engine] 人物小传扩充失败（跳过）: {exc}")
+            return None
 
     def create_performance(
         self,
@@ -156,6 +173,7 @@ class EchuuLiveEngine:
         character_config: Optional[dict] = None,
         on_phase_callback: Optional[callable] = None,
         persona_card: Optional[dict] = None,
+        enable_dossier: bool = True,
     ) -> PerformanceState:
         """V2: PersonaAnalyst → UnitPlanner(自适应段数) → ScriptWriter → 去升华。"""
         from echuu.core.persona_card import PersonaCard
@@ -170,10 +188,16 @@ class EchuuLiveEngine:
                   f"观众称呼={self.persona_card.audience_nickname or '（无）'}")
 
         if on_phase_callback:
+            on_phase_callback("Phase 0: 扩充人物小传 + 推导冲突...")
+        self.dossier = self._maybe_expand(name, persona, background, enable_dossier)
+        if self.dossier and not self.dossier.is_empty():
+            print(f"🎭 人物小传冲突: {self.dossier.conflict.statement}")
+
+        if on_phase_callback:
             on_phase_callback("Phase A: 分析人设三轴 + 故事内核...")
         rich_persona, story_core = self.persona_analyst.analyze(
             name=name, persona=persona, topic=topic, background=background, llm=self.llm_gen,
-            card=self.persona_card,
+            card=self.persona_card, dossier=self.dossier,
         )
 
         if on_phase_callback:
@@ -195,7 +219,7 @@ class EchuuLiveEngine:
         print(f"📚 few-shot 示例注入: {n_ex} 条 (sampler={'on' if self.example_sampler else 'off'})")
         units = self.script_writer.write(
             rich_persona, story_core, units, examples=examples, topic=topic,
-            card=self.persona_card,
+            card=self.persona_card, dossier=self.dossier,
         )
 
         # call-back 埋梗账本：writer 埋的意象优先，兜底用生活化锚点（closing 回收用）
