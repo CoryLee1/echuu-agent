@@ -46,8 +46,8 @@ class CharacterDossier:
     def from_dict(cls, data: Optional[dict]) -> Optional["CharacterDossier"]:
         if not isinstance(data, dict):
             return None
-        c = data.get("conflict") or {}
-        b = data.get("behavior_rules") or {}
+        c = data.get("conflict"); c = c if isinstance(c, dict) else {}
+        b = data.get("behavior_rules"); b = b if isinstance(b, dict) else {}
         dossier = cls(
             expanded_bio=str(data.get("expanded_bio", "")).strip(),
             conflict=Conflict(

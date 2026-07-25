@@ -38,6 +38,24 @@ def test_from_dict_none_and_empty():
     assert CharacterDossier.from_dict({"conflict": {}, "behavior_rules": {}}) is None
 
 
+def test_from_dict_nondict_nested_degrades():
+    # Non-dict values in conflict/behavior_rules must not crash (degrade gracefully)
+    assert CharacterDossier.from_dict({"conflict": "not-a-dict"}) is None
+    assert CharacterDossier.from_dict({"behavior_rules": ["a", "b"]}) is None
+    # Valid data alongside bad behavior_rules still parses, no crash
+    d = CharacterDossier.from_dict({
+        "conflict": {"statement": "x"},
+        "behavior_rules": "bad"
+    })
+    assert d is not None and d.conflict.statement == "x"
+    # Bad conflict with valid behavior_rules
+    d = CharacterDossier.from_dict({
+        "conflict": 123,
+        "behavior_rules": {"trigger": "y"}
+    })
+    assert d is not None and d.behavior_rules.trigger == "y"
+
+
 def test_render_lists_only_nonempty():
     text = _sample().render_for_prompt()
     assert "她从不拒绝别人，但心里在记账" in text
