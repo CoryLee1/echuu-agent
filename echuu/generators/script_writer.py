@@ -16,6 +16,7 @@ import json
 import re
 from typing import Any, Protocol
 
+from echuu.core.persona_dossier import CharacterDossier
 from echuu.core.persona_model import RichPersona
 from echuu.core.story_core import StoryCore
 from echuu.core.unit import ScriptLine, Unit
@@ -226,9 +227,14 @@ class ScriptWriter:
         self.example_sampler = example_sampler
         self.last_planted_gags: list[str] = []
 
-    def _unit_rails(self, units: list[Unit], core: StoryCore) -> str:
+    def _unit_rails(self, units: list[Unit], core: StoryCore, dossier=None) -> str:
         n = len(units)
         beats = list(core.story_beats)
+        bp = ""
+        if dossier is not None and not dossier.is_empty():
+            bp = (dossier.behavior_rules.breaking_point or "").strip()
+        # "转"拍索引：n<=2 时是最后一个(1)，否则是倒数第二个
+        turn_idx = (n - 1) if n <= 2 else (n - 2)
         out = []
         for i, u in enumerate(units):
             t0, t1 = u.time_window
@@ -243,17 +249,18 @@ class ScriptWriter:
             else:
                 label = "承·升级"
             beat = beats[i] if i < len(beats) else "（承接上一段往前推进）"
-            out.append(
-                f"- Unit{i} [{int(t0)}-{int(t1)}s] {label}，能量={u.density}\n"
-                f"    本段推进到剧情节点：{beat}"
-            )
+            line = (f"- Unit{i} [{int(t0)}-{int(t1)}s] {label}，能量={u.density}\n"
+                    f"    本段推进到剧情节点：{beat}")
+            if bp and i == turn_idx:
+                line += f"\n    ⚡ 本段是角色的爆发点：{bp}（让它自然炸出来，随后收）"
+            out.append(line)
         return "\n".join(out)
 
     def _build_prompt(self, persona: RichPersona, core: StoryCore,
                       units: list[Unit], examples: str, topic: str,
-                      card=None) -> str:
+                      card=None, dossier=None) -> str:
         card_text = card.render_for_prompt() if card and not card.is_empty() else "（无——按上面的人设发挥）"
-        return _PROMPT_TEMPLATE.format(
+        prompt = _PROMPT_TEMPLATE.format(
             persona_card=card_text,
             identity=persona.identity,
             belief=persona.belief,
@@ -271,9 +278,13 @@ class ScriptWriter:
             punchline_seeds=_join(core.punchline_seeds),
             hook_angle=core.hook_angle or "（无）",
             examples=examples or "（无示例）",
-            unit_rails=self._unit_rails(units, core),
+            unit_rails=self._unit_rails(units, core, dossier=dossier),
             n_units=len(units),
         )
+        if dossier is not None and not dossier.is_empty():
+            prompt += ("\n\n【人物内在冲突—行为规则（贯穿全场台词，别点破）】\n"
+                       f"{dossier.render_for_prompt()}")
+        return prompt
 
     def _try_generate(self, prompt: str) -> str | None:
         try:
@@ -283,9 +294,10 @@ class ScriptWriter:
             return None
 
     def write(self, persona: RichPersona, core: StoryCore, units: list[Unit],
-              examples: str = "", topic: str = "", card=None) -> list[Unit]:
+              examples: str = "", topic: str = "", card=None, dossier=None) -> list[Unit]:
         self.last_planted_gags: list[str] = []  # call-back 埋梗，engine 读走登记进 ledger
-        prompt = self._build_prompt(persona, core, units, examples, topic, card=card)
+        prompt = self._build_prompt(persona, core, units, examples, topic,
+                                    card=card, dossier=dossier)
         raw = self._try_generate(prompt)
         parsed = _parse(raw) if raw is not None else None
 

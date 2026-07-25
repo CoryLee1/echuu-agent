@@ -7,6 +7,7 @@ import pytest
 
 from echuu.core.persona_model import RichPersona
 from echuu.core.story_core import StoryCore
+from echuu.core.unit import Unit
 from echuu.core.unit_planner import UnitPlanner
 from echuu.generators.script_writer import ScriptWriter
 
@@ -183,3 +184,51 @@ def test_write_first_line_hook_last_line_turn(persona, core, units):
     for u in out:
         assert u.lines[0].stage == "hook"
         assert u.lines[-1].stage == "turn"
+
+
+from echuu.core.persona_dossier import CharacterDossier, Conflict, BehaviorRules
+from echuu.core.unit import AcousticHint
+
+
+class _RecLLM:
+    def __init__(self): self.prompts = []
+    def generate(self, prompt): self.prompts.append(prompt); return "{ bad json }"
+
+
+def _units(n=3):
+    return [Unit(index=i, time_window=(i * 60, (i + 1) * 60), acoustic=AcousticHint())
+            for i in range(n)]
+
+
+def _persona():
+    return RichPersona(identity="i", belief="b", flaw="f")
+
+
+def _core():
+    return StoryCore(spine="s", story_beats=("起", "转", "合"))
+
+
+def test_writer_prompt_carries_dossier_and_breaking_point_on_turn():
+    llm = _RecLLM()
+    dossier = CharacterDossier(
+        expanded_bio="",
+        conflict=Conflict(statement="她从不拒绝别人，但心里在记账"),
+        behavior_rules=BehaviorRules(
+            contradiction="嘴上没事，行为拖延",
+            breaking_point="被第三次索取会突然强硬"))
+    ScriptWriter(llm).write(_persona(), _core(), _units(3),
+                            topic="帮朋友做决定", dossier=dossier)
+    p = llm.prompts[0]
+    assert "她从不拒绝别人，但心里在记账" in p
+    # breaking_point 出现在"转"拍附近（n=3 时转是 index=1）
+    assert "被第三次索取会突然强硬" in p
+    turn_pos = p.index("被第三次索取会突然强硬")
+    unit1_pos = p.index("Unit1")
+    unit2_pos = p.index("Unit2")
+    assert unit1_pos < turn_pos < unit2_pos
+
+
+def test_writer_prompt_without_dossier_unchanged():
+    llm = _RecLLM()
+    ScriptWriter(llm).write(_persona(), _core(), _units(3), topic="t")
+    assert "内在冲突" not in llm.prompts[0]
