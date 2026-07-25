@@ -240,6 +240,18 @@ class LiveService:
                 if script_sources:
                     shutil.copy(script_sources[-1], session_dir / "full_script.json")
 
+                # 落盘人物小传（供回看/评测；失败不阻塞）
+                try:
+                    if getattr(engine, "dossier", None):
+                        import json as _json
+                        from dataclasses import asdict as _asdict
+                        (session_dir / "dossier.json").write_text(
+                            _json.dumps(_asdict(engine.dossier), ensure_ascii=False, indent=2),
+                            encoding="utf-8",
+                        )
+                except Exception as exc:  # noqa: BLE001
+                    print(f"[dossier] 落盘失败（跳过）: {exc}")
+
                 generator = engine.run(max_steps=max_steps, play_audio=False, save_audio=True)
 
             # 开场段先播（stage='opening'，前端按 stage 走 sequential 通道）
