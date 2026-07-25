@@ -14,6 +14,7 @@ import re
 from typing import Any, Protocol
 
 from echuu.core.persona_card import PersonaCard
+from echuu.core.persona_dossier import CharacterDossier
 from echuu.core.persona_model import RichPersona
 from echuu.core.story_core import StoryCore
 
@@ -104,7 +105,8 @@ def _as_tuple(value: Any) -> tuple[str, ...]:
 
 
 def _placeholder(name: str, persona: str, topic: str) -> tuple[RichPersona, StoryCore]:
-    head = (persona or name or "未提供").strip().splitlines()[0][:40]
+    _head_src = (persona or name or "未提供").strip()
+    head = (_head_src.splitlines()[0][:40] if _head_src else "") or "未提供"
     rp = RichPersona(
         identity=head or "[待补充身份]",
         belief="[待补充信念]",
@@ -140,10 +142,18 @@ class PersonaAnalyst:
         background: str,
         llm: _LLM,
         card: "PersonaCard | None" = None,
+        dossier: "CharacterDossier | None" = None,
     ) -> tuple[RichPersona, StoryCore]:
         prompt = _PROMPT.format(
             name=name or "", persona=persona or "", background=background or "", topic=topic or "",
         )
+        if dossier is not None and not dossier.is_empty():
+            # 人物小传+冲突作为背景语境：让 flaw/core_struggle/twist 长在这条坎上，不再每场漂
+            prompt += (
+                "\n\n【人物小传与内在冲突（分析必须与之一致，别另起炉灶）】\n"
+                f"{dossier.render_for_prompt()}\n"
+                "core_struggle 与 twist 要围绕上面这条冲突展开；flaw 用它的行为规则做素材。"
+            )
         if card and not card.is_empty():
             # 用户人设卡是硬约束：口癖/称呼/雷点等直接采用，不许 analyst 自己发明
             prompt += (

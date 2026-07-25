@@ -111,3 +111,50 @@ def test_analyze_missing_axis_degrades():
     })
     rp, _ = PersonaAnalyst().analyze("n", "p", "t", "b", FakeLLM(payload))
     assert rp.flaw
+
+
+def test_placeholder_survives_whitespace():
+    """persona 为纯空白字符串时不应在 _placeholder 里抛 IndexError（I4: flaw 永不为空）。"""
+    rp, sc = PersonaAnalyst().analyze("n", "   ", "t", "b", RaisingLLM())
+    assert rp.flaw
+    assert isinstance(sc, StoryCore)
+
+
+from echuu.core.persona_dossier import CharacterDossier, Conflict, BehaviorRules
+
+
+class _CapturingLLM:
+    def __init__(self, payload): self._p, self.prompts = payload, []
+    def generate(self, prompt):
+        self.prompts.append(prompt); return self._p
+
+
+def test_analyze_injects_dossier_into_prompt():
+    import json
+    payload = json.dumps({
+        "persona": {"identity": "i", "belief": "b", "flaw": "f",
+                    "verbal_tics": ["诶"], "situational_weaknesses": ["一紧张就绕"],
+                    "contrast_hook": "h", "life_anchors": ["便利贴"],
+                    "title_hook": "t", "visual_anchor": "v"},
+        "story": {"spine": "s", "core_struggle": "cs", "twist": "tw",
+                  "central_contrast": "cc", "emotional_undercurrent": "eu",
+                  "story_beats": ["起", "转", "合"], "punchline_seeds": ["p"],
+                  "hook_angle": "ha"},
+    }, ensure_ascii=False)
+    from echuu.core.persona_analyst import PersonaAnalyst
+    llm = _CapturingLLM(payload)
+    dossier = CharacterDossier(
+        expanded_bio="", conflict=Conflict(statement="她从不拒绝别人，但心里在记账"),
+        behavior_rules=BehaviorRules(contradiction="嘴上没事，行为拖延"))
+    PersonaAnalyst().analyze("n", "温柔女孩", "帮朋友做决定", "", llm=llm, dossier=dossier)
+    assert "她从不拒绝别人，但心里在记账" in llm.prompts[0]
+
+
+def test_analyze_without_dossier_unchanged():
+    import json
+    payload = json.dumps({"persona": {"identity": "i", "belief": "b", "flaw": "f"},
+                          "story": {"spine": "s"}}, ensure_ascii=False)
+    from echuu.core.persona_analyst import PersonaAnalyst
+    llm = _CapturingLLM(payload)
+    PersonaAnalyst().analyze("n", "p", "t", "", llm=llm)  # 不传 dossier
+    assert "核心冲突" not in llm.prompts[0]
