@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><title>echuu 评测</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:1000px;margin:2rem auto;padding:0 1rem}
+  .row{display:flex;gap:1rem}
+  .card{flex:1;border:1px solid #ccc;border-radius:8px;padding:1rem}
+  .card h3{margin:.2rem 0}
+  pre{white-space:pre-wrap;font-size:.95rem;line-height:1.5;max-height:50vh;overflow:auto}
+  .btns{display:flex;gap:.5rem;justify-content:center;margin:1.2rem 0}
+  button{padding:.6rem 1.2rem;font-size:1rem;cursor:pointer;border-radius:6px;border:1px solid #888}
+  #done{text-align:center;font-size:1.2rem;color:#080}
+</style></head>
+<body>
+  <h2>哪个更有意思 / 表达更精彩？</h2>
+  <div id="app"></div>
+  <div id="done" hidden>全部标注完成 ✅ 运行 <code>python -m echuu.eval.pairwise report</code> 看胜率</div>
+<script>
+let cur = null;
+async function load(){
+  const r = await fetch('/api/next').then(x=>x.json());
+  if(r.done){document.getElementById('app').hidden=true;document.getElementById('done').hidden=false;return;}
+  cur = r;
+  document.getElementById('app').innerHTML = `
+    <div class="row">
+      <div class="card"><h3>A</h3>
+        <audio controls src="${r.a.audio_url}"></audio><pre>${escapeHtml(r.a.text)}</pre></div>
+      <div class="card"><h3>B</h3>
+        <audio controls src="${r.b.audio_url}"></audio><pre>${escapeHtml(r.b.text)}</pre></div>
+    </div>
+    <div class="btns">
+      <button onclick="judge('a')">← A 更好</button>
+      <button onclick="judge('tie')">难分</button>
+      <button onclick="judge('b')">B 更好 →</button>
+    </div>`;
+}
+function escapeHtml(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+async function judge(w){
+  await fetch('/api/judge',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({fixture_id:cur.fixture_id,variant_a:cur.a.variant,
+      variant_b:cur.b.variant,winner:w})});
+  load();
+}
+load();
+</script>
+</body></html>
