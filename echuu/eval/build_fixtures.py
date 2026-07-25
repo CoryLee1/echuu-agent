@@ -17,7 +17,7 @@ def _load(clips_path: str) -> list[dict]:
 def build_fixtures(clips_path: str, out_path: str, n: int = 8) -> int:
     clips = _load(clips_path)
     rows = []
-    for c in clips[:n]:
+    for c in clips:
         title = str(c.get("title", "")).strip()
         if not title:
             continue
@@ -25,6 +25,8 @@ def build_fixtures(clips_path: str, out_path: str, n: int = 8) -> int:
         human = "\n".join(str(s.get("text", "")).strip() for s in segs if s.get("text"))
         rows.append({"id": c.get("clip_id", title), "topic": title,
                      "human_transcript": human})
+        if len(rows) >= n:
+            break
     Path(out_path).write_text(
         "\n".join(json.dumps(r, ensure_ascii=False) for r in rows), encoding="utf-8")
     return len(rows)
