@@ -63,7 +63,7 @@ def next_pair():
     judged = _judged_pairs()
     pairs = _all_pairs()
     pending = [p for p in pairs if (p[0], frozenset((p[1], p[2]))) not in judged]
-    pool = pending or pairs
+    pool = pending
     if not pool:
         return {"done": True}
     fx, va, vb = random.choice(pool)

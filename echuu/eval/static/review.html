@@ -23,9 +23,9 @@ async function load(){
   document.getElementById('app').innerHTML = `
     <div class="row">
       <div class="card"><h3>A</h3>
-        <audio controls src="${r.a.audio_url}"></audio><pre>${escapeHtml(r.a.text)}</pre></div>
+        <audio controls src="${escapeHtml(r.a.audio_url)}"></audio><pre>${escapeHtml(r.a.text)}</pre></div>
       <div class="card"><h3>B</h3>
-        <audio controls src="${r.b.audio_url}"></audio><pre>${escapeHtml(r.b.text)}</pre></div>
+        <audio controls src="${escapeHtml(r.b.audio_url)}"></audio><pre>${escapeHtml(r.b.text)}</pre></div>
     </div>
     <div class="btns">
       <button onclick="judge('a')">← A 更好</button>

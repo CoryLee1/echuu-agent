@@ -12,6 +12,11 @@ from typing import Callable
 def render_script(engine) -> str:
     """驱动 engine.run()，把每个 step 的 speech 拼成整份剧本文本。"""
     lines = []
+    # max_steps=15 caps machine variants at the production inline default (see
+    # start-inline). This makes the `vs human` comparison length-biased (human
+    # transcripts aren't capped), but the primary with_dossier vs no_dossier
+    # ablation is symmetric — both machine variants share this same cap — so
+    # the headline verdict (see pairwise.cmd_report) is unaffected.
     for ev in engine.run(max_steps=15, play_audio=False, save_audio=False):
         sp = (ev.get("speech") or ev.get("line", {}).get("text") or "").strip()
         if sp:

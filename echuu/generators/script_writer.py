@@ -258,7 +258,7 @@ class ScriptWriter:
 
     def _build_prompt(self, persona: RichPersona, core: StoryCore,
                       units: list[Unit], examples: str, topic: str,
-                      card=None, dossier=None) -> str:
+                      card=None, dossier: "CharacterDossier | None" = None) -> str:
         card_text = card.render_for_prompt() if card and not card.is_empty() else "（无——按上面的人设发挥）"
         prompt = _PROMPT_TEMPLATE.format(
             persona_card=card_text,
@@ -294,7 +294,8 @@ class ScriptWriter:
             return None
 
     def write(self, persona: RichPersona, core: StoryCore, units: list[Unit],
-              examples: str = "", topic: str = "", card=None, dossier=None) -> list[Unit]:
+              examples: str = "", topic: str = "", card=None,
+              dossier: "CharacterDossier | None" = None) -> list[Unit]:
         self.last_planted_gags: list[str] = []  # call-back 埋梗，engine 读走登记进 ledger
         prompt = self._build_prompt(persona, core, units, examples, topic,
                                     card=card, dossier=dossier)

@@ -18,3 +18,13 @@ def test_win_rate_counts_pair_ignoring_ties():
     assert r["n"] == 2           # tie 不计
     assert r["wins_a"] == 2      # with_dossier 两胜
     assert r["rate"] == 1.0
+
+
+def test_win_rate_ignores_malformed_winner():
+    judgments = [
+        {"variant_a": "with_dossier", "variant_b": "no_dossier", "winner": "a"},
+        {"variant_a": "with_dossier", "variant_b": "no_dossier", "winner": "x"},  # malformed, skip
+    ]
+    r = win_rate(judgments, "with_dossier", "no_dossier")
+    assert r["n"] == 1          # malformed row not counted
+    assert r["wins_a"] == 1

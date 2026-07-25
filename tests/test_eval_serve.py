@@ -46,3 +46,25 @@ def test_audio_missing_returns_404(tmp_path):
     client = TestClient(app)
     assert client.get("/audio/c1/with_dossier").status_code == 404
     assert client.get("/audio/c1/bogus_variant").status_code == 404
+
+
+def test_next_done_after_all_judged(tmp_path):
+    # c1 has 3 variants (human/with_dossier/no_dossier) -> 3 pairs. Judging all
+    # 3 must make /api/next report done=True instead of re-serving a judged
+    # pair (regression: pool used to fall back to `pairs` when `pending` was
+    # empty, so done was unreachable and duplicate judgments accumulated).
+    client = TestClient(_app(tmp_path))
+    got_done = False
+    for _ in range(10):
+        r = client.get("/api/next").json()
+        if r.get("done"):
+            got_done = True
+            break
+        a, b = r["a"], r["b"]
+        payload = {"fixture_id": r["fixture_id"], "variant_a": a["variant"],
+                   "variant_b": b["variant"], "winner": "a"}
+        assert client.post("/api/judge", json=payload).status_code == 200
+    assert got_done, "loop hit the iteration cap without ever seeing done=True"
+
+    final = client.get("/api/next").json()
+    assert final == {"done": True}

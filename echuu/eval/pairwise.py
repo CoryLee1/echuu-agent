@@ -35,8 +35,13 @@ def win_rate(judgments: list[dict], a: str, b: str) -> dict:
         pair = {va, vb}
         if pair != {a, b} or w == "tie":
             continue
+        if w == "a":
+            winner_variant = va
+        elif w == "b":
+            winner_variant = vb
+        else:
+            continue  # malformed winner, skip (don't count)
         n += 1
-        winner_variant = va if w == "a" else vb
         if winner_variant == a:
             wins_a += 1
     rate = (wins_a / n) if n else 0.0
