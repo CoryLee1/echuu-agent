@@ -58,3 +58,11 @@ def test_degrades_without_crash():
 def test_bad_json_degrades():
     d = PersonaExpander().expand("x", "y", "", None, FakeLLM("not json at all"))
     assert d.conflict.statement
+
+
+def test_fallback_survives_whitespace_persona():
+    """Regression: _fallback must never crash on whitespace-only or empty persona."""
+    for bad in ("   ", "\n\n", "", None):
+        d = PersonaExpander().expand("n", bad, "", None, BoomLLM())
+        assert isinstance(d, CharacterDossier)
+        assert d.conflict.statement  # non-empty, no crash

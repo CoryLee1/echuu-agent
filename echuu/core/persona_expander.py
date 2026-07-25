@@ -71,7 +71,8 @@ def _parse(raw: str) -> Optional[dict[str, Any]]:
 
 def _fallback(persona: str) -> CharacterDossier:
     """LLM 不可用时的最小兜底：从 persona 首句造一条'反面'冲突，statement 永不为空。"""
-    trait = (persona or "这个人").strip().splitlines()[0][:30] or "这个人"
+    stripped = (persona or "").strip()
+    trait = (stripped.splitlines()[0][:30] if stripped else "") or "这个人"
     return CharacterDossier(
         expanded_bio=trait,
         conflict=Conflict(angle="反面", premise=trait,
