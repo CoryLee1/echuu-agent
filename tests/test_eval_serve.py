@@ -36,3 +36,13 @@ def test_judge_appends_jsonl(tmp_path):
     assert client.post("/api/judge", json=payload).status_code == 200
     rows = [json.loads(l) for l in serve.JUDGMENTS.read_text(encoding="utf-8").splitlines() if l.strip()]
     assert rows[-1]["winner"] == "a" and rows[-1]["fixture_id"] == "c1"
+
+
+def test_audio_missing_returns_404(tmp_path):
+    app = _app(tmp_path)
+    # text.txt exists (from _seed_runs) but audio.wav is missing for this variant
+    # (TTS failed/skipped case) — /audio must 404, not 500.
+    (tmp_path / "runs" / "c1" / "with_dossier" / "audio.wav").unlink()
+    client = TestClient(app)
+    assert client.get("/audio/c1/with_dossier").status_code == 404
+    assert client.get("/audio/c1/bogus_variant").status_code == 404

@@ -9,7 +9,7 @@ import random
 from itertools import combinations
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 
@@ -88,8 +88,12 @@ def judge(j: Judge):
 
 @app.get("/audio/{fixture_id}/{variant}")
 def audio(fixture_id: str, variant: str):
-    return FileResponse(RUNS_DIR / fixture_id / variant / "audio.wav",
-                        media_type="audio/wav")
+    if variant not in VARIANTS:
+        raise HTTPException(status_code=404)
+    path = RUNS_DIR / fixture_id / variant / "audio.wav"
+    if not path.exists():
+        raise HTTPException(status_code=404)
+    return FileResponse(path, media_type="audio/wav")
 
 
 @app.get("/", response_class=HTMLResponse)
