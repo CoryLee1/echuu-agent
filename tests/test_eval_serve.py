@@ -38,6 +38,16 @@ def test_judge_appends_jsonl(tmp_path):
     assert rows[-1]["winner"] == "a" and rows[-1]["fixture_id"] == "c1"
 
 
+def test_judge_rejects_duplicate_or_unknown_pair(tmp_path):
+    client = TestClient(_app(tmp_path))
+    payload = {"fixture_id": "c1", "variant_a": "with_dossier",
+               "variant_b": "no_dossier", "winner": "a"}
+    assert client.post("/api/judge", json=payload).status_code == 200
+    assert client.post("/api/judge", json=payload).status_code == 409
+    unknown = {**payload, "fixture_id": "missing"}
+    assert client.post("/api/judge", json=unknown).status_code == 404
+
+
 def test_audio_missing_returns_404(tmp_path):
     app = _app(tmp_path)
     # text.txt exists (from _seed_runs) but audio.wav is missing for this variant

@@ -75,18 +75,18 @@ class CharacterDossier:
         """结构化渲染进 prompt（只列非空字段）。"""
         lines: list[str] = []
         if self.expanded_bio:
-            lines.append(f"- 人物小传：{self.expanded_bio}")
+            lines.append(f"- 人物小传假设（不是已证实履历）：{self.expanded_bio}")
         c = self.conflict
         if c.statement:
             angle = f"（{c.angle}）" if c.angle else ""
-            lines.append(f"- 核心冲突{angle}：{c.statement}")
+            lines.append(f"- 核心冲突假设{angle}：{c.statement}")
         b = self.behavior_rules
         if b.contradiction:
             lines.append(f"- 言行不一（贯穿全场，别点破）：{b.contradiction}")
         if b.trigger:
             lines.append(f"- 触发反应：{b.trigger}")
         if b.breaking_point:
-            lines.append(f'- 爆发点（放在"转"那一拍）：{b.breaking_point}')
+            lines.append(f"- 临界反应（仅在内容自然触及时使用）：{b.breaking_point}")
         if b.avoid_topics:
             lines.append(f"- 会回避的话题（越回避越真实）：{'、'.join(b.avoid_topics)}")
         return "\n".join(lines)

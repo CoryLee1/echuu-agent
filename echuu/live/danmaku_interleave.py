@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
+from echuu.live.untrusted import render_untrusted, sanitize_untrusted
+
 
 class _LLM(Protocol):
     def generate(self, prompt: str) -> str: ...
@@ -23,11 +25,12 @@ _PROMPT = """\
 你正在讲的事（重点，别跑偏）：{topic}
 你刚说到：{last_line}
 
-弹幕来自【{user}】：{danmaku}
+弹幕来自观众「{user}」：
+{danmaku}
 
 要求：
 - 只回 1-2 句，像真主播随口接一下，自然口语，带一点你的语癖。
-- 点一下这位观众（用名字或"这位"），简短反应，然后一句话拉回你正在讲的事。
+- 点一下这位观众（用名字或泛称），简短反应，然后一句话拉回你正在讲的事。
 - 绝不改变你故事的重点和走向，别开新话题、别长篇大论。
 - 只输出你要说的话，不要任何解释、不要引号、不要括号说明。
 {card_rules}"""
@@ -59,10 +62,16 @@ class DanmakuInterleaver:
             rules = []
             if getattr(card, "audience_nickname", ""):
                 rules.append(f"- 提到观众整体时用固定称呼「{card.audience_nickname}」。")
+            has_internals = False
             if getattr(card, "fears", ()):
+                has_internals = True
                 rules.append(f"- 若弹幕戳中你的雷点（{'；'.join(card.fears)}），反应要明显破防/炸毛，加倍！")
             if getattr(card, "prides", ()):
+                has_internals = True
                 rules.append(f"- 若弹幕夸到/质疑你的骄傲点（{'；'.join(card.prides)}），要明显得意/不服，加倍！")
+            if has_internals:
+                # 雷点/骄傲点是内部触发器：只决定反应强度，复述出来就是当众念设定表
+                rules.append("- 上面这些雷点/骄傲点只用来决定你的反应强度，不要把它们念出来。")
             if rules:
                 card_rules += "\n".join(rules) + "\n"
         if gags:
@@ -72,8 +81,9 @@ class DanmakuInterleaver:
             verbal_tics=tics,
             topic=topic or "（正在讲的事）",
             last_line=last_line or "",
-            user=user or "观众",
-            danmaku=danmaku_text or "",
+            # 观众可控字段：用户名和弹幕正文都要去结构、限长
+            user=sanitize_untrusted(user or "观众", max_chars=24),
+            danmaku=render_untrusted(danmaku_text or ""),
             card_rules=card_rules,
         )
         try:

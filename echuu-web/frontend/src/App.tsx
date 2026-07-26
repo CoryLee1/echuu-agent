@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 import Layout from "./components/Layout";
@@ -7,6 +8,8 @@ import Characters from "./pages/Characters";
 import LiveMonitor from "./pages/LiveMonitor";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
+
+const QualityEvaluation = lazy(() => import("./pages/QualityEvaluation"));
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -43,6 +46,14 @@ const App = () => {
           <Route path="characters" element={<Characters />} />
           <Route path="live" element={<LiveMonitor />} />
           <Route path="history" element={<History />} />
+          <Route
+            path="evaluation"
+            element={
+              <Suspense fallback={<div className="text-slate-500">加载质量评测台...</div>}>
+                <QualityEvaluation />
+              </Suspense>
+            }
+          />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>

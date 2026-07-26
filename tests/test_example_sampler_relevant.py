@@ -87,3 +87,31 @@ def test_zero_overlap_does_not_crash(sampler):
 def test_get_relevant_examples_formats(sampler):
     s = sampler.get_relevant_examples(topic="读博 沉没成本", persona="研究生", n=2, language="zh", seed=1)
     assert "真实案例" in s
+
+
+def test_retrieval_excludes_current_fixture_and_reports_ids(sampler):
+    formatted, ids = sampler.get_relevant_examples_with_ids(
+        topic="读博 沉没成本 换导师",
+        persona="焦虑的研究生",
+        n=3,
+        language="zh",
+        seed=42,
+        allowed_ids={"z1", "z2"},
+        exclude_ids={"z1"},
+    )
+    assert ids == ["z2"]
+    assert "食堂打饭趣事" in formatted
+    assert "读博换导师沉没成本" not in formatted
+
+
+def test_allowed_pool_is_respected_before_language_fallback(sampler):
+    out = sampler.sample_relevant(
+        topic="anything",
+        n=3,
+        language="en",
+        hard_language=True,
+        temperature=0,
+        allowed_ids={"z2", "e1"},
+        exclude_ids={"e1"},
+    )
+    assert [clip["clip_id"] for clip in out] == ["z2"]

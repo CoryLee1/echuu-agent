@@ -1,11 +1,11 @@
 """ScriptWriter (agent②) — 从故事内核创作 5 分钟直播台词。
 
-目标不是短视频文案，而是真实直播切片的质感：90% 可信的松弛铺垫托起 1-2 个
-高光时刻。允许口语冗余和重复（活人感），限制细节密度（每行最多一个新信息），
-保持对观众说话的对象感。范例密度以 data/ 下真实切片为准。
+目标不是短视频文案，而是真实直播切片的质感：90% 可信的松弛铺垫托起 1 个
+高光时刻。允许自然口语，限制信息和修辞预算，并让每一段都推进同一个中心结论。
+范例密度以 data/ 下真实切片为准。
 
 不是「按 beat 填格子」——它拿 RichPersona + StoryCore + few-shot 真实片段，通盘规划
-叙事（起承转合 / 铺垫 / 纠结 / 高光 / 碎碎念）并把内容连贯地落进 4 个时间/音色桶。
+内容结构并把它连贯地落进 2-4 个时间/音色桶。
 
 单次 LLM 调用 + 退化兜底。
 See docs/superpowers/specs/2026-05-31-rupture-engine-content-quality-design.md §4.
@@ -14,11 +14,15 @@ from __future__ import annotations
 
 import json
 import re
+from copy import deepcopy
 from typing import Any, Protocol
 
+from echuu.core.discourse_mode import MODE_GUIDES, MODE_LABELS
 from echuu.core.persona_dossier import CharacterDossier
 from echuu.core.persona_model import RichPersona
+from echuu.core.prompt_leakage import find_prompt_leaks
 from echuu.core.story_core import StoryCore
+from echuu.core.tuning_guidance import render_generation_constraints
 from echuu.core.unit import ScriptLine, Unit
 
 
@@ -26,101 +30,81 @@ class _LLM(Protocol):
     def generate(self, prompt: str) -> str: ...
 
 
+PROMPT_VERSION = "script-writer-v6-compact-anti-leak"
+
+
 _PROMPT_TEMPLATE = """\
-你是一个很会聊天的直播主播的影子写手。给一个 5 分钟单人直播写完整台词。
-目标：像一段真实直播切片——围绕【一件普通的小事】唠透，有铺垫、有呼吸，
-最后落在一两下真正的高光上。
-最怕的是两件事：一是泛泛而谈，听完不知道讲了件什么事；二是每句话都在抖机灵、堆细节、塞比喻，
-像短视频文案在朗诵，而不像一个人在跟你聊天。
+你是直播主播的影子写手。写一段 2.5-5 分钟、自然口语化的直播台词。
+全篇只回答一个内容主轴：普通铺垫占大多数，只设 1 个高光；事不用有趣，看法要有趣，
+但事实不能加戏，也不要强造认知翻转。
 
-【有趣的分寸——最重要的一条】
-- **事不用有趣，看法要有趣**：事就是普通人的普通事（越平常越可信，别加戏加巧合）；
-  有意思来自【表达】（这个人独有的措辞、自嘲、精准又意外的观察角度）和【洞察】
-  （把这件普通小事讲出一个观众没想过、但一听就"诶，对哦！"的道理/歪理）。
-  好主播能把"帮朋友做决定"聊出"你替他选=以后他失败都赖你"——事只是由头，看法才是节目。
-- 全场只有 1-2 个高光时刻（那个认知翻转 + 至多一句真金句），其余台词是可信的日常铺垫、
-  碎碎念、跟观众唠嗑。铺垫不是废话：高光是被前面 90% 的松弛托起来的。参考下面
-  真实案例的密度分布——大部分时间都很平，观众才跟得上、才有代入。
-- 每行台词最多引入 1 个新信息或新细节；全场比喻至多 1 处。宁可平实，不要堆砌。
-- 允许口语冗余：真人会把同一个意思用自己的话换着说两三遍来加重情绪、会说半句改口。
-  这种重复是活人感，尽管用（用这个角色自己的措辞现编，别引用任何现成句子）；
-  但剧情不要原地打转，每段要把事情往前推。
-- 生活化锚点从下面挑 2-3 个用就够，别全塞进来。细节要像从真实记忆里挖出来的
-  （少而准、带具体场景），不是为了有梗编出来的装饰。
-- 全程保持对象感：你在跟观众"你们"聊天，多用第二人称，像在回应一个观众的提问/弹幕
-  那样切入和推进这件事，而不是演一出封闭的独角戏。
-- 🚫 绝对不准把观众/弹幕的反应写进台词（"弹幕炸了""弹幕刷屏'xxx'"都不行）——
-  你可以对观众说话，但不能替观众说话。
-
-【这个人是谁】
-- 身份：{identity}
-- 信念：{belief}（会被现实打脸）
-- 弱点：{flaw}
-- 语癖（必须自然织进台词，每段都用一点）：{verbal_tics}
-- 情境弱点：{situational_weaknesses}
-- 反差/悬疑：{contrast_hook}
-- 生活化锚点（拿来做具体细节）：{life_anchors}
-
-【人设卡（用户钉死的硬约束，优先级最高）】
+【唯一事实来源】
+可当作事实的原始输入：
+{source_material}
+用户人设卡：
 {persona_card}
+只有以上两块可以支持事实。下方人物分析、内容内核和 Dossier 只指导口吻与结构，
+不得据此新增日期、数量、身体特征、伤病、物件、人物往事、他人原话或观众反应。
 
-【今天讲的那件事 · 内核】（就讲这一件事，讲透，别贪多）
-- 话题：{topic}
-- 主线（一件普通的小事）：{spine}
-- 核心纠结/矛盾点（内容的心脏，全程围着它转）：{core_struggle}
-- 认知翻转（重头戏：把这件小事看穿的那个洞察）：{twist}
-- 核心反差：{central_contrast}
-- 情绪暗线：{emotional_undercurrent}
-- 洞察种子（打磨成一听就"对哦！"的说法）：{punchline_seeds}
-- 开场钩子角度：{hook_angle}
+【人物口吻】
+身份={identity}
+信念={belief}
+弱点={flaw}
+语癖={verbal_tics}
+情境弱点={situational_weaknesses}
+反差={contrast_hook}
+有来源的生活锚点={life_anchors}
 
-【真实主播是怎么讲话的——模仿它们的密度分布、结构骨架和口吻，不是抄内容】
-（注意每个案例的"结构骨架"：真实切片的推进方式是共情/回应→自我经历→对比→收束这类
-朴素弧线，靠一件事讲透，不靠每句加码）
-{examples}
+【本轮内容合同】
+话题={topic}
+类型={discourse_mode_label}（{discourse_mode}）
+类型理由={mode_rationale}
+类型结构={mode_guide}
+语气={tone_mode}
+深度={depth_budget}
+娱乐机制={entertainment_mechanism}
+唯一主轴={spine}
+核心判断点={core_struggle}
+支撑点（最多两个）={supporting_points}
+推进/payoff={twist}
+核心反差={central_contrast}
+情绪暗线={emotional_undercurrent}
+洞察种子={punchline_seeds}
+开场角度={hook_angle}
 
-【有结构地往前推进 —— 起 / 承 / 转(认知翻转) / 合】
+【节奏分段】
 {unit_rails}
 
-【硬要求】
-1. **就讲这一件事**：各段是【同一件事】的几个阶段（起承转合），围绕"核心纠结点"层层推进。
-   每段把这件事往前讲、往深挖；句子可以重复加重情绪，但剧情不要原地打转，
-   也不要东拉西扯讲好几件不相干的事。
-2. **转 = 认知翻转，不是剧情反转**：倒数第二段（转）是全场唯一必须"响"的一下，就是上面那个
-   "认知翻转"——前面所有段落都在用松弛的铺垫为它蓄力。到这里把前面唠的那件普通小事
-   一句话看穿，让观众"诶，对哦！"或"噗"地笑出来。这个洞察必须能被观众复述成一句生活话；
-   不需要给事情本身加反转，更不要靠大病、死亡、科幻协议、玄学系统、世界观设定来硬炸。
-3. **真·直播开场（第一段开头 1-2 句）**：像真的在开播——先跟正在涌进来的观众搭句话/起个范儿
-   （符合人设：可以是吐槽、自嘲、跟老观众打招呼、对某个进场弹幕的即兴反应），自然带语癖，
-   紧接着抛一句【向观众提问/求共鸣】把人勾进话题（"有没有人也……？""你们遇到过……吗？"），
-   **然后**才进入故事。
-   🚫 绝对禁止老套报幕式开场：不准出现"今天我要给你们讲一个……""今天想跟大家分享……"
-      "大家好，欢迎来到我的直播间"之类。开场要像活人开播，不是念稿报幕。
-4. **真·下播收尾（最后一段结尾 1-2 句）**：像真的要下播——收一下今天这件事，跟观众道别/留个钩子/
-   约下次（符合人设，可以顺手回应一下弹幕氛围），留个具体画面或小悬念。
-   🚫 不准喊口号、不准"今天的故事就到这里，希望大家……"这种说教升华式收尾。
-5. 自然用语癖；写**碎碎念**（自我嘀咕、跑神）和**自我拉扯的纠结**。
-6. 具体细节：开头多铺具体场景/身边物品/当时心情，与话题相关、对当时状况的实际描写——别说空话。
-6.5 **接地气守门**：每段至少有一个普通生活锚点（地点/物件/具体动作/具体数字），每个新设定必须在前文
-   或【今天讲的那件事·内核】里有铺垫；禁止中后段突然空降"住院病历号/实体化协议/死亡/复活码/命运系统"。
-7. filler（嗯/那个/诶）和停顿（——、…）直接写进台词文本里。
-8. 绝不写情绪标签或括号说明；绝不写「升华/总结人生道理」那种说教结尾。
-9. **埋梗-回收（call-back）**：在前 1/3 的台词里自然埋 1-2 个【具体意象】（一个物件/一个说法/
-   一个数字，例："猫罐头汇率"），最后一段必须自然回收其中至少一个——直接把意象接回来用，
-   🚫 不准点破"还记得吗/前面说过"。把埋的意象原文列进输出的 planted_gags。
-10. **互动点**：中段（非首非末的某个 unit）的最后一行，向观众抛一个【具体的问题】
-   （二选一/报数/说亲身经历，别问"你们觉得呢"这种空问题），把这一行的 interact 标为 true。
+【真实切片参考】
+只学自然程度、密度与推进方式，不抄事实和措辞：
+{examples}
 
-严格输出 JSON（不要任何额外文字、不要 markdown 围栏）：
+【单核心写作契约】
+1. 每段只能建立主轴、提供依据、给出判断/边界或收束主轴；purpose 与 spine_link 只写进 JSON 字段，
+   绝不能说进 lines.text。删掉不影响主轴的段落，不另开支线。
+2. 全场最多一个组织框架/比喻、一个高光、1-2 个有来源的生活锚点；每行最多引入 1 个新信息。
+3. 允许停顿、改口、碎碎念和一次短回环；重复必须增加信息。开场直接接住观众话头并自然提问，
+   结尾自然回收，
+   不报幕、不喊口号、不说教。
+4. 可以对观众说话，但不准把观众/弹幕的反应写进台词；不得替观众描述他们正在刷什么、说什么。
+5. 不写括号舞台说明、情绪标签或内部规则。事实细节必须能在唯一事实来源中逐字找到依据；
+   禁止空降病历、合同、死亡、复活码或命运系统。
+6. playful_teasing/light_banter 且 depth=light 时，只做接梗、吊胃口、反差或截断式 payoff；
+   不上升到权力、权限、责任、协议、许可、博弈、隐藏机制，也不换皮表达这些概念。
+7. narrative 可自然转折；commentary 给主张与边界；advice 给判断原则；banter 接梗；
+   emotional 保留真实感受；explainer 澄清机制；reaction 保留即时性。
+
+只输出 JSON，不要 markdown 或解释：
 {{
   "units": [
-    {{"index": 0, "lines": [
+    {{"index": 0, "purpose": "<本段作用>", "spine_link": "<怎样推进唯一主轴>",
+      "lines": [
       {{"text": "...", "interruption_cost": 0.5}},
       {{"text": "...", "interruption_cost": 0.4, "interact": false}}
     ]}},
-    ... (共 {n_units} 个 unit，对齐上面的节奏护栏，每个 3-4 行)
+    ... (共 {n_units} 个 unit，每个 2-3 行)
   ],
-  "planted_gags": ["<埋下的意象原文，1-2 个>"]
+  "planted_gags": ["<确实埋下且会回收的意象，最多一个；没有则空数组>"]
 }}
 """
 
@@ -173,6 +157,23 @@ _UNGROUNDED_HIGH_CONCEPT_TERMS = (
     "灵魂 KPI",
     "原始声源",
 )
+_PLAYFUL_OVERINTERPRETATION_TERMS = (
+    "权力关系", "关系权限", "解释权", "控制权", "判断权", "权限错位",
+    "权力流动", "权力账", "静默移交", "让渡", "情感外包", "责任外包",
+    "免责协议", "免责条款", "责任豁免", "连带责任", "预设协议", "默认签约",
+    "许可证", "许可权", "契约", "授权", "担保", "盖章", "注册",
+    "隐藏按钮", "暂停键", "倒计时", "边界塌陷", "责任", "负责",
+    "博弈", "承担", "试探性",
+    "consent", "permission", "authority", "responsibility", "agreement",
+    "contract", "license", "certificate", "registration", "authorization",
+    "terms and conditions",
+)
+_PLAYFUL_TUNING_LEAK_TERMS = (
+    "先把已经确认的事实摆出来",
+    "判断重点是现在还能不能获得有效支持",
+    "核实真实流程、成果安排",
+    "回到你能确认的支持、流程和实际代价",
+)
 
 
 def _all_script_text(parsed: dict[str, Any]) -> str:
@@ -194,6 +195,7 @@ def _grounding_text(persona: RichPersona, core: StoryCore, topic: str) -> str:
         persona.visual_anchor,
         core.spine,
         core.core_struggle,
+        *core.supporting_points,
         core.twist,
         core.central_contrast,
         core.emotional_undercurrent,
@@ -212,13 +214,170 @@ def _has_ungrounded_high_concept_turn(
     persona: RichPersona,
     core: StoryCore,
     topic: str,
+    source_material: dict | None = None,
 ) -> bool:
     script_text = _all_script_text(parsed)
-    grounding = _grounding_text(persona, core, topic)
+    grounding = (
+        json.dumps(source_material, ensure_ascii=False)
+        if source_material
+        else _grounding_text(persona, core, topic)
+    )
     for term in _UNGROUNDED_HIGH_CONCEPT_TERMS:
         if term in script_text and term not in grounding:
             return True
     return False
+
+
+def _overinterprets_playful_script(
+    parsed: dict[str, Any],
+    core: StoryCore,
+    source_material: dict | None,
+) -> bool:
+    if core.tone_mode not in {"playful_teasing", "light_banter"}:
+        return False
+    if core.depth_budget != "light":
+        return False
+    script_text = _all_script_text(parsed)
+    source_text = json.dumps(source_material or {}, ensure_ascii=False)
+    script_lower = script_text.lower()
+    source_lower = source_text.lower()
+    return any(
+        term.lower() in script_lower and term.lower() not in source_lower
+        for term in _PLAYFUL_OVERINTERPRETATION_TERMS
+    ) or any(term in script_text for term in _PLAYFUL_TUNING_LEAK_TERMS)
+
+
+_SPECIFIC_NUMBER_RE = re.compile(
+    r"(?:\d+(?:\.\d+)?|[一二三四五六七八九十百千万两半]+"
+    r"|(?:one|two|three|four|five|six|seven|eight|nine|ten|dozen|hundred|thousand))"
+    r"(?:秒|分钟|小时|天|周|月|年|次|版|篇|本|份|封|届|岁|个|轮|遍|行|条|句"
+    r"|\s*(?:s|secs?|seconds?|minutes?|hours?|days?|weeks?|months?|years?|times?|"
+    r"messages?|comments?|replies?|people|viewers?)\b)",
+    re.IGNORECASE,
+)
+_STAGE_CUE_RE = (
+    r"(?:转笔|轻敲|压低|停顿|停半拍|切镜|麦克风|耳麦|轻笑|抬眼|眨眼|看镜头|"
+    r"灯灭|提词器|调音量|声音|leans?|looks?|pauses?|laughs?|whispers?|holds?|"
+    r"raises?|turns?|ear\s*mic|microphone|headset|earpiece|asmr|mic\s*brush|silence)"
+)
+_STAGE_DIRECTION_RE = re.compile(
+    r"(?:[（(][^）)\n]{0,60}" + _STAGE_CUE_RE + r"[^）)\n]{0,60}[）)]"
+    r"|[*_][^*_\n]{0,80}" + _STAGE_CUE_RE + r"[^*_\n]{0,80}[*_])",
+    re.IGNORECASE,
+)
+_FABRICATED_AUDIENCE_RE = re.compile(
+    r"(?:chat|audience|viewers?)[^\n.!?。！？]{0,40}"
+    r"(?:dropped|typed|said|spammed|sent|posted|filled|exploded|messages?|comments?)"
+    r"|(?:弹幕|观众)[^，。！？\n]{0,24}(?:炸|刷屏|刷了|发了|都在|全是|说|喊)",
+    re.IGNORECASE,
+)
+_UNSUPPORTED_PERSONAL_DETAILS = (
+    "耳垂", "痘印", "伤疤", "疤痕", "旧伤", "病史",
+    "屏保", "合影", "戒指", "无名指", "门禁截图", "门禁卡", "申请表",
+    "胶带", "剪刀", "便签", "咖啡杯", "抽屉", "聊天记录",
+    "实验记录", "开题报告", "致谢页",
+    "tea cup", "teacup", "coffee cup", "mug", "notebook", "sticky note",
+)
+_ACADEMIC_CONTEXT_TERMS = ("读博", "博士", "导师", "学术", "学校", "大学", "教育")
+_EMPLOYMENT_FRAME_TERMS = ("劳务合同", "雇佣合同", "合伙协议", "没签合同", "签合同")
+
+
+def _unsupported_specific_detail_markers(
+    parsed: dict[str, Any],
+    source_material: dict | None,
+    tuning_guidance,
+) -> tuple[str, ...]:
+    script_text = _all_script_text(parsed)
+    source_text = json.dumps(source_material or {}, ensure_ascii=False)
+    markers: list[str] = []
+    markers.extend(
+        f"stage_direction:{match.group(0)[:80]}"
+        for match in _STAGE_DIRECTION_RE.finditer(script_text)
+        if match.group(0) not in source_text
+    )
+    categories = {
+        str(item.get("category", ""))
+        for item in (tuning_guidance or ())
+        if isinstance(item, dict)
+    }
+    if not categories.intersection({"fabricated_detail", "world_knowledge"}):
+        return tuple(dict.fromkeys(markers))
+    if "fabricated_detail" in categories:
+        for detail in _SPECIFIC_NUMBER_RE.findall(script_text):
+            if detail not in source_text:
+                markers.append(f"number:{detail}")
+        for term in _UNSUPPORTED_PERSONAL_DETAILS:
+            if term.lower() in script_text.lower() and term.lower() not in source_text.lower():
+                markers.append(f"detail:{term}")
+        markers.extend(
+            f"fabricated_audience:{match.group(0)[:80]}"
+            for match in _FABRICATED_AUDIENCE_RE.finditer(script_text)
+            if match.group(0) not in source_text
+        )
+    if (
+        "world_knowledge" in categories
+        and any(term in source_text for term in _ACADEMIC_CONTEXT_TERMS)
+    ):
+        matched_domain_terms: list[str] = []
+        for term in sorted(_EMPLOYMENT_FRAME_TERMS, key=len, reverse=True):
+            if term in script_text and term not in source_text:
+                if not any(term in longer for longer in matched_domain_terms):
+                    matched_domain_terms.append(term)
+                    markers.append(f"domain:{term}")
+    return tuple(dict.fromkeys(markers))
+
+
+def _has_unsupported_specific_details(
+    parsed: dict[str, Any],
+    source_material: dict | None,
+    tuning_guidance,
+) -> bool:
+    return bool(_unsupported_specific_detail_markers(
+        parsed, source_material, tuning_guidance,
+    ))
+
+
+def _vague_number_replacement(detail: str) -> str:
+    lowered = detail.lower()
+    if re.search(r"(?:秒|分钟|小时|seconds?|minutes?|hours?)", lowered):
+        return "一会儿" if re.search(r"[\u4e00-\u9fff]", detail) else "a moment"
+    if "遍" in detail:
+        return "几遍"
+    if "次" in detail:
+        return "几次"
+    if "句" in detail:
+        return "一点"
+    if re.search(r"(?:messages?|comments?|replies?|people|viewers?|条|个)", lowered):
+        return "一些" if re.search(r"[\u4e00-\u9fff]", detail) else "some"
+    if re.search(r"(?:times?)", lowered):
+        return "a few times"
+    return "一阵子" if re.search(r"[\u4e00-\u9fff]", detail) else "a while"
+
+
+def _sanitize_safe_surface_details(
+    parsed: dict[str, Any],
+    source_material: dict | None,
+) -> dict[str, Any]:
+    """Remove only non-semantic stage notes and blur unsupported exact counts."""
+    cleaned = deepcopy(parsed)
+    source_text = json.dumps(source_material or {}, ensure_ascii=False)
+    for unit in cleaned.get("units", []):
+        for line in unit.get("lines", []):
+            text = str(line.get("text", ""))
+            text = _STAGE_DIRECTION_RE.sub(
+                lambda match: match.group(0) if match.group(0) in source_text else "",
+                text,
+            )
+            text = _SPECIFIC_NUMBER_RE.sub(
+                lambda match: (
+                    match.group(0)
+                    if match.group(0) in source_text
+                    else _vague_number_replacement(match.group(0))
+                ),
+                text,
+            )
+            line["text"] = re.sub(r"[ \t]{2,}", " ", text).strip()
+    return cleaned
 
 
 class ScriptWriter:
@@ -226,6 +385,17 @@ class ScriptWriter:
         self.llm = llm
         self.example_sampler = example_sampler
         self.last_planted_gags: list[str] = []
+        self.last_quality_gate = {
+            "retried": False,
+            "sanitized": False,
+            "passed": True,
+            "first_issues": [],
+            "retry_issues": [],
+            "first_issue_details": [],
+            "retry_issue_details": [],
+            "post_sanitize_issues": [],
+            "post_sanitize_issue_details": [],
+        }
 
     def _unit_rails(self, units: list[Unit], core: StoryCore, dossier=None) -> str:
         n = len(units)
@@ -233,35 +403,53 @@ class ScriptWriter:
         bp = ""
         if dossier is not None and not dossier.is_empty():
             bp = (dossier.behavior_rules.breaking_point or "").strip()
-        # "转"拍索引：n<=2 时是最后一个(1)，否则是倒数第二个
+        mode = core.discourse_mode if core.discourse_mode in MODE_GUIDES else "narrative"
+        mode_guide = MODE_GUIDES[mode]
+        # narrative/emotional 的关键拍：n<=2 时是最后一个，否则是倒数第二个
         turn_idx = (n - 1) if n <= 2 else (n - 2)
         out = []
         for i, u in enumerate(units):
             t0, t1 = u.time_window
-            if n <= 2:
-                label = "起·真·开播+铺垫" if i == 0 else "转(认知翻转)+收束·真·下播"
+            if mode == "narrative" and n <= 2:
+                label = "开播+场景铺垫" if i == 0 else "关键变化+自然收束"
             elif i == 0:
-                label = "起·真·开播+设置"
+                label = "开播+建立内容主轴"
             elif i == n - 1:
-                label = "合·收束+真·下播"
-            elif i == n - 2:
-                label = "转·认知翻转（全场最响的一下）"
+                label = "收束+真·下播"
+            elif mode == "narrative" and i == n - 2:
+                label = "关键变化/发现（不强求反转）"
             else:
-                label = "承·升级"
+                label = f"{MODE_LABELS[mode]}·继续推进"
             beat = beats[i] if i < len(beats) else "（承接上一段往前推进）"
             line = (f"- Unit{i} [{int(t0)}-{int(t1)}s] {label}，能量={u.density}\n"
-                    f"    本段推进到剧情节点：{beat}")
-            if bp and i == turn_idx:
-                line += f"\n    ⚡ 本段是角色的爆发点：{bp}（让它自然炸出来，随后收）"
+                    f"    本段内容节点：{beat}")
+            if bp and mode in {"narrative", "emotional"} and i == turn_idx:
+                line += f"\n    ⚡ 可自然触及角色临界点：{bp}（不要为了爆发硬演）"
+            if i == 0:
+                line += f"\n    类型总护栏：{mode_guide}"
             out.append(line)
         return "\n".join(out)
 
     def _build_prompt(self, persona: RichPersona, core: StoryCore,
                       units: list[Unit], examples: str, topic: str,
-                      card=None, dossier: "CharacterDossier | None" = None) -> str:
+                      card=None, dossier: "CharacterDossier | None" = None,
+                      source_material: dict | None = None,
+                      tuning_guidance=None) -> str:
         card_text = card.render_for_prompt() if card and not card.is_empty() else "（无——按上面的人设发挥）"
         prompt = _PROMPT_TEMPLATE.format(
             persona_card=card_text,
+            source_material=json.dumps(
+                source_material or {"topic": topic},
+                ensure_ascii=False,
+                indent=2,
+            ),
+            discourse_mode=core.discourse_mode,
+            discourse_mode_label=MODE_LABELS.get(core.discourse_mode, "故事叙述"),
+            mode_rationale=core.mode_rationale or "按话题与角色的自然表达方式选择",
+            mode_guide=MODE_GUIDES.get(core.discourse_mode, MODE_GUIDES["narrative"]),
+            tone_mode=core.tone_mode,
+            depth_budget=core.depth_budget,
+            entertainment_mechanism=core.entertainment_mechanism or "（无）",
             identity=persona.identity,
             belief=persona.belief,
             flaw=persona.flaw,
@@ -272,6 +460,7 @@ class ScriptWriter:
             topic=topic,
             spine=core.spine,
             core_struggle=core.core_struggle or "（无）",
+            supporting_points=_join(core.supporting_points),
             twist=core.twist or "（无）",
             central_contrast=core.central_contrast or "（无）",
             emotional_undercurrent=core.emotional_undercurrent or "（无）",
@@ -282,8 +471,18 @@ class ScriptWriter:
             n_units=len(units),
         )
         if dossier is not None and not dossier.is_empty():
-            prompt += ("\n\n【人物内在冲突—行为规则（贯穿全场台词，别点破）】\n"
-                       f"{dossier.render_for_prompt()}")
+            prompt += (
+                "\n\n【人物内在冲突—行为规则（软线索，不得覆盖话语类型或强造剧情）】\n"
+                f"{dossier.render_for_prompt()}\n"
+                "只在本期内容自然触及时体现；不相关就保持为人物底色，不必说出来。"
+            )
+        quality_flags = render_generation_constraints(tuning_guidance, "writer")
+        if quality_flags:
+            prompt += (
+                "\n\n【静默质量标志】\n"
+                f"{quality_flags}\n"
+                "只在内部检查，不得在输出中提及标志名、规则或调整过程。"
+            )
         return prompt
 
     def _try_generate(self, prompt: str) -> str | None:
@@ -293,25 +492,181 @@ class ScriptWriter:
             print(f"[ScriptWriter] LLM 调用失败: {exc}")
             return None
 
+    @staticmethod
+    def _build_repair_prompt(
+        parsed: dict[str, Any] | None,
+        raw: str | None,
+        core: StoryCore,
+        units: list[Unit],
+        source_material: dict | None,
+        tuning_guidance,
+        issue_details: list[str] | None = None,
+    ) -> str:
+        playful_light = (
+            core.tone_mode in {"playful_teasing", "light_banter"}
+            and core.depth_budget == "light"
+        )
+        if playful_light:
+            previous_payload = {
+                "units": [{
+                    "index": unit.index,
+                    "purpose": (
+                        core.story_beats[index]
+                        if index < len(core.story_beats)
+                        else "推进同一个轻松互动"
+                    ),
+                    "spine_link": "继续吊住同一个期待并靠近轻巧 payoff",
+                    "lines": [],
+                } for index, unit in enumerate(units)],
+                "planted_gags": [],
+            }
+            previous = json.dumps(
+                previous_payload, ensure_ascii=False, separators=(",", ":"),
+            )
+        else:
+            previous = (
+                json.dumps(parsed, ensure_ascii=False, separators=(",", ":"))
+                if parsed is not None
+                else str(raw or "")
+            )
+        previous = previous[:6000]
+        contract = {
+            "unit_count": len(units),
+            "indices": [unit.index for unit in units],
+            "discourse_mode": core.discourse_mode,
+            "tone_mode": core.tone_mode,
+            "depth_budget": core.depth_budget,
+            "entertainment_mechanism": core.entertainment_mechanism,
+            "spine": core.spine,
+            "supporting_points": list(core.supporting_points),
+            "story_beats": list(core.story_beats),
+            "silent_quality_checks": json.loads(
+                render_generation_constraints(tuning_guidance, "writer") or
+                '{"silent_quality_checks":[]}'
+            )["silent_quality_checks"],
+        }
+        forbidden_fragments = [
+            detail.split(":", 1)[1]
+            for detail in (issue_details or [])
+            if ":" in detail
+        ]
+        return (
+            "修复下面的直播台词 JSON。只输出 JSON，不解释。\n"
+            "保留 units 结构；每个 index 恰好出现一次，每段保留 purpose、spine_link 和 2-3 条 lines。\n"
+            "lines.text 只能是观众会听到的自然台词：不得出现写作规则、字段名、内部检查、"
+            "舞台括号说明或来源未给出的事实。light 的调笑只做接梗、吊胃口和轻巧 payoff，"
+            "不写权力、责任、协议、许可、consent、permission、certificate、博弈或隐藏机制；"
+            "可以对观众说话，但不得写 Chat/弹幕/观众做了什么或说了什么。\n"
+            f"CONTRACT={json.dumps(contract, ensure_ascii=False, separators=(',', ':'))}\n"
+            f"SOURCE={json.dumps(source_material or {}, ensure_ascii=False, separators=(',', ':'))}\n"
+            f"FORBIDDEN_OUTPUT_FRAGMENTS={json.dumps(forbidden_fragments, ensure_ascii=False)}\n"
+            f"PREVIOUS={previous}"
+        )
+
     def write(self, persona: RichPersona, core: StoryCore, units: list[Unit],
               examples: str = "", topic: str = "", card=None,
-              dossier: "CharacterDossier | None" = None) -> list[Unit]:
+              dossier: "CharacterDossier | None" = None,
+              source_material: dict | None = None,
+              tuning_guidance=None) -> list[Unit]:
         self.last_planted_gags: list[str] = []  # call-back 埋梗，engine 读走登记进 ledger
-        prompt = self._build_prompt(persona, core, units, examples, topic,
-                                    card=card, dossier=dossier)
+        self.last_quality_gate = {
+            "retried": False,
+            "sanitized": False,
+            "passed": True,
+            "first_issues": [],
+            "retry_issues": [],
+            "first_issue_details": [],
+            "retry_issue_details": [],
+            "post_sanitize_issues": [],
+            "post_sanitize_issue_details": [],
+        }
+        prompt = self._build_prompt(
+            persona, core, units, examples, topic,
+            card=card, dossier=dossier,
+            source_material=source_material,
+            tuning_guidance=tuning_guidance,
+        )
         raw = self._try_generate(prompt)
         parsed = _parse(raw) if raw is not None else None
+        first_issues = (
+            self._quality_issues(
+                parsed, units, persona, core, topic,
+                source_material=source_material,
+                tuning_guidance=tuning_guidance,
+            )
+            if parsed is not None
+            else ["invalid_json"]
+        )
+        self.last_quality_gate["first_issues"] = first_issues
+        if parsed is not None:
+            self.last_quality_gate["first_issue_details"] = list(
+                _unsupported_specific_detail_markers(
+                    parsed, source_material, tuning_guidance,
+                )
+            )
 
-        if parsed is None or not self._is_complete(parsed, units, persona, core, topic):
-            raw = self._try_generate(prompt)  # retry once
+        if first_issues:
+            self.last_quality_gate["retried"] = True
+            repair_prompt = self._build_repair_prompt(
+                parsed,
+                raw,
+                core,
+                units,
+                source_material,
+                tuning_guidance,
+                self.last_quality_gate["first_issue_details"],
+            )
+            raw = self._try_generate(repair_prompt)  # retry once
             parsed = _parse(raw) if raw is not None else None
+            retry_issues = (
+                self._quality_issues(
+                    parsed, units, persona, core, topic,
+                    source_material=source_material,
+                    tuning_guidance=tuning_guidance,
+                )
+                if parsed is not None
+                else ["invalid_json"]
+            )
+            self.last_quality_gate["retry_issues"] = retry_issues
+            if parsed is not None:
+                self.last_quality_gate["retry_issue_details"] = list(
+                    _unsupported_specific_detail_markers(
+                        parsed, source_material, tuning_guidance,
+                    )
+                )
 
-        if parsed is None or not self._is_complete(parsed, units, persona, core, topic):
+        final_issues = list(self.last_quality_gate["retry_issues"])
+        retry_details = self.last_quality_gate["retry_issue_details"]
+        if (
+            parsed is not None
+            and final_issues == ["unsupported_specific_detail"]
+            and retry_details
+            and all(
+                detail.startswith(("stage_direction:", "number:"))
+                for detail in retry_details
+            )
+        ):
+            parsed = _sanitize_safe_surface_details(parsed, source_material)
+            self.last_quality_gate["sanitized"] = True
+            final_issues = self._quality_issues(
+                parsed, units, persona, core, topic,
+                source_material=source_material,
+                tuning_guidance=tuning_guidance,
+            )
+            self.last_quality_gate["post_sanitize_issues"] = final_issues
+            self.last_quality_gate["post_sanitize_issue_details"] = list(
+                _unsupported_specific_detail_markers(
+                    parsed, source_material, tuning_guidance,
+                )
+            )
+
+        if parsed is None or final_issues:
+            self.last_quality_gate["passed"] = False
             return self._fill_placeholder(units)
 
         gags = parsed.get("planted_gags")
         if isinstance(gags, list):
-            self.last_planted_gags = [str(g).strip() for g in gags if str(g).strip()][:2]
+            self.last_planted_gags = [str(g).strip() for g in gags if str(g).strip()][:1]
 
         index_to_unit = {u.index: u for u in units}
         for u in units:
@@ -321,6 +676,8 @@ class ScriptWriter:
             if idx not in index_to_unit:
                 continue
             target = index_to_unit[idx]
+            target.purpose = str(u_payload.get("purpose", "")).strip()
+            target.spine_link = str(u_payload.get("spine_link", "")).strip()
             for line in u_payload.get("lines", []):
                 n = len(target.lines)
                 is_interact = bool(line.get("interact"))
@@ -347,6 +704,47 @@ class ScriptWriter:
             return "turn"
         return "pad"
 
+    def _quality_issues(
+        self,
+        parsed: dict[str, Any],
+        units: list[Unit],
+        persona: RichPersona,
+        core: StoryCore,
+        topic: str,
+        source_material: dict | None = None,
+        tuning_guidance=None,
+    ) -> list[str]:
+        issues: list[str] = []
+        u_list = parsed.get("units", [])
+        if len(u_list) != len(units):
+            issues.append("unit_count")
+        if {u.get("index") for u in u_list} != {unit.index for unit in units}:
+            issues.append("unit_indices")
+        for u in u_list:
+            line_count = len(u.get("lines", []))
+            if line_count < 2 or line_count > 3:
+                issues.append(f"line_count:u{u.get('index')}")
+            if not str(u.get("purpose", "")).strip():
+                issues.append(f"missing_purpose:u{u.get('index')}")
+            if not str(u.get("spine_link", "")).strip():
+                issues.append(f"missing_spine_link:u{u.get('index')}")
+            if any(not str(line.get("text", "")).strip() for line in u.get("lines", [])):
+                issues.append(f"empty_line:u{u.get('index')}")
+        if _has_ungrounded_high_concept_turn(
+            parsed, persona, core, topic, source_material=source_material,
+        ):
+            issues.append("ungrounded_high_concept")
+        if _has_unsupported_specific_details(
+            parsed, source_material, tuning_guidance,
+        ):
+            issues.append("unsupported_specific_detail")
+        if _overinterprets_playful_script(parsed, core, source_material):
+            issues.append("playful_overinterpretation")
+        leak_markers = find_prompt_leaks(parsed, tuning_guidance)
+        if leak_markers:
+            issues.extend(f"prompt_leak:{marker}" for marker in leak_markers)
+        return list(dict.fromkeys(issues))
+
     def _is_complete(
         self,
         parsed: dict[str, Any],
@@ -354,20 +752,24 @@ class ScriptWriter:
         persona: RichPersona,
         core: StoryCore,
         topic: str,
+        source_material: dict | None = None,
+        tuning_guidance=None,
     ) -> bool:
-        u_list = parsed.get("units", [])
-        if len(u_list) != len(units):
-            return False
-        for u in u_list:
-            if len(u.get("lines", [])) < 2:
-                return False
-        if _has_ungrounded_high_concept_turn(parsed, persona, core, topic):
-            return False
-        return True
+        return not self._quality_issues(
+            parsed,
+            units,
+            persona,
+            core,
+            topic,
+            source_material=source_material,
+            tuning_guidance=tuning_guidance,
+        )
 
     def _fill_placeholder(self, units: list[Unit]) -> list[Unit]:
         for u in units:
             u.lines = self._placeholder_lines_for(u.index)
+            u.purpose = "生成失败占位"
+            u.spine_link = "未生成可审核的主轴推进说明"
         return units
 
     def _placeholder_lines_for(self, idx: int) -> list[ScriptLine]:

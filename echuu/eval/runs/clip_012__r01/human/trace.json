@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "pipeline": "human_reference",
+  "stages": [
+    {
+      "id": "input",
+      "label": "真人参考输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "topic": "Daddy称呼的轻松调笑",
+        "character_name": "",
+        "persona": "Nijisanji EN VTuber (Vox Akuma)；擅长故作认真地吊观众胃口，再用暧昧玩笑和截断式反转收尾；常用表达：\"you know\"、\"okay\"",
+        "tone_intent": "playful_teasing",
+        "depth_budget": "light",
+        "entertainment_mechanism": "故作认真 + 暧昧吊胃口 + 结尾截断反转"
+      }
+    },
+    {
+      "id": "runtime_output",
+      "label": "真人原稿",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "metrics": {
+        "text_chars": 799,
+        "line_count": 6
+      },
+      "output": {
+        "text": "I'm curious. How much do you enjoy being called daddy? I was going to be coy, because I've never said it, but today is such a special occasion.\nI just want to be sure you know. Sure, I'll tell you the truth. You know, okay, before I do, let me remind you all.\nI've said this before, but I'll say it again, because we have a larger audience here. And now, for those of you with a language barrier, remember, the word Daddy, when not used to refer to a member of your own family, carries extremely overt sexual connotations.\nPlease, for me, do not use it if you do not wish to refer to me in that way. Understand the words that you're using, okay?\nPlease. Don't use that word if you're not prepared to. This is my place, and I like it. So I'm here to inform you.\nI really, really, really f****** love—"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "degraded",
+      "duration_ms": 0.1,
+      "audio_bytes": 0,
+      "text_chars": 799,
+      "input": {
+        "text_chars": 799
+      },
+      "metrics": {
+        "duration_ms": 0.1,
+        "audio_bytes": 0,
+        "text_chars": 799
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 1,
+        "duration_ms": 0.1,
+        "failed_calls": 1
+      },
+      "output": {
+        "audio_path": "E:\\nextjs-vtuber-mocap\\echuu-agent\\echuu\\eval\\runs\\clip_012__r01\\human\\audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "clip_012",
+    "split": "dev",
+    "retrieval_seed": 1986112284,
+    "retrieval_allowed_pool_size": 20,
+    "retrieval_exclude_ids": [
+      "clip_012"
+    ],
+    "tuning_guidance_ids": [
+      "653ac2222f334ba3b0a1564c2fbc415a",
+      "a2e7523d47b94d3aa0bf289da0368296",
+      "75423cc4c50141c3bdcea7b7632e4e3d",
+      "6badd8f0df1745c493ddb833732190cd",
+      "57d3cacb4d294f2ab0462600911c398f"
+    ]
+  }
+}

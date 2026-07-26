@@ -42,17 +42,17 @@ _MURMUR_PROMPT = """你是虚拟主播「{name}」。人设：{persona}
 
 为每个节点写台词（口语，15-40字，符合你的人设口癖）。输出 JSON（不要 markdown 代码块）：
 {{
-  "intro": "开场：今天要学这首歌，跃跃欲试",
-  "first_fail": "试唱崩了之后的反应（吐槽这歌真难）",
+  "intro": "<开场台词：宣布今天要学这首歌，跃跃欲试>",
+  "first_fail": "<试唱崩掉之后的即时反应>",
   "phrases": [
-    {{"before": "练第N句之前说的话", "after_fail": "唱砸后的碎碎念（懊恼/吐槽歌词难/转音怎么做到的）", "after_good": "唱对之后的反应"}},
+    {{"before": "<练这一句之前说的话>", "after_fail": "<唱砸后的碎碎念>", "after_good": "<唱对之后的反应>"}},
     ...共 {n_phrases} 个
   ],
-  "final_intro": "最后完整唱之前深呼吸的话",
-  "final_review": "唱完的自评（不完美但真诚，类似给自己打七十分）"
+  "final_intro": "<最后完整唱之前深呼吸时说的话>",
+  "final_review": "<唱完的自评，不完美但真诚>"
 }}
 
-注意：第 {lucky_idx} 句的 after_good 要写出「意外的惊喜」；第 {hard_idx} 句的 after_fail 要有两句话用「||」分隔（对应两次失败）。
+注意：第 {lucky_idx} 句的 after_good 要体现出乎自己意料的惊喜；第 {hard_idx} 句的 after_fail 要有两句话用「||」分隔（对应两次失败）。
 只输出 JSON。"""
 
 

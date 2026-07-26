@@ -8,24 +8,36 @@ from __future__ import annotations
 import json
 import os
 import random
-from collections import defaultdict
+import hashlib
+from collections import OrderedDict, defaultdict
+from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
+from threading import Lock
+from time import perf_counter
 from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
 
 from ..core.pattern_analyzer import PatternAnalyzer
 from ..core.persona_model import PersonaModel, RichPersona
-from ..core.persona_analyst import PersonaAnalyst
-from ..core.persona_expander import PersonaExpander
+from ..core.persona_analyst import PersonaAnalyst, PROMPT_VERSION as ANALYST_PROMPT_VERSION
+from ..core.persona_expander import PersonaExpander, PROMPT_VERSION as DOSSIER_PROMPT_VERSION
 from ..core.persona_dossier import CharacterDossier
+from ..core.prompt_leakage import find_prompt_leaks
 from ..core.story_core import StoryCore
 from ..core.unit import Show
 from ..core.unit_planner import UnitPlanner
 from ..core.structure_breaker import StructureBreaker
+from ..core.tuning_guidance import (
+    normalize_tuning_guidance,
+    render_tuning_guidance,
+    tuning_guidance_categories,
+    tuning_guidance_fingerprint,
+    tuning_guidance_ids,
+)
 from ..generators.example_sampler import ExampleSampler
-from ..generators.script_writer import ScriptWriter
+from ..generators.script_writer import ScriptWriter, PROMPT_VERSION as WRITER_PROMPT_VERSION
 from .danmaku import DanmakuEvaluator, DanmakuHandler
 from .danmaku_interleave import DanmakuInterleaver
 from .llm_factory import create_llm_client
@@ -35,6 +47,47 @@ from .tts_client import TTSClient
 from .language import setup_stream_language_from_topic, StreamLanguageContext
 from .motion import pick_motion_for_danmaku, pick_motion_for_step
 from .audio_player import StreamSimulator
+
+
+_DOSSIER_CACHE_VERSION = "v2-soft-conflict"
+_DOSSIER_CACHE_MAX_SIZE = 128
+_DOSSIER_CACHE: "OrderedDict[str, CharacterDossier]" = OrderedDict()
+_DOSSIER_CACHE_LOCK = Lock()
+
+
+def _dossier_cache_key(
+    name: str,
+    persona: str,
+    background: str,
+    card,
+    tuning_guidance=None,
+) -> str:
+    card_text = card.render_for_prompt() if card and not card.is_empty() else ""
+    payload = "\0".join((
+        _DOSSIER_CACHE_VERSION,
+        name or "",
+        persona or "",
+        background or "",
+        card_text,
+        tuning_guidance_fingerprint(tuning_guidance),
+    ))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _get_cached_dossier(key: str) -> Optional[CharacterDossier]:
+    with _DOSSIER_CACHE_LOCK:
+        dossier = _DOSSIER_CACHE.get(key)
+        if dossier is not None:
+            _DOSSIER_CACHE.move_to_end(key)
+        return dossier
+
+
+def _cache_dossier(key: str, dossier: CharacterDossier) -> None:
+    with _DOSSIER_CACHE_LOCK:
+        _DOSSIER_CACHE[key] = dossier
+        _DOSSIER_CACHE.move_to_end(key)
+        while len(_DOSSIER_CACHE) > _DOSSIER_CACHE_MAX_SIZE:
+            _DOSSIER_CACHE.popitem(last=False)
 
 
 def _find_project_root() -> Path:
@@ -57,13 +110,62 @@ class _LLMGenerateAdapter:
     def __init__(self, client, max_tokens: int = 8000) -> None:
         self._client = client
         self._max_tokens = max_tokens
+        self.provider = client.__class__.__name__
+        self.model = str(getattr(client, "model", "") or "unknown")
+        self.calls: list[dict] = []
 
     def generate(self, prompt: str) -> str:
-        # Prefer a native .generate if a future client provides one.
-        native = getattr(self._client, "generate", None)
-        if callable(native):
-            return native(prompt)
-        return self._client.call(prompt, max_tokens=self._max_tokens)
+        started = perf_counter()
+        call = {
+            "provider": self.provider,
+            "model": self.model,
+            "prompt_chars": len(prompt or ""),
+            "prompt_sha256": hashlib.sha256((prompt or "").encode("utf-8")).hexdigest()[:16],
+            "max_tokens": self._max_tokens,
+        }
+        try:
+            # Prefer a native .generate if a future client provides one.
+            native = getattr(self._client, "generate", None)
+            if callable(native):
+                response = native(prompt)
+            else:
+                response = self._client.call(prompt, max_tokens=self._max_tokens)
+            call.update({
+                "status": "completed",
+                "response_chars": len(response or ""),
+                "duration_ms": round((perf_counter() - started) * 1000, 1),
+            })
+            return response
+        except Exception as exc:
+            call.update({
+                "status": "failed",
+                "response_chars": 0,
+                "duration_ms": round((perf_counter() - started) * 1000, 1),
+                "error_type": exc.__class__.__name__,
+            })
+            raise
+        finally:
+            self.calls.append(call)
+
+    def summarize_since(self, start_index: int) -> dict:
+        calls = self.calls[start_index:]
+        prompt_sizes = [int(call.get("prompt_chars", 0)) for call in calls]
+        return {
+            "uses_ai": bool(calls),
+            "provider": self.provider,
+            "model": self.model,
+            "call_count": len(calls),
+            "duration_ms": round(sum(float(call.get("duration_ms", 0)) for call in calls), 1),
+            "prompt_chars": sum(int(call.get("prompt_chars", 0)) for call in calls),
+            "avg_prompt_chars": (
+                round(sum(prompt_sizes) / len(prompt_sizes), 1)
+                if prompt_sizes else 0
+            ),
+            "max_prompt_chars": max(prompt_sizes, default=0),
+            "response_chars": sum(int(call.get("response_chars", 0)) for call in calls),
+            "failed_calls": sum(call.get("status") == "failed" for call in calls),
+            "calls": calls,
+        }
 
 
 class EchuuLiveEngine:
@@ -106,6 +208,9 @@ class EchuuLiveEngine:
         self.persona_analyst = PersonaAnalyst()
         self.persona_expander = PersonaExpander()
         self.dossier: Optional[CharacterDossier] = None
+        self._dossier_cache_hit = False
+        self.tuning_guidance: tuple[dict[str, str], ...] = ()
+        self.debug_trace: dict = {"version": 1, "stages": []}
         self.unit_planner = UnitPlanner()
         self.structure_breaker = StructureBreaker()
         # Phase 2-①：用户人设卡 + call-back 埋梗账本（create_performance 里填充）
@@ -134,6 +239,13 @@ class EchuuLiveEngine:
         on_phase_callback: Optional[callable] = None,
         persona_card: Optional[dict] = None,
         enable_dossier: bool = True,
+        retrieval_allowed_ids: Optional[List[str]] = None,
+        retrieval_exclude_ids: Optional[List[str]] = None,
+        retrieval_seed: Optional[int] = None,
+        tuning_guidance: Optional[List[dict]] = None,
+        tone_intent: str = "auto",
+        depth_budget: str = "auto",
+        entertainment_mechanism: str = "",
     ) -> PerformanceState:
         """设置表演参数并生成剧本。"""
         # 在这里我们可以捕获推理过程并传给回调
@@ -147,18 +259,46 @@ class EchuuLiveEngine:
             on_phase_callback=on_phase_callback,
             persona_card=persona_card,
             enable_dossier=enable_dossier,
+            retrieval_allowed_ids=retrieval_allowed_ids,
+            retrieval_exclude_ids=retrieval_exclude_ids,
+            retrieval_seed=retrieval_seed,
+            tuning_guidance=tuning_guidance,
+            tone_intent=tone_intent,
+            depth_budget=depth_budget,
+            entertainment_mechanism=entertainment_mechanism,
         )
         print(f"\n表演设置完成: {name} - {topic}")
         print(f"剧本行数: {len(self.state.script_lines)}")
         return self.state
 
-    def _maybe_expand(self, name, persona, background, enable_dossier: bool):
-        """按开关决定是否扩充人物小传（eval 的'无扩充'变体走 False）。"""
+    def _maybe_expand(
+        self,
+        name,
+        persona,
+        background,
+        enable_dossier: bool,
+        tuning_guidance=None,
+    ):
+        """按开关扩充人物小传；相同人设在进程内复用，避免重复 LLM 调用。"""
         if not enable_dossier:
+            self._dossier_cache_hit = False
             return None
+        cache_key = _dossier_cache_key(
+            name, persona, background, self.persona_card, tuning_guidance,
+        )
+        cached = _get_cached_dossier(cache_key)
+        if cached is not None:
+            self._dossier_cache_hit = True
+            return cached
+        self._dossier_cache_hit = False
         try:
-            return self.persona_expander.expand(
-                name, persona, background, self.persona_card, self.llm_gen)
+            dossier = self.persona_expander.expand(
+                name, persona, background, self.persona_card, self.llm_gen,
+                tuning_guidance=tuning_guidance,
+            )
+            if dossier is not None and not dossier.is_empty():
+                _cache_dossier(cache_key, dossier)
+            return dossier
         except Exception as exc:  # noqa: BLE001 — 扩充失败不阻塞开播
             print(f"[engine] 人物小传扩充失败（跳过）: {exc}")
             return None
@@ -174,10 +314,67 @@ class EchuuLiveEngine:
         on_phase_callback: Optional[callable] = None,
         persona_card: Optional[dict] = None,
         enable_dossier: bool = True,
+        retrieval_allowed_ids: Optional[List[str]] = None,
+        retrieval_exclude_ids: Optional[List[str]] = None,
+        retrieval_seed: Optional[int] = None,
+        tuning_guidance: Optional[List[dict]] = None,
+        tone_intent: str = "auto",
+        depth_budget: str = "auto",
+        entertainment_mechanism: str = "",
     ) -> PerformanceState:
         """V2: PersonaAnalyst → UnitPlanner(自适应段数) → ScriptWriter → 去升华。"""
         from echuu.core.persona_card import PersonaCard
 
+        self.tuning_guidance = normalize_tuning_guidance(tuning_guidance)
+        guidance_ids = tuning_guidance_ids(self.tuning_guidance)
+        guidance_categories = tuning_guidance_categories(self.tuning_guidance)
+        self.debug_trace = {
+            "version": 1,
+            "pipeline": "EchuuLiveEngine.create_performance",
+            "stages": [{
+                "id": "input",
+                "label": "输入",
+                "status": "completed",
+                "duration_ms": 0,
+                "ai": {"uses_ai": False, "call_count": 0},
+                "output": {
+                    "name": name,
+                    "persona": persona,
+                    "background": background,
+                    "topic": topic,
+                    "language": language,
+                    "enable_dossier": enable_dossier,
+                    "persona_card": persona_card,
+                    "retrieval_allowed_ids": retrieval_allowed_ids,
+                    "retrieval_exclude_ids": retrieval_exclude_ids,
+                    "retrieval_seed": retrieval_seed,
+                    "tuning_guidance_ids": guidance_ids,
+                    "tone_intent": tone_intent,
+                    "depth_budget": depth_budget,
+                    "entertainment_mechanism": entertainment_mechanism,
+                },
+            }],
+        }
+        self.debug_trace["stages"].append({
+            "id": "tuning_guidance",
+            "label": "人类批注规则",
+            "status": "completed" if self.tuning_guidance else "skipped",
+            "duration_ms": 0,
+            "ai": {"uses_ai": False, "call_count": 0},
+            "input": {
+                "source": "TRAIN tuning notes",
+                "note_ids": guidance_ids,
+            },
+            "metrics": {
+                "rule_count": len(self.tuning_guidance),
+                "categories": guidance_categories,
+                "fingerprint": tuning_guidance_fingerprint(self.tuning_guidance),
+            },
+            "output": {
+                "rules": list(self.tuning_guidance),
+                "prompt_text": render_tuning_guidance(self.tuning_guidance),
+            },
+        })
         self.stream_lang_context = setup_stream_language_from_topic(topic, persona)
         print(f"🌐 语言设置: {self.stream_lang_context.greeting_style}")
 
@@ -189,38 +386,200 @@ class EchuuLiveEngine:
 
         if on_phase_callback:
             on_phase_callback("Phase 0: 扩充人物小传 + 推导冲突...")
-        self.dossier = self._maybe_expand(name, persona, background, enable_dossier)
+        ai_call_start = len(self.llm_gen.calls)
+        stage_started = perf_counter()
+        self.dossier = self._maybe_expand(
+            name, persona, background, enable_dossier,
+            tuning_guidance=self.tuning_guidance,
+        )
+        dossier_output = asdict(self.dossier) if self.dossier else None
+        dossier_leaks = find_prompt_leaks(
+            dossier_output, self.tuning_guidance,
+        )
+        self.debug_trace["stages"].append({
+            "id": "dossier",
+            "label": "人物扩充",
+            "status": (
+                "skipped" if not enable_dossier
+                else "degraded" if dossier_leaks
+                else "completed"
+            ),
+            "duration_ms": round((perf_counter() - stage_started) * 1000, 1),
+            "ai": self.llm_gen.summarize_since(ai_call_start),
+            "input": {
+                "name": name,
+                "persona": persona,
+                "background": background,
+                "persona_card": persona_card,
+            },
+            "metrics": {
+                "enabled": enable_dossier,
+                "cache_hit": self._dossier_cache_hit,
+                "has_conflict": bool(self.dossier and self.dossier.conflict.statement),
+                "prompt_version": DOSSIER_PROMPT_VERSION,
+                "prompt_leak_detected": bool(dossier_leaks),
+                "prompt_leak_markers": list(dossier_leaks),
+            },
+            "output": dossier_output,
+        })
         if self.dossier and not self.dossier.is_empty():
             print(f"🎭 人物小传冲突: {self.dossier.conflict.statement}")
 
         if on_phase_callback:
             on_phase_callback("Phase A: 分析人设三轴 + 故事内核...")
+        ai_call_start = len(self.llm_gen.calls)
+        stage_started = perf_counter()
         rich_persona, story_core = self.persona_analyst.analyze(
             name=name, persona=persona, topic=topic, background=background, llm=self.llm_gen,
             card=self.persona_card, dossier=self.dossier,
+            tuning_guidance=self.tuning_guidance,
+            tone_intent=tone_intent,
+            depth_budget=depth_budget,
+            entertainment_mechanism=entertainment_mechanism,
         )
+        analysis_output = {
+            "rich_persona": asdict(rich_persona),
+            "story_core": asdict(story_core),
+        }
+        analysis_leaks = find_prompt_leaks(
+            analysis_output, self.tuning_guidance,
+        )
+        self.debug_trace["stages"].append({
+            "id": "persona_analysis",
+            "label": "人设、话语类型与内容内核",
+            "status": "degraded" if analysis_leaks else "completed",
+            "duration_ms": round((perf_counter() - stage_started) * 1000, 1),
+            "ai": self.llm_gen.summarize_since(ai_call_start),
+            "input": {
+                "name": name,
+                "persona": persona,
+                "background": background,
+                "topic": topic,
+                "tone_intent": tone_intent,
+                "depth_budget": depth_budget,
+                "entertainment_mechanism": entertainment_mechanism,
+                "dossier": asdict(self.dossier) if self.dossier else None,
+            },
+            "output": analysis_output,
+            "metrics": {
+                "discourse_mode": story_core.discourse_mode,
+                "prompt_version": ANALYST_PROMPT_VERSION,
+                "prompt_leak_detected": bool(analysis_leaks),
+                "prompt_leak_markers": list(analysis_leaks),
+            },
+        })
 
         if on_phase_callback:
             on_phase_callback("Phase B: 排时间/音色骨架...")
-        # 节目长度自适应：故事撑得起几段就播几段（2~4 段 ≈ 2.5~5 分钟）
-        n_units = max(2, min(4, len(story_core.story_beats) or 4))
+        # 节目长度自适应：非叙事默认不超过 3 段，避免为了凑四段换框架、加支线。
+        max_units = 4 if story_core.discourse_mode == "narrative" else 3
+        n_units = max(2, min(max_units, len(story_core.story_beats) or 3))
+        stage_started = perf_counter()
         units = self.unit_planner.plan(n_units)
+        self.debug_trace["stages"].append({
+            "id": "unit_plan",
+            "label": "节目分段",
+            "status": "completed",
+            "duration_ms": round((perf_counter() - stage_started) * 1000, 1),
+            "ai": {"uses_ai": False, "call_count": 0},
+            "input": {
+                "requested_unit_count": n_units,
+                "story_beats": list(story_core.story_beats),
+                "spine": story_core.spine,
+                "supporting_points": list(story_core.supporting_points),
+                "emotional_undercurrent": story_core.emotional_undercurrent,
+            },
+            "metrics": {"unit_count": len(units)},
+            "output": [asdict(unit) for unit in units],
+        })
         print(f"🎚️ 节目长度: {len(units)} 段 (~{int(len(units) * 75 / 60)}min，按故事自适应)")
 
         if on_phase_callback:
             on_phase_callback("Phase C: 抽相关 few-shot + 编剧创作...")
         examples = ""
+        few_shot_ids: list[str] = []
         if self.example_sampler:
             lang = "en" if str(language).lower().startswith("en") else "zh"
-            examples = self.example_sampler.get_relevant_examples(
-                topic=topic, persona=persona, n=3, language=lang,
+            examples, few_shot_ids = self.example_sampler.get_relevant_examples_with_ids(
+                topic=topic, persona=persona, n=2, language=lang,
+                seed=retrieval_seed,
+                allowed_ids=retrieval_allowed_ids,
+                exclude_ids=retrieval_exclude_ids or (),
             )
-        n_ex = examples.count("真实案例") if examples else 0
+        n_ex = len(few_shot_ids)
         print(f"📚 few-shot 示例注入: {n_ex} 条 (sampler={'on' if self.example_sampler else 'off'})")
+        writer_input = {
+            "rich_persona": asdict(rich_persona),
+            "story_core": asdict(story_core),
+            "unit_skeleton": [asdict(unit) for unit in units],
+            "few_shot_count": n_ex,
+            "few_shot_ids": few_shot_ids,
+            "retrieval_seed": retrieval_seed,
+            "dossier": asdict(self.dossier) if self.dossier else None,
+            "tuning_guidance_ids": guidance_ids,
+        }
+        ai_call_start = len(self.llm_gen.calls)
+        stage_started = perf_counter()
         units = self.script_writer.write(
             rich_persona, story_core, units, examples=examples, topic=topic,
             card=self.persona_card, dossier=self.dossier,
+            source_material={
+                "name": name,
+                "persona": persona,
+                "background": background,
+                "topic": topic,
+                "tone_intent": tone_intent,
+                "depth_budget": depth_budget,
+                "entertainment_mechanism": entertainment_mechanism,
+            },
+            tuning_guidance=self.tuning_guidance,
         )
+        script_output = [asdict(unit) for unit in units]
+        script_leaks = find_prompt_leaks(
+            script_output, self.tuning_guidance,
+        )
+        self.debug_trace["stages"].append({
+            "id": "script_writer",
+            "label": "剧本生成",
+            "status": (
+                "degraded"
+                if script_leaks or not self.script_writer.last_quality_gate["passed"]
+                else "completed"
+            ),
+            "duration_ms": round((perf_counter() - stage_started) * 1000, 1),
+            "ai": self.llm_gen.summarize_since(ai_call_start),
+            "input": writer_input,
+            "metrics": {
+                "few_shot_count": n_ex,
+                "few_shot_ids": few_shot_ids,
+                "retrieval_seed": retrieval_seed,
+                "unit_count": len(units),
+                "line_count": sum(len(unit.lines) for unit in units),
+                "spine": story_core.spine,
+                "supporting_point_count": len(story_core.supporting_points),
+                "quality_gate_retried": self.script_writer.last_quality_gate["retried"],
+                "quality_gate_sanitized": self.script_writer.last_quality_gate["sanitized"],
+                "quality_gate_passed": self.script_writer.last_quality_gate["passed"],
+                "quality_gate_first_issues": self.script_writer.last_quality_gate["first_issues"],
+                "quality_gate_retry_issues": self.script_writer.last_quality_gate["retry_issues"],
+                "quality_gate_first_issue_details": self.script_writer.last_quality_gate[
+                    "first_issue_details"
+                ],
+                "quality_gate_retry_issue_details": self.script_writer.last_quality_gate[
+                    "retry_issue_details"
+                ],
+                "quality_gate_post_sanitize_issues": self.script_writer.last_quality_gate[
+                    "post_sanitize_issues"
+                ],
+                "quality_gate_post_sanitize_issue_details": self.script_writer.last_quality_gate[
+                    "post_sanitize_issue_details"
+                ],
+                "prompt_version": WRITER_PROMPT_VERSION,
+                "prompt_leak_detected": bool(script_leaks),
+                "prompt_leak_markers": list(script_leaks),
+            },
+            "output": script_output,
+        })
 
         # call-back 埋梗账本：writer 埋的意象优先，兜底用生活化锚点（closing 回收用）
         from echuu.core.gag_ledger import GagLedger
@@ -233,8 +592,29 @@ class EchuuLiveEngine:
 
         if on_phase_callback:
             on_phase_callback("Phase D: 清洗升华...")
+        pre_process_line_count = sum(len(unit.lines) for unit in units)
+        stage_started = perf_counter()
         for u in units:
             self.structure_breaker.delete_sublimation_in_unit(u)
+        postprocess_output = [asdict(unit) for unit in units]
+        postprocess_leaks = find_prompt_leaks(
+            postprocess_output, self.tuning_guidance,
+        )
+        self.debug_trace["stages"].append({
+            "id": "postprocess",
+            "label": "后处理",
+            "status": "degraded" if postprocess_leaks else "completed",
+            "duration_ms": round((perf_counter() - stage_started) * 1000, 1),
+            "ai": {"uses_ai": False, "call_count": 0},
+            "input": {"line_count": pre_process_line_count},
+            "metrics": {
+                "line_count": sum(len(unit.lines) for unit in units),
+                "planted_gags": list(self.script_writer.last_planted_gags),
+                "prompt_leak_detected": bool(postprocess_leaks),
+                "prompt_leak_markers": list(postprocess_leaks),
+            },
+            "output": postprocess_output,
+        })
 
         show = Show(persona=rich_persona, topic=topic, units=units, story_core=story_core)
 

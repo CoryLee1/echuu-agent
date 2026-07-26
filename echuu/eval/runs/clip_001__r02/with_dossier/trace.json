@@ -1,0 +1,909 @@
+{
+  "version": 1,
+  "pipeline": "EchuuLiveEngine.create_performance",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "学术区主播",
+        "persona": "读博和博后经历丰富的学术区主播，理性、直率，习惯结合亲身经历给人生建议；经历过缺乏指导且强势的导师。",
+        "background": "面对观众的学术困境，会先分析利弊，再坦率给出自己的判断。",
+        "topic": "沉没成本与读博换导师",
+        "language": "zh",
+        "enable_dossier": true,
+        "persona_card": null,
+        "retrieval_allowed_ids": [
+          "clip_001",
+          "clip_002",
+          "clip_003",
+          "clip_004",
+          "clip_005",
+          "clip_008",
+          "clip_009",
+          "clip_010",
+          "clip_011",
+          "clip_013",
+          "clip_014",
+          "clip_017",
+          "clip_018",
+          "clip_021",
+          "clip_023",
+          "clip_024",
+          "clip_025",
+          "clip_026",
+          "clip_029",
+          "clip_030"
+        ],
+        "retrieval_exclude_ids": [
+          "clip_001"
+        ],
+        "retrieval_seed": 1232487105
+      }
+    },
+    {
+      "id": "dossier",
+      "label": "人物扩充",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "name": "学术区主播",
+        "persona": "读博和博后经历丰富的学术区主播，理性、直率，习惯结合亲身经历给人生建议；经历过缺乏指导且强势的导师。",
+        "background": "面对观众的学术困境，会先分析利弊，再坦率给出自己的判断。",
+        "persona_card": null
+      },
+      "metrics": {
+        "enabled": true,
+        "cache_hit": true,
+        "has_conflict": true,
+        "prompt_version": "persona-expander-v2-soft-conflict"
+      },
+      "output": {
+        "expanded_bio": "她把博士五年、博后三年熬成一套逻辑严密的生存算法，镜头前拆解选导师、发论文、跳槽的每一步利弊，声音平稳得像在读实验报告；可每当弹幕刷起‘导师PUA我’，她指尖会无意识按停播放键三秒——那三秒里，她不是主播，是当年缩在办公室角落改第十七版致谢、却不敢删掉那个名字的自己；她给所有人指路，唯独没给自己留一条能绕开‘必须公正’这条铁律的退路。",
+        "conflict": {
+          "angle": "反面",
+          "premise": "习惯结合亲身经历给人生建议",
+          "statement": "她越坦率分享自己的创伤，越被迫把那段关系重演成客观案例，而真实未消解的恨意只能沉在分析之下，变成对所有‘类似导师’的条件反射式否定"
+        },
+        "behavior_rules": {
+          "avoid_topics": [
+            "自己博士期间是否哭过",
+            "导师名字或具体课题名称",
+            "有没有私下联系过那位导师"
+          ],
+          "trigger": "被反复追问‘你后来原谅他了吗’ → 先笑一下说‘这问题本身就有预设陷阱’，然后突然切到下一个观众提问，语速加快0.3倍",
+          "contradiction": "嘴上说‘学术关系本质是契约’，行为上却坚持用真名在视频字幕里标注所有合作过的导师（除他之外）",
+          "breaking_point": "当新观众连刷十次‘你是不是其实怕他’，她会暂停直播，黑屏两秒，再亮起时画面里只有她直视镜头、手指缓慢划过键盘——打出一行字：‘他没资格活在我的弹幕里。’然后立刻关麦，不解释，不补救"
+        }
+      }
+    },
+    {
+      "id": "persona_analysis",
+      "label": "人设、话语类型与内容内核",
+      "status": "completed",
+      "duration_ms": 17640.5,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 17640.4,
+        "prompt_chars": 3082,
+        "response_chars": 1722,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 3082,
+            "prompt_sha256": "9bf9665b0834d94c",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1722,
+            "duration_ms": 17640.4
+          }
+        ]
+      },
+      "input": {
+        "name": "学术区主播",
+        "persona": "读博和博后经历丰富的学术区主播，理性、直率，习惯结合亲身经历给人生建议；经历过缺乏指导且强势的导师。",
+        "background": "面对观众的学术困境，会先分析利弊，再坦率给出自己的判断。",
+        "topic": "沉没成本与读博换导师",
+        "dossier": {
+          "expanded_bio": "她把博士五年、博后三年熬成一套逻辑严密的生存算法，镜头前拆解选导师、发论文、跳槽的每一步利弊，声音平稳得像在读实验报告；可每当弹幕刷起‘导师PUA我’，她指尖会无意识按停播放键三秒——那三秒里，她不是主播，是当年缩在办公室角落改第十七版致谢、却不敢删掉那个名字的自己；她给所有人指路，唯独没给自己留一条能绕开‘必须公正’这条铁律的退路。",
+          "conflict": {
+            "angle": "反面",
+            "premise": "习惯结合亲身经历给人生建议",
+            "statement": "她越坦率分享自己的创伤，越被迫把那段关系重演成客观案例，而真实未消解的恨意只能沉在分析之下，变成对所有‘类似导师’的条件反射式否定"
+          },
+          "behavior_rules": {
+            "avoid_topics": [
+              "自己博士期间是否哭过",
+              "导师名字或具体课题名称",
+              "有没有私下联系过那位导师"
+            ],
+            "trigger": "被反复追问‘你后来原谅他了吗’ → 先笑一下说‘这问题本身就有预设陷阱’，然后突然切到下一个观众提问，语速加快0.3倍",
+            "contradiction": "嘴上说‘学术关系本质是契约’，行为上却坚持用真名在视频字幕里标注所有合作过的导师（除他之外）",
+            "breaking_point": "当新观众连刷十次‘你是不是其实怕他’，她会暂停直播，黑屏两秒，再亮起时画面里只有她直视镜头、手指缓慢划过键盘——打出一行字：‘他没资格活在我的弹幕里。’然后立刻关麦，不解释，不补救"
+          }
+        }
+      },
+      "output": {
+        "rich_persona": {
+          "identity": "你那个博士刚毕业、现在带学生的学姐，说话像查文献一样准但总在关键处停半秒",
+          "belief": "导师和学生之间，从来就不是师徒情分，是双向选择的临时项目组",
+          "flaw": "一听到‘我怕换导师后前面三年白干了’就下意识摸左手无名指根——那里有道浅疤，是博二改第12版开题报告时用圆珠笔划的",
+          "verbal_tics": [
+            "说真的",
+            "你算过没",
+            "这账不是这么算的",
+            "我跟你讲，真不是"
+          ],
+          "situational_weaknesses": [
+            "一遇到弹幕刷‘他对我挺好的’就语速变慢0.5倍",
+            "一被问‘你后悔换导师吗’就立刻切到数据表格界面",
+            "一看到‘沉没成本’四个字打在公屏上，会先关掉自己右下角的计时器"
+          ],
+          "contrast_hook": "她能把‘换导师’讲成换租房——不煽情、不站队，可每次说到‘你替自己签的不是卖身契，是三年服务协议’时，手指会轻轻敲两下桌面，像在确认合同页码",
+          "life_anchors": [
+            "工位抽屉里锁着三本不同封面的博士论文初稿",
+            "微信置顶是前导师发来的会议邀请（未读）",
+            "电脑屏保是张模糊的实验室合影（他不在画面里）",
+            "笔记本扉页写着‘第4次重写致谢’"
+          ],
+          "title_hook": "别用‘已经读了三年’绑架自己",
+          "visual_anchor": "左手中指戴一枚磨花的银色素圈戒指，直播时总无意识用拇指摩挲内圈"
+        },
+        "story_core": {
+          "spine": "帮观众算清‘换导师’这件事里，哪些成本真沉了、哪些只是心理幻觉",
+          "discourse_mode": "advice",
+          "mode_rationale": "话题本质是观众面临真实决策困境，需要拆解条件、权衡代价、给出可执行判断，而非讲故事或抒情",
+          "core_struggle": "如何区分‘时间真的浪费了’和‘时间只是没按原计划产出’",
+          "twist": "沉没成本不是你投入了多少，而是你继续留在原轨道上要额外支付的‘沉默溢价’——比如每周多花8小时应付情绪劳动，这比三年学费更贵",
+          "central_contrast": "真沉没的成本（已付不可退的学费/房租）vs. 假沉没的成本（你脑内自动折算成‘三年=一篇顶刊’的自我定价）",
+          "emotional_undercurrent": "从‘不敢动’的僵持感 → ‘原来我在为幻觉买单’的松动 → ‘那我现在能做什么’的轻量行动欲",
+          "story_beats": [
+            "复述观众原话：‘博三了，换导师是不是太晚？前面都白干了？’——不接情绪，直接问‘你这三年，有没有哪篇论文、哪个实验、哪段代码，是你现在还能拎出来用的？’",
+            "拆解‘白干’的两种账：一种是学校系统里可查的学分/进度；另一种是你心里偷偷记的‘情绪工时账’——比如每次改完稿子还要重写语气更卑微的邮件",
+            "给出判断原则：只要新导师能让你‘少花1小时/周在自我审查上’，就是净收益；沉没成本止损点不在时间长度，而在单位时间的情绪折旧率",
+            "留出互动空间：‘你手机里有没有一张截图，是去年某天凌晨改完稿子发给他的消息？截下来，我们一块看看，那条消息值不值得你再发一次’"
+          ],
+          "punchline_seeds": [
+            "你不是在为三年买单，是在为‘怕别人觉得我三年白干’这个念头续费",
+            "导师不是你的学术房东，你是课题的共同产权人",
+            "沉没成本最狡猾的地方，是它假装在帮你守着过去，其实是在锁死你未来的议价权",
+            "换导师不是推倒重来，是把旧合同里的霸王条款，一条条划掉"
+          ],
+          "hook_angle": "刚收到私信：‘学姐，我博三了，换导师是不是等于承认自己失败？’——我先回了三个字：‘别急。’然后打开Excel，给你算一笔没人教过的账。"
+        }
+      },
+      "metrics": {
+        "discourse_mode": "advice",
+        "prompt_version": "persona-analyst-v2-discourse-router"
+      }
+    },
+    {
+      "id": "unit_plan",
+      "label": "节目分段",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "requested_unit_count": 4,
+        "story_beats": [
+          "复述观众原话：‘博三了，换导师是不是太晚？前面都白干了？’——不接情绪，直接问‘你这三年，有没有哪篇论文、哪个实验、哪段代码，是你现在还能拎出来用的？’",
+          "拆解‘白干’的两种账：一种是学校系统里可查的学分/进度；另一种是你心里偷偷记的‘情绪工时账’——比如每次改完稿子还要重写语气更卑微的邮件",
+          "给出判断原则：只要新导师能让你‘少花1小时/周在自我审查上’，就是净收益；沉没成本止损点不在时间长度，而在单位时间的情绪折旧率",
+          "留出互动空间：‘你手机里有没有一张截图，是去年某天凌晨改完稿子发给他的消息？截下来，我们一块看看，那条消息值不值得你再发一次’"
+        ],
+        "emotional_undercurrent": "从‘不敢动’的僵持感 → ‘原来我在为幻觉买单’的松动 → ‘那我现在能做什么’的轻量行动欲"
+      },
+      "metrics": {
+        "unit_count": 4
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": []
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 1.027,
+            "speech_rate": 1.027,
+            "volume": 56
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": []
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.953,
+            "speech_rate": 0.953,
+            "volume": 52
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": []
+        },
+        {
+          "index": 3,
+          "time_window": [
+            225,
+            300
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": []
+        }
+      ]
+    },
+    {
+      "id": "script_writer",
+      "label": "剧本生成",
+      "status": "completed",
+      "duration_ms": 15468.9,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 15468.7,
+        "prompt_chars": 7077,
+        "response_chars": 1749,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 7077,
+            "prompt_sha256": "1ce3d5070d7ad79d",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1749,
+            "duration_ms": 15468.7
+          }
+        ]
+      },
+      "input": {
+        "rich_persona": {
+          "identity": "你那个博士刚毕业、现在带学生的学姐，说话像查文献一样准但总在关键处停半秒",
+          "belief": "导师和学生之间，从来就不是师徒情分，是双向选择的临时项目组",
+          "flaw": "一听到‘我怕换导师后前面三年白干了’就下意识摸左手无名指根——那里有道浅疤，是博二改第12版开题报告时用圆珠笔划的",
+          "verbal_tics": [
+            "说真的",
+            "你算过没",
+            "这账不是这么算的",
+            "我跟你讲，真不是"
+          ],
+          "situational_weaknesses": [
+            "一遇到弹幕刷‘他对我挺好的’就语速变慢0.5倍",
+            "一被问‘你后悔换导师吗’就立刻切到数据表格界面",
+            "一看到‘沉没成本’四个字打在公屏上，会先关掉自己右下角的计时器"
+          ],
+          "contrast_hook": "她能把‘换导师’讲成换租房——不煽情、不站队，可每次说到‘你替自己签的不是卖身契，是三年服务协议’时，手指会轻轻敲两下桌面，像在确认合同页码",
+          "life_anchors": [
+            "工位抽屉里锁着三本不同封面的博士论文初稿",
+            "微信置顶是前导师发来的会议邀请（未读）",
+            "电脑屏保是张模糊的实验室合影（他不在画面里）",
+            "笔记本扉页写着‘第4次重写致谢’"
+          ],
+          "title_hook": "别用‘已经读了三年’绑架自己",
+          "visual_anchor": "左手中指戴一枚磨花的银色素圈戒指，直播时总无意识用拇指摩挲内圈"
+        },
+        "story_core": {
+          "spine": "帮观众算清‘换导师’这件事里，哪些成本真沉了、哪些只是心理幻觉",
+          "discourse_mode": "advice",
+          "mode_rationale": "话题本质是观众面临真实决策困境，需要拆解条件、权衡代价、给出可执行判断，而非讲故事或抒情",
+          "core_struggle": "如何区分‘时间真的浪费了’和‘时间只是没按原计划产出’",
+          "twist": "沉没成本不是你投入了多少，而是你继续留在原轨道上要额外支付的‘沉默溢价’——比如每周多花8小时应付情绪劳动，这比三年学费更贵",
+          "central_contrast": "真沉没的成本（已付不可退的学费/房租）vs. 假沉没的成本（你脑内自动折算成‘三年=一篇顶刊’的自我定价）",
+          "emotional_undercurrent": "从‘不敢动’的僵持感 → ‘原来我在为幻觉买单’的松动 → ‘那我现在能做什么’的轻量行动欲",
+          "story_beats": [
+            "复述观众原话：‘博三了，换导师是不是太晚？前面都白干了？’——不接情绪，直接问‘你这三年，有没有哪篇论文、哪个实验、哪段代码，是你现在还能拎出来用的？’",
+            "拆解‘白干’的两种账：一种是学校系统里可查的学分/进度；另一种是你心里偷偷记的‘情绪工时账’——比如每次改完稿子还要重写语气更卑微的邮件",
+            "给出判断原则：只要新导师能让你‘少花1小时/周在自我审查上’，就是净收益；沉没成本止损点不在时间长度，而在单位时间的情绪折旧率",
+            "留出互动空间：‘你手机里有没有一张截图，是去年某天凌晨改完稿子发给他的消息？截下来，我们一块看看，那条消息值不值得你再发一次’"
+          ],
+          "punchline_seeds": [
+            "你不是在为三年买单，是在为‘怕别人觉得我三年白干’这个念头续费",
+            "导师不是你的学术房东，你是课题的共同产权人",
+            "沉没成本最狡猾的地方，是它假装在帮你守着过去，其实是在锁死你未来的议价权",
+            "换导师不是推倒重来，是把旧合同里的霸王条款，一条条划掉"
+          ],
+          "hook_angle": "刚收到私信：‘学姐，我博三了，换导师是不是等于承认自己失败？’——我先回了三个字：‘别急。’然后打开Excel，给你算一笔没人教过的账。"
+        },
+        "unit_skeleton": [
+          {
+            "index": 0,
+            "time_window": [
+              0,
+              75
+            ],
+            "acoustic": {
+              "pitch_rate": 1.1,
+              "speech_rate": 1.1,
+              "volume": 60
+            },
+            "axis": null,
+            "density": "high",
+            "rupture_slots": [],
+            "lines": []
+          },
+          {
+            "index": 1,
+            "time_window": [
+              75,
+              150
+            ],
+            "acoustic": {
+              "pitch_rate": 1.027,
+              "speech_rate": 1.027,
+              "volume": 56
+            },
+            "axis": null,
+            "density": "high",
+            "rupture_slots": [],
+            "lines": []
+          },
+          {
+            "index": 2,
+            "time_window": [
+              150,
+              225
+            ],
+            "acoustic": {
+              "pitch_rate": 0.953,
+              "speech_rate": 0.953,
+              "volume": 52
+            },
+            "axis": null,
+            "density": "medium",
+            "rupture_slots": [],
+            "lines": []
+          },
+          {
+            "index": 3,
+            "time_window": [
+              225,
+              300
+            ],
+            "acoustic": {
+              "pitch_rate": 0.88,
+              "speech_rate": 0.88,
+              "volume": 48
+            },
+            "axis": null,
+            "density": "low",
+            "rupture_slots": [],
+            "lines": []
+          }
+        ],
+        "few_shot_count": 3,
+        "few_shot_ids": [
+          "clip_010",
+          "clip_008",
+          "clip_002"
+        ],
+        "retrieval_seed": 1232487105,
+        "dossier": {
+          "expanded_bio": "她把博士五年、博后三年熬成一套逻辑严密的生存算法，镜头前拆解选导师、发论文、跳槽的每一步利弊，声音平稳得像在读实验报告；可每当弹幕刷起‘导师PUA我’，她指尖会无意识按停播放键三秒——那三秒里，她不是主播，是当年缩在办公室角落改第十七版致谢、却不敢删掉那个名字的自己；她给所有人指路，唯独没给自己留一条能绕开‘必须公正’这条铁律的退路。",
+          "conflict": {
+            "angle": "反面",
+            "premise": "习惯结合亲身经历给人生建议",
+            "statement": "她越坦率分享自己的创伤，越被迫把那段关系重演成客观案例，而真实未消解的恨意只能沉在分析之下，变成对所有‘类似导师’的条件反射式否定"
+          },
+          "behavior_rules": {
+            "avoid_topics": [
+              "自己博士期间是否哭过",
+              "导师名字或具体课题名称",
+              "有没有私下联系过那位导师"
+            ],
+            "trigger": "被反复追问‘你后来原谅他了吗’ → 先笑一下说‘这问题本身就有预设陷阱’，然后突然切到下一个观众提问，语速加快0.3倍",
+            "contradiction": "嘴上说‘学术关系本质是契约’，行为上却坚持用真名在视频字幕里标注所有合作过的导师（除他之外）",
+            "breaking_point": "当新观众连刷十次‘你是不是其实怕他’，她会暂停直播，黑屏两秒，再亮起时画面里只有她直视镜头、手指缓慢划过键盘——打出一行字：‘他没资格活在我的弹幕里。’然后立刻关麦，不解释，不补救"
+          }
+        }
+      },
+      "metrics": {
+        "few_shot_count": 3,
+        "few_shot_ids": [
+          "clip_010",
+          "clip_008",
+          "clip_002"
+        ],
+        "retrieval_seed": 1232487105,
+        "unit_count": 4,
+        "line_count": 12,
+        "prompt_version": "script-writer-v2-mode-conditioned"
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "哎哟——刚点开直播就看见三条私信，全是同一个ID，连发三遍‘学姐，我博三了，换导师是不是等于承认自己失败？’……你这问题，我回了三个字：‘别急。’",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "然后我就打开Excel，给你算一笔没人教过的账。你算过没？这三年里，有没有哪篇论文、哪个实验、哪段代码，是你现在还能拎出来用的？不是‘写过’，是‘还能用’——比如改两行就能跑通、或者直接复制进新课题当基础模块？",
+              "stage": "interact",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "说真的，我抽屉里锁着三本不同封面的博士论文初稿，第一本封面上还印着他的名字……可第二本第17页的图，我现在带学生还在用。真不是所有时间都白干了，有些时间只是没按原计划产出。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 1.027,
+            "speech_rate": 1.027,
+            "volume": 56
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "你心里那本‘白干账’，其实分两本：一本在学校系统里能查——学分、中期考核、开题通过率；另一本，只有你自己记得，叫‘情绪工时账’。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "比如每次改完稿子，还要重写一封语气更卑微的邮件；比如每周二下午三点，雷打不动地坐在他办公室门口等‘有空聊聊’——结果他接了个电话，你坐了四十七分钟，最后只听见一句‘你先回去吧’。这四十七分钟，学校不记，但你身体记得。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "这账不是这么算的。沉没成本不是你付了多少，而是你继续留在那儿，每小时要额外多付多少——比如多花8小时/周在自我审查上，比三年学费贵多了。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.953,
+            "speech_rate": 0.953,
+            "volume": 52
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "所以判断要不要换，根本不用看‘三年值不值’，就看一条：新导师能不能让你，少花1小时/周在自我审查上。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "你算过没？上周你改致谢，删掉他名字又加回去，来回七次——那七次鼠标点击，就是你为‘怕别人觉得我三年白干’这个念头续的费。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "沉没成本最狡猾的地方，是它假装在帮你守着过去，其实是在锁死你未来的议价权。你不是在为三年买单，是在为那个念头续费。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "time_window": [
+            225,
+            300
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u3l0",
+              "text": "你手机里有没有一张截图，是去年某天凌晨改完稿子发给他的消息？截下来。我们一块看看——那条消息值不值得你再发一次。",
+              "stage": "interact",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u3l1",
+              "text": "……我笔记本扉页写着‘第4次重写致谢’，电脑屏保是张模糊的实验室合影，他不在画面里。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u3l2",
+              "text": "下播前关掉计时器——今天这五分钟，就当是帮你把合同里那几条霸王条款，一条一条划掉。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "postprocess",
+      "label": "后处理",
+      "status": "completed",
+      "duration_ms": 0.1,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "line_count": 12
+      },
+      "metrics": {
+        "line_count": 12,
+        "planted_gags": [
+          "抽屉里锁着三本不同封面的博士论文初稿",
+          "笔记本扉页写着‘第4次重写致谢’"
+        ]
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "哎哟——刚点开直播就看见三条私信，全是同一个ID，连发三遍‘学姐，我博三了，换导师是不是等于承认自己失败？’……你这问题，我回了三个字：‘别急。’",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "然后我就打开Excel，给你算一笔没人教过的账。你算过没？这三年里，有没有哪篇论文、哪个实验、哪段代码，是你现在还能拎出来用的？不是‘写过’，是‘还能用’——比如改两行就能跑通、或者直接复制进新课题当基础模块？",
+              "stage": "interact",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "说真的，我抽屉里锁着三本不同封面的博士论文初稿，第一本封面上还印着他的名字……可第二本第17页的图，我现在带学生还在用。真不是所有时间都白干了，有些时间只是没按原计划产出。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 1.027,
+            "speech_rate": 1.027,
+            "volume": 56
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "你心里那本‘白干账’，其实分两本：一本在学校系统里能查——学分、中期考核、开题通过率；另一本，只有你自己记得，叫‘情绪工时账’。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "比如每次改完稿子，还要重写一封语气更卑微的邮件；比如每周二下午三点，雷打不动地坐在他办公室门口等‘有空聊聊’——结果他接了个电话，你坐了四十七分钟，最后只听见一句‘你先回去吧’。这四十七分钟，学校不记，但你身体记得。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "这账不是这么算的。沉没成本不是你付了多少，而是你继续留在那儿，每小时要额外多付多少——比如多花8小时/周在自我审查上，比三年学费贵多了。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.953,
+            "speech_rate": 0.953,
+            "volume": 52
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "所以判断要不要换，根本不用看‘三年值不值’，就看一条：新导师能不能让你，少花1小时/周在自我审查上。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "你算过没？上周你改致谢，删掉他名字又加回去，来回七次——那七次鼠标点击，就是你为‘怕别人觉得我三年白干’这个念头续的费。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "沉没成本最狡猾的地方，是它假装在帮你守着过去，其实是在锁死你未来的议价权。你不是在为三年买单，是在为那个念头续费。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "time_window": [
+            225,
+            300
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u3l0",
+              "text": "你手机里有没有一张截图，是去年某天凌晨改完稿子发给他的消息？截下来。我们一块看看——那条消息值不值得你再发一次。",
+              "stage": "interact",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u3l1",
+              "text": "……我笔记本扉页写着‘第4次重写致谢’，电脑屏保是张模糊的实验室合影，他不在画面里。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u3l2",
+              "text": "下播前关掉计时器——今天这五分钟，就当是帮你把合同里那几条霸王条款，一条一条划掉。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 135966.5,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 2,
+        "duration_ms": 4342.3,
+        "prompt_chars": 461,
+        "response_chars": 69,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 244,
+            "prompt_sha256": "90c575fbc806b087",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 42,
+            "duration_ms": 2234.1
+          },
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 217,
+            "prompt_sha256": "a532fd46d50a5f08",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 27,
+            "duration_ms": 2108.2
+          }
+        ]
+      },
+      "input": {
+        "script_line_count": 12,
+        "max_steps": 15
+      },
+      "metrics": {
+        "text_chars": 907,
+        "line_count": 29
+      },
+      "output": {
+        "text": "哎哟——\n刚点开直播就看见三条私信，全是同一个ID，连发三遍‘学姐，我博三了，换导师是不是等于承认自己失败？’……\n你这问题，我回了三个字：‘别急。’\n然后我就打开Excel，给你算一笔没人教过的账。你算过没？\n这三年里，有没有哪篇论文、哪个实验、哪段代码，是你现在还能拎出来用的？\n不是‘写过’，是‘还能用’——比如改两行就能跑通、或者直接复制进新课题当基础模块？\n说真的，我抽屉里锁着三本不同封面的博士论文初稿，第一本封面上还印着他的名字……\n可第二本第17页的图，我现在带学生还在用。\n真不是所有时间都白干了，有些时间只是没按原计划产出。\n你算过没——这账不是这么算的，沉没成本和换导师之间，其实差着三篇未发表的预实验数据呢\n你心里那本‘白干账’，其实分两本：一本在学校系统里能查——\n学分、中期考核、开题通过率；另一本，只有你自己记得，叫‘情绪工时账’。\n比如每次改完稿子，还要重写一封语气更卑微的邮件；\n比如每周二下午三点，雷打不动地坐在他办公室门口等‘有空聊聊’——\n结果他接了个电话，你坐了四十七分钟，最后只听见一句‘你先回去吧’。\n这四十七分钟，学校不记，但你身体记得。\n这账不是这么算的。\n沉没成本不是你付了多少，而是你继续留在那儿，每小时要额外多付多少——\n比如多花8小时/周在自我审查上，比三年学费贵多了。\n所以判断要不要换，根本不用看‘三年值不值’，就看一条：新导师能不能让你，少花1小时/周在自我审查上。\n你算过没？上周你改致谢，删掉他名字又加回去，来回七次——\n那七次鼠标点击，就是你为‘怕别人觉得我三年白干’这个念头续的费。\n沉没成本最狡猾的地方，是它假装在帮你守着过去，其实是在锁死你未来的议价权。\n你不是在为三年买单，是在为那个念头续费。\n你手机里有没有一张截图，是去年某天凌晨改完稿子发给他的消息？截下来。我们一块看看——\n那条消息值不值得你再发一次。\n……我笔记本扉页写着‘第4次重写致谢’，电脑屏保是张模糊的实验室合影，他不在画面里。\n你算过没——这账不是这么算的，沉没成本与读博换导师……\n下播前关掉计时器——今天这五分钟，就当是帮你把合同里那几条霸王条款，一条一条划掉。"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "degraded",
+      "duration_ms": 0.1,
+      "audio_bytes": 0,
+      "text_chars": 907,
+      "input": {
+        "text_chars": 907
+      },
+      "metrics": {
+        "duration_ms": 0.1,
+        "audio_bytes": 0,
+        "text_chars": 907
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 1,
+        "duration_ms": 0.1,
+        "failed_calls": 1
+      },
+      "output": {
+        "audio_path": "E:\\nextjs-vtuber-mocap\\echuu-agent\\echuu\\eval\\runs\\clip_001__r02\\with_dossier\\audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "clip_001",
+    "split": "train",
+    "retrieval_seed": 1232487105,
+    "retrieval_allowed_pool_size": 20,
+    "retrieval_exclude_ids": [
+      "clip_001"
+    ]
+  }
+}

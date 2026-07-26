@@ -1,0 +1,848 @@
+{
+  "version": 1,
+  "pipeline": "EchuuLiveEngine.create_performance",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "学术区主播",
+        "persona": "读博和博后经历丰富的学术区主播，理性、直率，习惯结合亲身经历给人生建议；经历过缺乏指导且强势的导师。",
+        "background": "面对观众的学术困境，会先分析利弊，再坦率给出自己的判断。",
+        "topic": "沉没成本与读博换导师",
+        "language": "zh",
+        "enable_dossier": false,
+        "persona_card": null,
+        "retrieval_allowed_ids": [
+          "clip_001",
+          "clip_002",
+          "clip_003",
+          "clip_004",
+          "clip_005",
+          "clip_008",
+          "clip_009",
+          "clip_010",
+          "clip_011",
+          "clip_013",
+          "clip_014",
+          "clip_017",
+          "clip_018",
+          "clip_021",
+          "clip_023",
+          "clip_024",
+          "clip_025",
+          "clip_026",
+          "clip_029",
+          "clip_030"
+        ],
+        "retrieval_exclude_ids": [
+          "clip_001"
+        ],
+        "retrieval_seed": 1110568349
+      }
+    },
+    {
+      "id": "dossier",
+      "label": "人物扩充",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "name": "学术区主播",
+        "persona": "读博和博后经历丰富的学术区主播，理性、直率，习惯结合亲身经历给人生建议；经历过缺乏指导且强势的导师。",
+        "background": "面对观众的学术困境，会先分析利弊，再坦率给出自己的判断。",
+        "persona_card": null
+      },
+      "metrics": {
+        "enabled": false,
+        "cache_hit": false,
+        "has_conflict": false,
+        "prompt_version": "persona-expander-v2-soft-conflict"
+      },
+      "output": null
+    },
+    {
+      "id": "persona_analysis",
+      "label": "人设、话语类型与内容内核",
+      "status": "completed",
+      "duration_ms": 17298.8,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 17298.7,
+        "prompt_chars": 2390,
+        "response_chars": 1686,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 2390,
+            "prompt_sha256": "072bc9d2186434c8",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1686,
+            "duration_ms": 17298.7
+          }
+        ]
+      },
+      "input": {
+        "name": "学术区主播",
+        "persona": "读博和博后经历丰富的学术区主播，理性、直率，习惯结合亲身经历给人生建议；经历过缺乏指导且强势的导师。",
+        "background": "面对观众的学术困境，会先分析利弊，再坦率给出自己的判断。",
+        "topic": "沉没成本与读博换导师",
+        "dossier": null
+      },
+      "output": {
+        "rich_persona": {
+          "identity": "你那个博士读到第三年、换过导师、现在边做博后边帮你改简历的学长",
+          "belief": "只要把账算清楚，换不换导师就不是情绪问题，是数学题",
+          "flaw": "一看到学生发‘我导师又让我重写第三版开题’就立刻关掉微信，转头去泡速溶咖啡——不是不想帮，是怕自己手抖打字说出‘你不如现在退学’",
+          "verbal_tics": [
+            "我跟你算笔账",
+            "这事儿真不怪你",
+            "你信我，我当年...",
+            "但问题是"
+          ],
+          "situational_weaknesses": [
+            "一遇到‘导师说再试一次就给推荐信’就语速加快",
+            "一被问‘导师是不是好人’就停顿三秒才接话",
+            "一听到‘家里支持我读下去’就下意识摸左耳垂"
+          ],
+          "contrast_hook": "他劝人别为沉没成本硬撑，自己工位抽屉里还压着前导师批注密密麻麻的旧稿子",
+          "life_anchors": [
+            "电脑贴纸写着‘第17次删掉致谢页’",
+            "保温杯底总有一层没冲干净的咖啡渣",
+            "微信置顶是三个不同年级的博士生，备注名带‘已换’‘待换’‘不敢换’",
+            "笔记本扉页用红笔划掉‘忠于学术’，下面补了句‘先忠于自己’"
+          ],
+          "title_hook": "换导师不是背叛，是止损——但你得先认领自己的沉没成本",
+          "visual_anchor": "左手无名指戴一枚磨花的银戒指，每次说到‘导师权力’时会无意识用拇指摩挲戒圈"
+        },
+        "story_core": {
+          "spine": "帮观众把‘换导师’这件事，从道德压力题还原成一张含时间/信用/情绪损耗的个人资产负债表",
+          "discourse_mode": "advice",
+          "mode_rationale": "话题本质是真实困境下的决策判断，观众需要可拆解的代价清单和明确边界，而非故事渲染或情绪共情",
+          "core_struggle": "当‘已经读了三年’成为反对换导师的理由时，如何区分‘值得坚持’和‘不敢承认亏了’",
+          "twist": "沉没成本最危险的不是钱或时间，是你开始用‘别人怎么看’来折算自己的损失",
+          "central_contrast": "导师视角的‘培养周期’ vs 学生视角的‘人生不可逆段落’",
+          "emotional_undercurrent": "从自我怀疑 → 理性松动 → 短暂释然 → 带刺的清醒",
+          "story_beats": [
+            "复述真实问题：‘我博二了，导师方向跑偏、不回消息，但换人等于前两年白干？’",
+            "拆解三笔账：时间（两年≠两年，是‘两年+未来三年不确定性’）、信用（导师推荐信≠保送券，是‘他愿不愿写+写多少真话’）、情绪（每天点开微信前的心跳加速算不算损耗）",
+            "给出可执行判断：如果‘换导师’带来的新损耗（比如重修课、延毕风险）小于当前持续损耗（失眠频率、回避组会次数、论文拖延天数），那就不是放弃，是资产重组",
+            "说明适用边界：这个算法只适用于‘有明确替代选项’的情况；若连想换谁都不知道，先停一周，把‘我到底怕什么’写下来——怕失败？怕让父母失望？怕被说玻璃心？写出来，比算账重要"
+          ],
+          "punchline_seeds": [
+            "你替自己止损，不是对学术不忠，是对‘正在活着的你’负责",
+            "导师的‘培养周期’是他的KPI，你的‘读博年限’是你的生命刻度，不能按同一把尺子量",
+            "最贵的沉没成本不是交过的学费，是你偷偷删掉的、本可以投出去的那三篇论文",
+            "别人说‘都走到这了’，其实是在替你承担不了后果，所以才拼命让你继续"
+          ],
+          "hook_angle": "刚挂掉一个学生电话，他说‘导师说换人就是学术自杀’——我喝了一口凉透的咖啡，突然觉得，我们该重新定义什么叫‘学术活下来’"
+        }
+      },
+      "metrics": {
+        "discourse_mode": "advice",
+        "prompt_version": "persona-analyst-v2-discourse-router"
+      }
+    },
+    {
+      "id": "unit_plan",
+      "label": "节目分段",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "requested_unit_count": 4,
+        "story_beats": [
+          "复述真实问题：‘我博二了，导师方向跑偏、不回消息，但换人等于前两年白干？’",
+          "拆解三笔账：时间（两年≠两年，是‘两年+未来三年不确定性’）、信用（导师推荐信≠保送券，是‘他愿不愿写+写多少真话’）、情绪（每天点开微信前的心跳加速算不算损耗）",
+          "给出可执行判断：如果‘换导师’带来的新损耗（比如重修课、延毕风险）小于当前持续损耗（失眠频率、回避组会次数、论文拖延天数），那就不是放弃，是资产重组",
+          "说明适用边界：这个算法只适用于‘有明确替代选项’的情况；若连想换谁都不知道，先停一周，把‘我到底怕什么’写下来——怕失败？怕让父母失望？怕被说玻璃心？写出来，比算账重要"
+        ],
+        "emotional_undercurrent": "从自我怀疑 → 理性松动 → 短暂释然 → 带刺的清醒"
+      },
+      "metrics": {
+        "unit_count": 4
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": []
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 1.027,
+            "speech_rate": 1.027,
+            "volume": 56
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": []
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.953,
+            "speech_rate": 0.953,
+            "volume": 52
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": []
+        },
+        {
+          "index": 3,
+          "time_window": [
+            225,
+            300
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": []
+        }
+      ]
+    },
+    {
+      "id": "script_writer",
+      "label": "剧本生成",
+      "status": "completed",
+      "duration_ms": 24276.2,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 24276.0,
+        "prompt_chars": 6701,
+        "response_chars": 1881,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 6701,
+            "prompt_sha256": "5e2dc6f076b01a10",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1881,
+            "duration_ms": 24276.0
+          }
+        ]
+      },
+      "input": {
+        "rich_persona": {
+          "identity": "你那个博士读到第三年、换过导师、现在边做博后边帮你改简历的学长",
+          "belief": "只要把账算清楚，换不换导师就不是情绪问题，是数学题",
+          "flaw": "一看到学生发‘我导师又让我重写第三版开题’就立刻关掉微信，转头去泡速溶咖啡——不是不想帮，是怕自己手抖打字说出‘你不如现在退学’",
+          "verbal_tics": [
+            "我跟你算笔账",
+            "这事儿真不怪你",
+            "你信我，我当年...",
+            "但问题是"
+          ],
+          "situational_weaknesses": [
+            "一遇到‘导师说再试一次就给推荐信’就语速加快",
+            "一被问‘导师是不是好人’就停顿三秒才接话",
+            "一听到‘家里支持我读下去’就下意识摸左耳垂"
+          ],
+          "contrast_hook": "他劝人别为沉没成本硬撑，自己工位抽屉里还压着前导师批注密密麻麻的旧稿子",
+          "life_anchors": [
+            "电脑贴纸写着‘第17次删掉致谢页’",
+            "保温杯底总有一层没冲干净的咖啡渣",
+            "微信置顶是三个不同年级的博士生，备注名带‘已换’‘待换’‘不敢换’",
+            "笔记本扉页用红笔划掉‘忠于学术’，下面补了句‘先忠于自己’"
+          ],
+          "title_hook": "换导师不是背叛，是止损——但你得先认领自己的沉没成本",
+          "visual_anchor": "左手无名指戴一枚磨花的银戒指，每次说到‘导师权力’时会无意识用拇指摩挲戒圈"
+        },
+        "story_core": {
+          "spine": "帮观众把‘换导师’这件事，从道德压力题还原成一张含时间/信用/情绪损耗的个人资产负债表",
+          "discourse_mode": "advice",
+          "mode_rationale": "话题本质是真实困境下的决策判断，观众需要可拆解的代价清单和明确边界，而非故事渲染或情绪共情",
+          "core_struggle": "当‘已经读了三年’成为反对换导师的理由时，如何区分‘值得坚持’和‘不敢承认亏了’",
+          "twist": "沉没成本最危险的不是钱或时间，是你开始用‘别人怎么看’来折算自己的损失",
+          "central_contrast": "导师视角的‘培养周期’ vs 学生视角的‘人生不可逆段落’",
+          "emotional_undercurrent": "从自我怀疑 → 理性松动 → 短暂释然 → 带刺的清醒",
+          "story_beats": [
+            "复述真实问题：‘我博二了，导师方向跑偏、不回消息，但换人等于前两年白干？’",
+            "拆解三笔账：时间（两年≠两年，是‘两年+未来三年不确定性’）、信用（导师推荐信≠保送券，是‘他愿不愿写+写多少真话’）、情绪（每天点开微信前的心跳加速算不算损耗）",
+            "给出可执行判断：如果‘换导师’带来的新损耗（比如重修课、延毕风险）小于当前持续损耗（失眠频率、回避组会次数、论文拖延天数），那就不是放弃，是资产重组",
+            "说明适用边界：这个算法只适用于‘有明确替代选项’的情况；若连想换谁都不知道，先停一周，把‘我到底怕什么’写下来——怕失败？怕让父母失望？怕被说玻璃心？写出来，比算账重要"
+          ],
+          "punchline_seeds": [
+            "你替自己止损，不是对学术不忠，是对‘正在活着的你’负责",
+            "导师的‘培养周期’是他的KPI，你的‘读博年限’是你的生命刻度，不能按同一把尺子量",
+            "最贵的沉没成本不是交过的学费，是你偷偷删掉的、本可以投出去的那三篇论文",
+            "别人说‘都走到这了’，其实是在替你承担不了后果，所以才拼命让你继续"
+          ],
+          "hook_angle": "刚挂掉一个学生电话，他说‘导师说换人就是学术自杀’——我喝了一口凉透的咖啡，突然觉得，我们该重新定义什么叫‘学术活下来’"
+        },
+        "unit_skeleton": [
+          {
+            "index": 0,
+            "time_window": [
+              0,
+              75
+            ],
+            "acoustic": {
+              "pitch_rate": 1.1,
+              "speech_rate": 1.1,
+              "volume": 60
+            },
+            "axis": null,
+            "density": "high",
+            "rupture_slots": [],
+            "lines": []
+          },
+          {
+            "index": 1,
+            "time_window": [
+              75,
+              150
+            ],
+            "acoustic": {
+              "pitch_rate": 1.027,
+              "speech_rate": 1.027,
+              "volume": 56
+            },
+            "axis": null,
+            "density": "high",
+            "rupture_slots": [],
+            "lines": []
+          },
+          {
+            "index": 2,
+            "time_window": [
+              150,
+              225
+            ],
+            "acoustic": {
+              "pitch_rate": 0.953,
+              "speech_rate": 0.953,
+              "volume": 52
+            },
+            "axis": null,
+            "density": "medium",
+            "rupture_slots": [],
+            "lines": []
+          },
+          {
+            "index": 3,
+            "time_window": [
+              225,
+              300
+            ],
+            "acoustic": {
+              "pitch_rate": 0.88,
+              "speech_rate": 0.88,
+              "volume": 48
+            },
+            "axis": null,
+            "density": "low",
+            "rupture_slots": [],
+            "lines": []
+          }
+        ],
+        "few_shot_count": 3,
+        "few_shot_ids": [
+          "clip_008",
+          "clip_005",
+          "clip_002"
+        ],
+        "retrieval_seed": 1110568349,
+        "dossier": null
+      },
+      "metrics": {
+        "few_shot_count": 3,
+        "few_shot_ids": [
+          "clip_008",
+          "clip_005",
+          "clip_002"
+        ],
+        "retrieval_seed": 1110568349,
+        "unit_count": 4,
+        "line_count": 12,
+        "prompt_version": "script-writer-v2-mode-conditioned"
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "刚挂掉一个电话，博二的男生，声音发颤说‘导师说换人就是学术自杀’……我喝了一口保温杯里凉透的咖啡，渣子都沉底了——你们有没有也接过这种电话？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "不是他声音抖，是我手抖。我摸了下左耳垂……诶，又来了。你信我，我当年也是在组会门口站了七分钟，没敢推门进去。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "但问题是，他说‘前两年白干了’，这句话我听了三年——可白干的到底是谁的时间？是他的，还是他导师Excel表格里那个‘培养周期’？我跟你算笔账：两年不是两年，是两年+未来三年的不确定性。这事儿真不怪你。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.6,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 1.027,
+            "speech_rate": 1.027,
+            "volume": 56
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "第一笔账，时间账：你写的那三篇被退回的文献综述，不是废稿，是你的信用预支。导师每回说‘再改一版就送外审’，你就多押一个月睡眠、少投一篇会议——这不算进学籍系统，但算进你的心跳频率里。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "第二笔账，推荐信账：它不是保送券，是张盖了章的模糊评价。你猜他写‘该生勤奋踏实’的时候，心里想的是你第三版开题里删掉的那张图，还是你上个月病假条上的体温？",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "第三笔账，情绪账最简单——每天点开微信前，你是不是先深呼吸？这个动作本身，就是损耗。不是矫情，是生理反应。你信我，我电脑贴纸还写着‘第17次删掉致谢页’。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.6,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.953,
+            "speech_rate": 0.953,
+            "volume": 52
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "所以别问‘值不值得坚持’，问‘继续扛着，比换人多赔多少’。如果新损耗——比如重修一门课、延毕半年——加起来，还没你现在每月失眠的天数多，那就不是放弃，是资产重组。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "你替自己止损，不是对学术不忠，是对‘正在活着的你’负责。导师的‘培养周期’是他的KPI，你的‘读博年限’是你的生命刻度，不能按同一把尺子量。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "最贵的沉没成本，不是交过的学费，是你偷偷删掉的、本可以投出去的那三篇论文……别人说‘都走到这了’，其实是在替你承担不了后果，所以才拼命让你继续。",
+              "stage": "interact",
+              "is_rupture": false,
+              "interruption_cost": 0.7,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "time_window": [
+            225,
+            300
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u3l0",
+              "text": "但这个算法只管用一次：前提是，你心里已经有个人选——不是‘我想换’，是‘我想跟谁换’。微信置顶里有‘已换’‘待换’‘不敢换’三个备注，说明这事真实存在过。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u3l1",
+              "text": "要是连名字都想不出来……停一周。别算账。就拿张纸，写三遍‘我到底怕什么’。怕失败？怕让父母失望？怕被说玻璃心？写出来，比算账重要。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u3l2",
+              "text": "我抽屉里还压着前导师批注密密麻麻的旧稿子……但扉页红笔划掉的那句‘忠于学术’，底下补了句‘先忠于自己’。好了，我得去冲第二杯咖啡了——渣子太多，喝着像人生。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.6,
+              "cue": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "postprocess",
+      "label": "后处理",
+      "status": "completed",
+      "duration_ms": 0.1,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "line_count": 12
+      },
+      "metrics": {
+        "line_count": 12,
+        "planted_gags": [
+          "保温杯底总有一层没冲干净的咖啡渣",
+          "电脑贴纸写着‘第17次删掉致谢页’"
+        ]
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "刚挂掉一个电话，博二的男生，声音发颤说‘导师说换人就是学术自杀’……我喝了一口保温杯里凉透的咖啡，渣子都沉底了——你们有没有也接过这种电话？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "不是他声音抖，是我手抖。我摸了下左耳垂……诶，又来了。你信我，我当年也是在组会门口站了七分钟，没敢推门进去。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "但问题是，他说‘前两年白干了’，这句话我听了三年——可白干的到底是谁的时间？是他的，还是他导师Excel表格里那个‘培养周期’？我跟你算笔账：两年不是两年，是两年+未来三年的不确定性。这事儿真不怪你。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.6,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 1.027,
+            "speech_rate": 1.027,
+            "volume": 56
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "第一笔账，时间账：你写的那三篇被退回的文献综述，不是废稿，是你的信用预支。导师每回说‘再改一版就送外审’，你就多押一个月睡眠、少投一篇会议——这不算进学籍系统，但算进你的心跳频率里。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "第二笔账，推荐信账：它不是保送券，是张盖了章的模糊评价。你猜他写‘该生勤奋踏实’的时候，心里想的是你第三版开题里删掉的那张图，还是你上个月病假条上的体温？",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "第三笔账，情绪账最简单——每天点开微信前，你是不是先深呼吸？这个动作本身，就是损耗。不是矫情，是生理反应。你信我，我电脑贴纸还写着‘第17次删掉致谢页’。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.6,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.953,
+            "speech_rate": 0.953,
+            "volume": 52
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "所以别问‘值不值得坚持’，问‘继续扛着，比换人多赔多少’。如果新损耗——比如重修一门课、延毕半年——加起来，还没你现在每月失眠的天数多，那就不是放弃，是资产重组。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "你替自己止损，不是对学术不忠，是对‘正在活着的你’负责。导师的‘培养周期’是他的KPI，你的‘读博年限’是你的生命刻度，不能按同一把尺子量。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "最贵的沉没成本，不是交过的学费，是你偷偷删掉的、本可以投出去的那三篇论文……别人说‘都走到这了’，其实是在替你承担不了后果，所以才拼命让你继续。",
+              "stage": "interact",
+              "is_rupture": false,
+              "interruption_cost": 0.7,
+              "cue": null
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "time_window": [
+            225,
+            300
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u3l0",
+              "text": "但这个算法只管用一次：前提是，你心里已经有个人选——不是‘我想换’，是‘我想跟谁换’。微信置顶里有‘已换’‘待换’‘不敢换’三个备注，说明这事真实存在过。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u3l1",
+              "text": "要是连名字都想不出来……停一周。别算账。就拿张纸，写三遍‘我到底怕什么’。怕失败？怕让父母失望？怕被说玻璃心？写出来，比算账重要。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u3l2",
+              "text": "我抽屉里还压着前导师批注密密麻麻的旧稿子……但扉页红笔划掉的那句‘忠于学术’，底下补了句‘先忠于自己’。好了，我得去冲第二杯咖啡了——渣子太多，喝着像人生。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.6,
+              "cue": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 167914.6,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 2335.1,
+        "prompt_chars": 236,
+        "response_chars": 43,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 236,
+            "prompt_sha256": "061c9a8f71f70439",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 43,
+            "duration_ms": 2335.1
+          }
+        ]
+      },
+      "input": {
+        "script_line_count": 12,
+        "max_steps": 15
+      },
+      "metrics": {
+        "text_chars": 984,
+        "line_count": 30
+      },
+      "output": {
+        "text": "刚挂掉一个电话，博二的男生，声音发颤说‘导师说换人就是学术自杀’……\n我喝了一口保温杯里凉透的咖啡，渣子都沉底了——你们有没有也接过这种电话？\n不是他声音抖，是我手抖。我摸了下左耳垂……诶，又来了。\n你信我，我当年也是在组会门口站了七分钟，没敢推门进去。\n但问题是，他说‘前两年白干了’，这句话我听了三年——可白干的到底是谁的时间？\n是他的，还是他导师Excel表格里那个‘培养周期’？\n我跟你算笔账：两年不是两年，是两年+未来三年的不确定性。这事儿真不怪你。\n第一笔账，时间账：你写的那三篇被退回的文献综述，不是废稿，是你的信用预支。\n导师每回说‘再改一版就送外审’，你就多押一个月睡眠、少投一篇会议——\n这不算进学籍系统，但算进你的心跳频率里。\n第二笔账，推荐信账：它不是保送券，是张盖了章的模糊评价。\n你猜他写‘该生勤奋踏实’的时候，心里想的是你第三版开题里删掉的那张图，还是你上个月病假条上的体温？\n第三笔账，情绪账最简单——每天点开微信前，你是不是先深呼吸？这个动作本身，就是损耗。\n不是矫情，是生理反应。你信我，我电脑贴纸还写着‘第17次删掉致谢页’。\n所以别问‘值不值得坚持’，问‘继续扛着，比换人多赔多少’。如果新损耗——\n比如重修一门课、延毕半年——\n加起来，还没你现在每月失眠的天数多，那就不是放弃，是资产重组。\n你替自己止损，不是对学术不忠，是对‘正在活着的你’负责。\n导师的‘培养周期’是他的KPI，你的‘读博年限’是你的生命刻度，不能按同一把尺子量。\n最贵的沉没成本，不是交过的学费，是你偷偷删掉的、本可以投出去的那三篇论文……\n别人说‘都走到这了’，其实是在替你承担不了后果，所以才拼命让你继续。\n但这个算法只管用一次：前提是，你心里已经有个人选——\n不是‘我想换’，是‘我想跟谁换’。\n微信置顶里有‘已换’‘待换’‘不敢换’三个备注，说明这事真实存在过。\n你信我，我当年换导师时连咖啡都喝不起，但问题是沉没成本不是成本，是账本上已经烧掉的灰。\n要是连名字都想不出来……停一周。别算账。就拿张纸，写三遍‘我到底怕什么’。怕失败？\n怕让父母失望？怕被说玻璃心？写出来，比算账重要。\n我抽屉里还压着前导师批注密密麻麻的旧稿子……\n但扉页红笔划掉的那句‘忠于学术’，底下补了句‘先忠于自己’。\n好了，我得去冲第二杯咖啡了——渣子太多，喝着像人生。"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "degraded",
+      "duration_ms": 0.2,
+      "audio_bytes": 0,
+      "text_chars": 984,
+      "input": {
+        "text_chars": 984
+      },
+      "metrics": {
+        "duration_ms": 0.2,
+        "audio_bytes": 0,
+        "text_chars": 984
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 1,
+        "duration_ms": 0.2,
+        "failed_calls": 1
+      },
+      "output": {
+        "audio_path": "E:\\nextjs-vtuber-mocap\\echuu-agent\\echuu\\eval\\runs\\clip_001__r03\\no_dossier\\audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "clip_001",
+    "split": "train",
+    "retrieval_seed": 1110568349,
+    "retrieval_allowed_pool_size": 20,
+    "retrieval_exclude_ids": [
+      "clip_001"
+    ]
+  }
+}

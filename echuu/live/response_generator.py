@@ -11,6 +11,7 @@ from typing import Dict, Optional
 
 from .llm_client import LLMClient
 from .state import Danmaku, PerformerMemory, UserProfile
+from .untrusted import render_untrusted, sanitize_untrusted
 from .language import (
     detect_language,
     detect_danmaku_language,
@@ -43,8 +44,9 @@ class DanmakuResponseGenerator:
 ## 收到的弹幕
 用户: {username}
 关系: {user_relationship}
-内容: "{danmaku_text}"
 类型: {danmaku_type}
+内容:
+{danmaku_text}
 
 {user_context}
 
@@ -68,24 +70,14 @@ class DanmakuResponseGenerator:
 - 简短回应
 
 ## 回应原则（非常重要）
-1. **不要复述弹幕** - 不要说"有人说xxx"
+1. **不要复述弹幕** - 不要把弹幕原文重新念一遍再回应
 2. **自然反应** - 像真人一样
 3. **根据关系调整** - 熟人更随意，新人更热情
-
-## 回应示例
-
-### 对新观众欢迎语:
-- 中文: "欢迎小明来到直播间！"
-- 英文: "Welcome John to the stream!"
-- 日文: "Johnさん、ありがとうございます！"
-
-### 对老观众回应:
-- "诶你又来了"
-- "欢迎回来"
+4. **只说这一句话本身** - 不要带称呼模板、不要解释你为什么这么回
 
 ## 输出格式（纯JSON，无markdown）
 {{
-    "response": "你的自然回应",
+    "response": "<你的自然回应>",
     "action": "continue"
 }}
 
@@ -145,9 +137,10 @@ class DanmakuResponseGenerator:
             stage=current_line.stage,
             current_text_preview=current_line.text[:60] + "...",
             next_text_preview=next_line.text[:60] + "..." if next_line else "（故事即将结束）",
-            username=danmaku.user,
+            # 观众可控字段：用户名和弹幕正文都要去结构、限长
+            username=sanitize_untrusted(danmaku.user, max_chars=24),
             user_relationship=user_relationship,
-            danmaku_text=danmaku.text,
+            danmaku_text=render_untrusted(danmaku.text),
             danmaku_type=danmaku_type,
             user_context=user_context,
             language_hint=language_hint,

@@ -42,3 +42,36 @@ def test_enable_dossier_true_runs_expander(monkeypatch):
     monkeypatch.setattr(engmod.PersonaExpander, "expand", fake_expand, raising=True)
     d = eng._maybe_expand("n", "p", "b", enable_dossier=True)
     assert d is not None and d.conflict.statement == "她记账"
+
+
+def test_same_persona_reuses_cached_dossier(monkeypatch):
+    eng, engmod = _make_engine(monkeypatch)
+    engmod._DOSSIER_CACHE.clear()
+    called = {"expand": 0}
+
+    def fake_expand(self, *a, **k):
+        called["expand"] += 1
+        return CharacterDossier(conflict=Conflict(statement="只生成一次"))
+
+    monkeypatch.setattr(engmod.PersonaExpander, "expand", fake_expand, raising=True)
+    first = eng._maybe_expand("角色", "温柔", "背景", enable_dossier=True)
+    second = eng._maybe_expand("角色", "温柔", "背景", enable_dossier=True)
+
+    assert first == second
+    assert called["expand"] == 1
+
+
+def test_changed_persona_invalidates_dossier_cache(monkeypatch):
+    eng, engmod = _make_engine(monkeypatch)
+    engmod._DOSSIER_CACHE.clear()
+    called = {"expand": 0}
+
+    def fake_expand(self, *a, **k):
+        called["expand"] += 1
+        return CharacterDossier(conflict=Conflict(statement=f"生成{called['expand']}"))
+
+    monkeypatch.setattr(engmod.PersonaExpander, "expand", fake_expand, raising=True)
+    eng._maybe_expand("角色", "温柔", "背景", enable_dossier=True)
+    eng._maybe_expand("角色", "嘴硬", "背景", enable_dossier=True)
+
+    assert called["expand"] == 2

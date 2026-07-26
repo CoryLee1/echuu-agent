@@ -48,6 +48,21 @@ def test_premise_traceable_to_input_in_prompt():
     assert "代价" in llm.prompts[0] and "反面" in llm.prompts[0]
 
 
+def test_expand_applies_generalized_tuning_guidance():
+    llm = FakeLLM(_GOOD)
+    PersonaExpander().expand(
+        "小柔", "很温柔的邻家女孩", "", None, llm,
+        tuning_guidance=[{
+            "id": "n1",
+            "category": "fabricated_detail",
+            "rule": "不得补造身体特征。",
+        }],
+    )
+    assert "fact_grounding" in llm.prompts[0]
+    assert "不得补造身体特征" not in llm.prompts[0]
+    assert "不得在输出中提及" in llm.prompts[0]
+
+
 def test_degrades_without_crash():
     d = PersonaExpander().expand("小柔", "很温柔", "", None, BoomLLM())
     assert isinstance(d, CharacterDossier)

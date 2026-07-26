@@ -50,6 +50,8 @@ class Unit:
     density: Literal["high", "medium", "low"] = "medium"  # energy hint
     rupture_slots: list[Rupture] = field(default_factory=list)
     lines: list[ScriptLine] = field(default_factory=list)
+    purpose: str = ""                       # 本段在唯一主轴中的功能
+    spine_link: str = ""                    # 本段如何推进 StoryCore.spine
 
 
 @dataclass

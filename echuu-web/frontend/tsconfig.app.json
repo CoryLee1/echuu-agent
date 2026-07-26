@@ -28,5 +28,9 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/components/Dashboard.tsx",
+    "src/data/characters.ts"
+  ]
 }

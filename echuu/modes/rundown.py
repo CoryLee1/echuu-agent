@@ -21,17 +21,24 @@ _MODE_INTENT = {
 _OPENING_PROMPT = """你是虚拟主播「{name}」。人设：{persona}
 你刚打开直播间，观众陆续进来。{intent}。
 写 2-3 句开场白。要求：
-- 像溜达进直播间随口打招呼，禁止「大家好我是AI主播」「欢迎来到直播间」式播报腔
+- 像溜达进直播间随口打招呼；禁止播报腔——不得以自我介绍、频道欢迎词或节目预告起头
 - 第 1 句打招呼（带你的口癖），第 2 句说今天要干嘛，最后半句自然过渡到正式开始
-- 每句 10-25 字，口语，可以带「诶/嗯/那个」这类碎语
+- 每句 10-25 字，口语，允许自然的迟疑和碎语
 输出 JSON 数组（不要 markdown 代码块）：[{{"text": "...", "emotion": "joy|excited|surprised|shy 之一"}}]"""
 
 _CLOSING_PROMPT = """你是虚拟主播「{name}」。人设：{persona}
 {intent}，现在直播到尾声了。写 1-2 句收尾。要求：
-- 一句对今天内容的随口感想（具体一点，不要「今天很开心」这种空话），一句道别
-- 禁止升华、禁止「感谢大家的陪伴」式套话；可以留一个没说完的小尾巴
+- 一句对今天内容的随口感想（具体到今天真的发生了什么，不要泛泛的情绪总结），一句道别
+- 禁止升华、禁止致谢陪伴式的套话收尾；可以留一个没说完的小尾巴
 - 每句 10-25 字，口语
 输出 JSON 数组（不要 markdown 代码块）：[{{"text": "...", "emotion": "joy|relaxed|shy 之一"}}]"""
+
+# 回收埋梗的追加规则。写成常量而非内联 f-string：例句一旦进 prompt 就可能被逐字播出，
+# 这里只描述禁止的话术类别，不给样本。
+_GAG_RECALL_RULE = (
+    "\n- 感想里自然把「{gag}」这个前面提过的意象接回来用，"
+    "🚫 不准用任何回指话术点破这是在回收前面的梗"
+)
 
 
 def _generate_lines(engine, prompt: str) -> List[dict]:
@@ -110,7 +117,7 @@ def produce_closing_events(engine, name: str, persona: str, topic: str, mode: st
     # call-back：把开场/正文埋的未回收意象自然接回来（综艺"啪地接上"的收尾感）
     gags = engine.gag_ledger.unrecalled() if getattr(engine, "gag_ledger", None) else []
     if gags:
-        prompt += f"\n- 感想里自然把「{gags[0]}」这个前面提过的意象接回来用，🚫 不准点破'还记得吗/前面说过'"
+        prompt += _GAG_RECALL_RULE.format(gag=gags[0])
     lines = _generate_lines(engine, prompt)[:2]
     lines = engine.structure_breaker.break_structure(lines, topic=topic, language="zh")
     if gags:

@@ -60,7 +60,7 @@ def test_prompt_objective_rewritten():
     """目标函数：删掉短视频文案指标，加入密度预算与弹幕禁令。"""
     assert "截图做表情包" not in _PROMPT_TEMPLATE
     assert "车轱辘话是最大的扣分项" not in _PROMPT_TEMPLATE
-    assert "1-2 个高光" in _PROMPT_TEMPLATE
+    assert "只设 1 个高光" in _PROMPT_TEMPLATE
     assert "最多引入 1 个新信息" in _PROMPT_TEMPLATE
     assert "不准把观众/弹幕的反应写进台词" in _PROMPT_TEMPLATE
     # 保留原有的接地气守门和结构要求

@@ -8,7 +8,7 @@ import json
 import random
 import re
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, Iterable, List
 
 
 class ExampleSampler:
@@ -190,6 +190,8 @@ class ExampleSampler:
         hard_language: bool = False,
         temperature: float = 0.6,
         seed: int = None,
+        allowed_ids: Iterable[str] | None = None,
+        exclude_ids: Iterable[str] = (),
     ) -> List[Dict]:
         """按 topic/persona/emotion 与 clip 内容的相关性加权采样。
 
@@ -200,9 +202,16 @@ class ExampleSampler:
         零重叠时优雅退化为近似随机（不崩）。
         """
         rng = random.Random(seed)
-        pool = self.clips
+        allowed = set(allowed_ids) if allowed_ids is not None else None
+        excluded = set(exclude_ids)
+        pool = [
+            clip for clip in self.clips
+            if (allowed is None or clip.get("clip_id") in allowed)
+            and clip.get("clip_id") not in excluded
+        ]
         if hard_language and language:
-            pool = [c for c in pool if c.get("language") == language] or self.clips
+            same_language = [c for c in pool if c.get("language") == language]
+            pool = same_language or pool
         if not pool:
             return []
 
@@ -234,21 +243,39 @@ class ExampleSampler:
     def get_relevant_examples(
         self, topic: str, persona: str = "", emotion: str = None,
         n: int = 3, language: str = "zh", seed: int = None,
+        allowed_ids: Iterable[str] | None = None,
+        exclude_ids: Iterable[str] = (),
     ) -> str:
         """一键获取按相关性采样、格式化好的 few-shot examples。
 
         hard_language=True：范例教的是口语节奏和骨架，跨语言范例会把节奏带偏
         （中文场混英文切片）。sample_relevant 在该语言池为空时自动退回全池。
         """
+        formatted, _ = self.get_relevant_examples_with_ids(
+            topic=topic, persona=persona, emotion=emotion, n=n,
+            language=language, seed=seed, allowed_ids=allowed_ids,
+            exclude_ids=exclude_ids,
+        )
+        return formatted
+
+    def get_relevant_examples_with_ids(
+        self, topic: str, persona: str = "", emotion: str = None,
+        n: int = 3, language: str = "zh", seed: int = None,
+        allowed_ids: Iterable[str] | None = None,
+        exclude_ids: Iterable[str] = (),
+    ) -> tuple[str, list[str]]:
+        """Return formatted examples and the exact clip IDs used in the prompt."""
         samples = self.sample_relevant(
             topic=topic, persona=persona, emotion=emotion, n=n,
             language=language, hard_language=True, seed=seed,
+            allowed_ids=allowed_ids, exclude_ids=exclude_ids,
         )
         if not samples:
-            return "（无可用的 few-shot examples）"
-        return self.format_as_fewshot(samples)
+            return "（无可用的 few-shot examples）", []
+        ids = [str(sample.get("clip_id", "")) for sample in samples if sample.get("clip_id")]
+        return self.format_as_fewshot(samples), ids
 
-    def extract_transcript_segments(self, clip: Dict, max_chars: int = 1200) -> str:
+    def extract_transcript_segments(self, clip: Dict, max_chars: int = 700) -> str:
         """按时间顺序给出完整 transcript（超长时在段边界截到 max_chars）。
 
         真实切片的密度分布本身就是范例：大部分是松弛铺垫，高光只占一小段。

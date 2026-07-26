@@ -8,6 +8,7 @@ import json
 import random
 from itertools import combinations
 from pathlib import Path
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
@@ -24,9 +25,9 @@ app = FastAPI(title="echuu eval")
 
 class Judge(BaseModel):
     fixture_id: str
-    variant_a: str
-    variant_b: str
-    winner: str  # "a" | "b" | "tie"
+    variant_a: Literal["human", "with_dossier", "no_dossier"]
+    variant_b: Literal["human", "with_dossier", "no_dossier"]
+    winner: Literal["a", "b", "tie"]
 
 
 def _read_text(fixture_id: str, variant: str) -> str:
@@ -81,6 +82,14 @@ def next_pair():
 
 @app.post("/api/judge")
 def judge(j: Judge):
+    if j.variant_a == j.variant_b:
+        raise HTTPException(status_code=422, detail="variants must differ")
+    pair_key = (j.fixture_id, frozenset((j.variant_a, j.variant_b)))
+    valid_pairs = {(fx, frozenset((a, b))) for fx, a, b in _all_pairs()}
+    if pair_key not in valid_pairs:
+        raise HTTPException(status_code=404, detail="unknown fixture/variant pair")
+    if pair_key in _judged_pairs():
+        raise HTTPException(status_code=409, detail="pair already judged")
     with JUDGMENTS.open("a", encoding="utf-8") as f:
         f.write(json.dumps(j.model_dump(), ensure_ascii=False) + "\n")
     return {"ok": True}

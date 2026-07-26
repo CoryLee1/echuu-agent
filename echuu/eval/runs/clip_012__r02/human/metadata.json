@@ -1,0 +1,11 @@
+{
+  "fixture_id": "clip_012__r02",
+  "source_fixture_id": "clip_012",
+  "variant": "human",
+  "repeat": 2,
+  "evaluation_split": "dev",
+  "retrieval_seed": 2330861033,
+  "retrieval_allowed_pool_size": 20,
+  "generated_at_utc": "2026-07-26T11:25:43.123322+00:00",
+  "eval_repeats": 3
+}

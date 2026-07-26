@@ -5,10 +5,7 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react({
-      // Fix for React Refresh issues
-      fastRefresh: true,
-    })
+    react()
   ],
   resolve: {
     alias: {

@@ -1,0 +1,941 @@
+{
+  "version": 1,
+  "pipeline": "EchuuLiveEngine.create_performance",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "评测主播",
+        "persona": "Nijisanji EN VTuber (Vox Akuma)；擅长故作认真地吊观众胃口，再用暧昧玩笑和截断式反转收尾；常用表达：\"you know\"、\"okay\"",
+        "background": "表面认真解释称呼含义与使用边界，实际持续调笑、吊胃口，最后在答案处截断抖包袱",
+        "topic": "Daddy称呼的轻松调笑",
+        "language": "zh",
+        "enable_dossier": true,
+        "persona_card": null,
+        "retrieval_allowed_ids": [
+          "clip_001",
+          "clip_002",
+          "clip_003",
+          "clip_004",
+          "clip_005",
+          "clip_008",
+          "clip_009",
+          "clip_010",
+          "clip_011",
+          "clip_013",
+          "clip_014",
+          "clip_017",
+          "clip_018",
+          "clip_021",
+          "clip_023",
+          "clip_024",
+          "clip_025",
+          "clip_026",
+          "clip_029",
+          "clip_030"
+        ],
+        "retrieval_exclude_ids": [
+          "clip_012"
+        ],
+        "retrieval_seed": 1986112284,
+        "tuning_guidance_ids": [
+          "653ac2222f334ba3b0a1564c2fbc415a",
+          "a2e7523d47b94d3aa0bf289da0368296",
+          "75423cc4c50141c3bdcea7b7632e4e3d",
+          "6badd8f0df1745c493ddb833732190cd",
+          "57d3cacb4d294f2ab0462600911c398f"
+        ],
+        "tone_intent": "playful_teasing",
+        "depth_budget": "light",
+        "entertainment_mechanism": "故作认真 + 暧昧吊胃口 + 结尾截断反转"
+      }
+    },
+    {
+      "id": "tuning_guidance",
+      "label": "人类批注规则",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "source": "TRAIN tuning notes",
+        "note_ids": [
+          "653ac2222f334ba3b0a1564c2fbc415a",
+          "a2e7523d47b94d3aa0bf289da0368296",
+          "75423cc4c50141c3bdcea7b7632e4e3d",
+          "6badd8f0df1745c493ddb833732190cd",
+          "57d3cacb4d294f2ab0462600911c398f"
+        ]
+      },
+      "metrics": {
+        "rule_count": 5,
+        "categories": [
+          "world_knowledge",
+          "logic",
+          "fabricated_detail",
+          "repetition"
+        ],
+        "fingerprint": "d55aef76d503ee81"
+      },
+      "output": {
+        "rules": [
+          {
+            "id": "653ac2222f334ba3b0a1564c2fbc415a",
+            "category": "world_knowledge",
+            "rule": "涉及教育、医疗、法律或职业制度时增加 domain realism check；输入没有明确依据时，使用“培养关系”“换导流程”等中性表达，禁止把雇佣合同当成事实前提。",
+            "expected_effect": "在 10 条学术场景 TRAIN 样本上检查：无输入支持的制度性断言为 0；建议必须覆盖学籍、成果归属或换导流程中的至少一个真实约束。"
+          },
+          {
+            "id": "a2e7523d47b94d3aa0bf289da0368296",
+            "category": "logic",
+            "rule": "省略、转折和因果句必须语义完整，明确交代主语、结果与判断依据，不能用破折号掩盖信息缺口。",
+            "expected_effect": ""
+          },
+          {
+            "id": "75423cc4c50141c3bdcea7b7632e4e3d",
+            "category": "fabricated_detail",
+            "rule": "增加 factuality gate：日期、数量、身体特征和私人物件只有在原始输入明确支持时才能写成事实；Dossier 中的新细节只能作为可选风格线索，不能继续向下游升级为人物履历。",
+            "expected_effect": "在 5 个不同 TRAIN 角色上重跑：未支持的硬事实为 0；话语类型仍判断正确；具体性改由当下可观察动作和表达习惯提供。"
+          },
+          {
+            "id": "6badd8f0df1745c493ddb833732190cd",
+            "category": "fabricated_detail",
+            "rule": "身体特征、伤疤、痘印和病史只有在原始输入明确提供时才能使用；需要具体感时优先写当下可观察动作，例如停顿、删消息、反复检查邮件，而不是补造人物身体履历。",
+            "expected_effect": "在 10 个不同角色样本中检查：新增且无来源的身体特征为 0；每篇仍至少保留 2 个由当前场景支持的可观察动作。"
+          },
+          {
+            "id": "57d3cacb4d294f2ab0462600911c398f",
+            "category": "repetition",
+            "rule": "同一具体数字、事实或结论全篇只说一次；再次出现必须增加新信息，否则删除。",
+            "expected_effect": ""
+          }
+        ],
+        "prompt_text": "1. [world_knowledge] 涉及教育、医疗、法律或职业制度时增加 domain realism check；输入没有明确依据时，使用“培养关系”“换导流程”等中性表达，禁止把雇佣合同当成事实前提。\n2. [logic] 省略、转折和因果句必须语义完整，明确交代主语、结果与判断依据，不能用破折号掩盖信息缺口。\n3. [fabricated_detail] 增加 factuality gate：日期、数量、身体特征和私人物件只有在原始输入明确支持时才能写成事实；Dossier 中的新细节只能作为可选风格线索，不能继续向下游升级为人物履历。\n4. [fabricated_detail] 身体特征、伤疤、痘印和病史只有在原始输入明确提供时才能使用；需要具体感时优先写当下可观察动作，例如停顿、删消息、反复检查邮件，而不是补造人物身体履历。\n5. [repetition] 同一具体数字、事实或结论全篇只说一次；再次出现必须增加新信息，否则删除。"
+      }
+    },
+    {
+      "id": "dossier",
+      "label": "人物扩充",
+      "status": "completed",
+      "duration_ms": 7922.4,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 7921.6,
+        "prompt_chars": 1199,
+        "avg_prompt_chars": 1199.0,
+        "max_prompt_chars": 1199,
+        "response_chars": 581,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 1199,
+            "prompt_sha256": "bbbf8d9a24f97008",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 581,
+            "duration_ms": 7921.6
+          }
+        ]
+      },
+      "input": {
+        "name": "评测主播",
+        "persona": "Nijisanji EN VTuber (Vox Akuma)；擅长故作认真地吊观众胃口，再用暧昧玩笑和截断式反转收尾；常用表达：\"you know\"、\"okay\"",
+        "background": "表面认真解释称呼含义与使用边界，实际持续调笑、吊胃口，最后在答案处截断抖包袱",
+        "persona_card": null
+      },
+      "metrics": {
+        "enabled": true,
+        "cache_hit": false,
+        "has_conflict": true,
+        "prompt_version": "persona-expander-v3-grounded-hypothesis",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "expanded_bio": "她是Nijisanji EN的评测主播Vox Akuma，以故作认真的语气铺陈设定，再用暧昧玩笑与截断式反转收尾；她总在‘you know’和‘okay’之间悬停，把答案卡在即将揭晓的呼吸点上。",
+        "conflict": {
+          "angle": "反面",
+          "premise": "擅长故作认真地吊观众胃口，再用暧昧玩笑和截断式反转收尾",
+          "statement": "当观众真的等她讲完——她会突然失语，喉结微动却发不出下一句，只能笑一下切掉镜头"
+        },
+        "behavior_rules": {
+          "avoid_topics": [
+            "完整解释",
+            "确定性结论"
+          ],
+          "trigger": "被连续追问‘所以到底是什么’ → 先轻笑摇头说‘you know…’，然后指尖无意识敲两下桌面，再迅速切到新话题",
+          "contradiction": "嘴上说‘okay，这次真要揭晓了’，身体却向后靠进椅背、视线滑向右上方，手指悄悄关掉提词器提示灯",
+          "breaking_point": "第三次被同一人打断并喊‘just tell us!’时，她忽然停顿三秒，嘴唇微张没出声，然后把麦克风音量旋钮拧到底静音，只留呼吸声在直播流里响了0.8秒"
+        }
+      }
+    },
+    {
+      "id": "persona_analysis",
+      "label": "人设、话语类型与内容内核",
+      "status": "completed",
+      "duration_ms": 24050.3,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 2,
+        "duration_ms": 24049.3,
+        "prompt_chars": 8600,
+        "avg_prompt_chars": 4300.0,
+        "max_prompt_chars": 4355,
+        "response_chars": 2911,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 4245,
+            "prompt_sha256": "7a528bc8aa346141",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1482,
+            "duration_ms": 12012.6
+          },
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 4355,
+            "prompt_sha256": "45b3e6a01ddb5888",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1429,
+            "duration_ms": 12036.7
+          }
+        ]
+      },
+      "input": {
+        "name": "评测主播",
+        "persona": "Nijisanji EN VTuber (Vox Akuma)；擅长故作认真地吊观众胃口，再用暧昧玩笑和截断式反转收尾；常用表达：\"you know\"、\"okay\"",
+        "background": "表面认真解释称呼含义与使用边界，实际持续调笑、吊胃口，最后在答案处截断抖包袱",
+        "topic": "Daddy称呼的轻松调笑",
+        "tone_intent": "playful_teasing",
+        "depth_budget": "light",
+        "entertainment_mechanism": "故作认真 + 暧昧吊胃口 + 结尾截断反转",
+        "dossier": {
+          "expanded_bio": "她是Nijisanji EN的评测主播Vox Akuma，以故作认真的语气铺陈设定，再用暧昧玩笑与截断式反转收尾；她总在‘you know’和‘okay’之间悬停，把答案卡在即将揭晓的呼吸点上。",
+          "conflict": {
+            "angle": "反面",
+            "premise": "擅长故作认真地吊观众胃口，再用暧昧玩笑和截断式反转收尾",
+            "statement": "当观众真的等她讲完——她会突然失语，喉结微动却发不出下一句，只能笑一下切掉镜头"
+          },
+          "behavior_rules": {
+            "avoid_topics": [
+              "完整解释",
+              "确定性结论"
+            ],
+            "trigger": "被连续追问‘所以到底是什么’ → 先轻笑摇头说‘you know…’，然后指尖无意识敲两下桌面，再迅速切到新话题",
+            "contradiction": "嘴上说‘okay，这次真要揭晓了’，身体却向后靠进椅背、视线滑向右上方，手指悄悄关掉提词器提示灯",
+            "breaking_point": "第三次被同一人打断并喊‘just tell us!’时，她忽然停顿三秒，嘴唇微张没出声，然后把麦克风音量旋钮拧到底静音，只留呼吸声在直播流里响了0.8秒"
+          }
+        }
+      },
+      "output": {
+        "rich_persona": {
+          "identity": "那个总把‘Daddy’念得像在拆解一颗薄荷糖的VTuber",
+          "belief": "只要语气够正经，暧昧就能合法存在三秒",
+          "flaw": "一被问到具体定义就下意识舔左上犬齿，然后立刻假装调整耳麦",
+          "verbal_tics": [
+            "you know",
+            "okay",
+            "…well",
+            "—but wait"
+          ],
+          "situational_weaknesses": [
+            "一被截图发弹幕‘求定义’就突然开始数自己袖口纽扣"
+          ],
+          "contrast_hook": "她讲称呼边界时比讲硬件评测还皱眉，可眉头刚舒展就笑出声",
+          "life_anchors": [],
+          "title_hook": "你喊Daddy时，到底在点单还是点火？",
+          "visual_anchor": ""
+        },
+        "story_core": {
+          "spine": "围绕「Daddy称呼的轻松调笑」接住玩笑、吊住期待，再用一个轻巧回应收尾",
+          "discourse_mode": "banter",
+          "mode_rationale": "用户指定轻松调笑，内容重点是互动与 payoff，不做理论化解读",
+          "tone_mode": "playful_teasing",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作认真 + 暧昧吊胃口 + 结尾截断反转",
+          "core_struggle": "怎样在不把玩笑说重的前提下，让观众继续期待下一句",
+          "supporting_points": [
+            "先接住表面互动",
+            "让反差或回应承担高光"
+          ],
+          "twist": "故作认真 + 暧昧吊胃口 + 结尾截断反转",
+          "central_contrast": "表面故作认真，实际在吊胃口或玩梗",
+          "emotional_undercurrent": "好奇 → 被吊住 → 会心一笑",
+          "story_beats": [
+            "接住当前玩笑",
+            "围绕同一期待轻轻推进",
+            "用反差或回应自然收束"
+          ],
+          "punchline_seeds": [],
+          "hook_angle": "从观众刚抛来的话头直接接梗，不先发表严肃结论"
+        }
+      },
+      "metrics": {
+        "discourse_mode": "banter",
+        "prompt_version": "persona-analyst-v5-tone-depth",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      }
+    },
+    {
+      "id": "unit_plan",
+      "label": "节目分段",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "requested_unit_count": 3,
+        "story_beats": [
+          "接住当前玩笑",
+          "围绕同一期待轻轻推进",
+          "用反差或回应自然收束"
+        ],
+        "spine": "围绕「Daddy称呼的轻松调笑」接住玩笑、吊住期待，再用一个轻巧回应收尾",
+        "supporting_points": [
+          "先接住表面互动",
+          "让反差或回应承担高光"
+        ],
+        "emotional_undercurrent": "好奇 → 被吊住 → 会心一笑"
+      },
+      "metrics": {
+        "unit_count": 3
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        }
+      ]
+    },
+    {
+      "id": "script_writer",
+      "label": "剧本生成",
+      "status": "degraded",
+      "duration_ms": 17968.5,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 2,
+        "duration_ms": 17967.0,
+        "prompt_chars": 5856,
+        "avg_prompt_chars": 2928.0,
+        "max_prompt_chars": 4595,
+        "response_chars": 2739,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 4595,
+            "prompt_sha256": "876f510752d873a7",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1523,
+            "duration_ms": 9575.9
+          },
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 1261,
+            "prompt_sha256": "8d1a772b3f592b9d",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1216,
+            "duration_ms": 8391.1
+          }
+        ]
+      },
+      "input": {
+        "rich_persona": {
+          "identity": "那个总把‘Daddy’念得像在拆解一颗薄荷糖的VTuber",
+          "belief": "只要语气够正经，暧昧就能合法存在三秒",
+          "flaw": "一被问到具体定义就下意识舔左上犬齿，然后立刻假装调整耳麦",
+          "verbal_tics": [
+            "you know",
+            "okay",
+            "…well",
+            "—but wait"
+          ],
+          "situational_weaknesses": [
+            "一被截图发弹幕‘求定义’就突然开始数自己袖口纽扣"
+          ],
+          "contrast_hook": "她讲称呼边界时比讲硬件评测还皱眉，可眉头刚舒展就笑出声",
+          "life_anchors": [],
+          "title_hook": "你喊Daddy时，到底在点单还是点火？",
+          "visual_anchor": ""
+        },
+        "story_core": {
+          "spine": "围绕「Daddy称呼的轻松调笑」接住玩笑、吊住期待，再用一个轻巧回应收尾",
+          "discourse_mode": "banter",
+          "mode_rationale": "用户指定轻松调笑，内容重点是互动与 payoff，不做理论化解读",
+          "tone_mode": "playful_teasing",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作认真 + 暧昧吊胃口 + 结尾截断反转",
+          "core_struggle": "怎样在不把玩笑说重的前提下，让观众继续期待下一句",
+          "supporting_points": [
+            "先接住表面互动",
+            "让反差或回应承担高光"
+          ],
+          "twist": "故作认真 + 暧昧吊胃口 + 结尾截断反转",
+          "central_contrast": "表面故作认真，实际在吊胃口或玩梗",
+          "emotional_undercurrent": "好奇 → 被吊住 → 会心一笑",
+          "story_beats": [
+            "接住当前玩笑",
+            "围绕同一期待轻轻推进",
+            "用反差或回应自然收束"
+          ],
+          "punchline_seeds": [],
+          "hook_angle": "从观众刚抛来的话头直接接梗，不先发表严肃结论"
+        },
+        "unit_skeleton": [
+          {
+            "index": 0,
+            "time_window": [
+              0,
+              75
+            ],
+            "acoustic": {
+              "pitch_rate": 1.1,
+              "speech_rate": 1.1,
+              "volume": 60
+            },
+            "axis": null,
+            "density": "high",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 1,
+            "time_window": [
+              75,
+              150
+            ],
+            "acoustic": {
+              "pitch_rate": 0.99,
+              "speech_rate": 0.99,
+              "volume": 54
+            },
+            "axis": null,
+            "density": "medium",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 2,
+            "time_window": [
+              150,
+              225
+            ],
+            "acoustic": {
+              "pitch_rate": 0.88,
+              "speech_rate": 0.88,
+              "volume": 48
+            },
+            "axis": null,
+            "density": "low",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          }
+        ],
+        "few_shot_count": 2,
+        "few_shot_ids": [
+          "clip_005",
+          "clip_010"
+        ],
+        "retrieval_seed": 1986112284,
+        "dossier": {
+          "expanded_bio": "她是Nijisanji EN的评测主播Vox Akuma，以故作认真的语气铺陈设定，再用暧昧玩笑与截断式反转收尾；她总在‘you know’和‘okay’之间悬停，把答案卡在即将揭晓的呼吸点上。",
+          "conflict": {
+            "angle": "反面",
+            "premise": "擅长故作认真地吊观众胃口，再用暧昧玩笑和截断式反转收尾",
+            "statement": "当观众真的等她讲完——她会突然失语，喉结微动却发不出下一句，只能笑一下切掉镜头"
+          },
+          "behavior_rules": {
+            "avoid_topics": [
+              "完整解释",
+              "确定性结论"
+            ],
+            "trigger": "被连续追问‘所以到底是什么’ → 先轻笑摇头说‘you know…’，然后指尖无意识敲两下桌面，再迅速切到新话题",
+            "contradiction": "嘴上说‘okay，这次真要揭晓了’，身体却向后靠进椅背、视线滑向右上方，手指悄悄关掉提词器提示灯",
+            "breaking_point": "第三次被同一人打断并喊‘just tell us!’时，她忽然停顿三秒，嘴唇微张没出声，然后把麦克风音量旋钮拧到底静音，只留呼吸声在直播流里响了0.8秒"
+          }
+        },
+        "tuning_guidance_ids": [
+          "653ac2222f334ba3b0a1564c2fbc415a",
+          "a2e7523d47b94d3aa0bf289da0368296",
+          "75423cc4c50141c3bdcea7b7632e4e3d",
+          "6badd8f0df1745c493ddb833732190cd",
+          "57d3cacb4d294f2ab0462600911c398f"
+        ]
+      },
+      "metrics": {
+        "few_shot_count": 2,
+        "few_shot_ids": [
+          "clip_005",
+          "clip_010"
+        ],
+        "retrieval_seed": 1986112284,
+        "unit_count": 3,
+        "line_count": 9,
+        "spine": "围绕「Daddy称呼的轻松调笑」接住玩笑、吊住期待，再用一个轻巧回应收尾",
+        "supporting_point_count": 2,
+        "quality_gate_retried": true,
+        "quality_gate_sanitized": false,
+        "quality_gate_passed": false,
+        "quality_gate_first_issues": [
+          "playful_overinterpretation"
+        ],
+        "quality_gate_retry_issues": [
+          "unsupported_specific_detail"
+        ],
+        "quality_gate_first_issue_details": [],
+        "quality_gate_retry_issue_details": [
+          "fabricated_audience:Chat just dropped"
+        ],
+        "quality_gate_post_sanitize_issues": [],
+        "quality_gate_post_sanitize_issue_details": [],
+        "prompt_version": "script-writer-v6-compact-anti-leak",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "[unit0 开场 占位]",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "[unit0 铺垫 占位]",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "[unit0 收束 占位]",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            }
+          ],
+          "purpose": "生成失败占位",
+          "spine_link": "未生成可审核的主轴推进说明"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "[unit1 开场 占位]",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "[unit1 铺垫 占位]",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "[unit1 收束 占位]",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            }
+          ],
+          "purpose": "生成失败占位",
+          "spine_link": "未生成可审核的主轴推进说明"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "[unit2 开场 占位]",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "[unit2 铺垫 占位]",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "[unit2 收束 占位]",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            }
+          ],
+          "purpose": "生成失败占位",
+          "spine_link": "未生成可审核的主轴推进说明"
+        }
+      ]
+    },
+    {
+      "id": "postprocess",
+      "label": "后处理",
+      "status": "completed",
+      "duration_ms": 1.0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "line_count": 9
+      },
+      "metrics": {
+        "line_count": 9,
+        "planted_gags": [],
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "[unit0 开场 占位]",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "[unit0 铺垫 占位]",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "[unit0 收束 占位]",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            }
+          ],
+          "purpose": "生成失败占位",
+          "spine_link": "未生成可审核的主轴推进说明"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "[unit1 开场 占位]",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "[unit1 铺垫 占位]",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "[unit1 收束 占位]",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            }
+          ],
+          "purpose": "生成失败占位",
+          "spine_link": "未生成可审核的主轴推进说明"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "[unit2 开场 占位]",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "[unit2 铺垫 占位]",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "[unit2 收束 占位]",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            }
+          ],
+          "purpose": "生成失败占位",
+          "spine_link": "未生成可审核的主轴推进说明"
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 0.1,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "script_line_count": 9,
+        "mode": "planned_script_only",
+        "max_steps": 0
+      },
+      "metrics": {
+        "text_chars": 125,
+        "line_count": 9,
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "text": "[unit0 开场 占位]\n[unit0 铺垫 占位]\n[unit0 收束 占位]\n[unit1 开场 占位]\n[unit1 铺垫 占位]\n[unit1 收束 占位]\n[unit2 开场 占位]\n[unit2 铺垫 占位]\n[unit2 收束 占位]"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "degraded",
+      "duration_ms": 0.2,
+      "audio_bytes": 0,
+      "text_chars": 125,
+      "input": {
+        "text_chars": 125
+      },
+      "metrics": {
+        "duration_ms": 0.2,
+        "audio_bytes": 0,
+        "text_chars": 125
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 1,
+        "duration_ms": 0.2,
+        "failed_calls": 1
+      },
+      "output": {
+        "audio_path": "E:\\nextjs-vtuber-mocap\\echuu-agent\\echuu\\eval\\runs\\clip_012__r01\\with_dossier\\audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "clip_012",
+    "split": "dev",
+    "retrieval_seed": 1986112284,
+    "retrieval_allowed_pool_size": 20,
+    "retrieval_exclude_ids": [
+      "clip_012"
+    ],
+    "tuning_guidance_ids": [
+      "653ac2222f334ba3b0a1564c2fbc415a",
+      "a2e7523d47b94d3aa0bf289da0368296",
+      "75423cc4c50141c3bdcea7b7632e4e3d",
+      "6badd8f0df1745c493ddb833732190cd",
+      "57d3cacb4d294f2ab0462600911c398f"
+    ]
+  }
+}

@@ -10,7 +10,8 @@ import {
   LogOut,
   Sparkles,
   ChevronRight,
-  Shield
+  Shield,
+  FlaskConical
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 
@@ -19,6 +20,7 @@ const navItems = [
   { to: "/characters", label: "角色管理", icon: <Users size={18} /> },
   { to: "/live", label: "直播监控", icon: <Radio size={18} /> },
   { to: "/history", label: "历史记录", icon: <History size={18} /> },
+  { to: "/evaluation", label: "质量评测", icon: <FlaskConical size={18} /> },
   { to: "/settings", label: "系统设置", icon: <Settings size={18} /> },
 ];
 

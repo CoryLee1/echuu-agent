@@ -8,16 +8,17 @@ def test_wilson_basic():
     assert lo0 == 0.0 and hi0 == 1.0
 
 
-def test_win_rate_counts_pair_ignoring_ties():
+def test_win_rate_counts_ties_as_half_win():
     judgments = [
         {"variant_a": "with_dossier", "variant_b": "no_dossier", "winner": "a"},
         {"variant_a": "no_dossier", "variant_b": "with_dossier", "winner": "b"},  # b=with
         {"variant_a": "with_dossier", "variant_b": "no_dossier", "winner": "tie"},
     ]
     r = win_rate(judgments, "with_dossier", "no_dossier")
-    assert r["n"] == 2           # tie 不计
-    assert r["wins_a"] == 2      # with_dossier 两胜
-    assert r["rate"] == 1.0
+    assert r["n"] == 3
+    assert r["wins_a"] == 2.5
+    assert r["ties"] == 1
+    assert r["rate"] == 2.5 / 3
 
 
 def test_win_rate_ignores_malformed_winner():

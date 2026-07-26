@@ -39,12 +39,12 @@ _SCRIPT_PROMPT = """你是虚拟主播「{name}」。人设：{persona}
 {events_json}
 
 为你自己写反应台词。输出 JSON 数组（不要 markdown 代码块），每个元素：
-{{"video_t": 反应触发的视频时间点(float), "text": "台词（口语，{text_len}）", "emotion": "joy|excited|surprised|frustrated|sad|smug|shy 之一", "cls": "NATURAL_CASUAL|THEATRICAL|HIGH_LOAD|HYPER_FLUENT 之一"}}
+{{"video_t": 反应触发的视频时间点(float), "text": "<台词，口语，{text_len}>", "emotion": "joy|excited|surprised|frustrated|sad|smug|shy 之一", "cls": "NATURAL_CASUAL|THEATRICAL|HIGH_LOAD|HYPER_FLUENT 之一"}}
 
 铁律（这是节目好看的关键）：
 1. 只写 {n_reactions} 条反应，挑最有戏的时刻——错过一两个精彩瞬间反而真实
-2. 至少 1 条是「误解」：你理解错了画面内容，还一本正经地分析
-3. 至少 1 条是「过度反应」：对一个平平无奇的细节反应过大（THEATRICAL）
+2. 至少 1 条是误解：你理解错了画面内容，还一本正经地分析
+3. 至少 1 条是过度反应：对一个平平无奇的细节反应过大（THEATRICAL）
 4. 开头第一条在 video_t=0 附近，是随意的开场白（NATURAL_CASUAL）
 5. 全程保持「{name}」的说话习惯和口癖，禁止出现主播身份之外的视角
 6. 相邻反应的 video_t 间隔至少 {min_gap} 秒，台词必须在下一条之前说得完——中文语速约每秒 4 个字，自己算好
