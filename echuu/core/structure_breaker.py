@@ -8,6 +8,7 @@
 4. 检查并打破过于线性的结构
 """
 
+import os
 import re
 import random
 from typing import List
@@ -154,6 +155,10 @@ class StructureBreaker:
 
         在某些行的开头添加"诶我说到哪了？对，"
         """
+        # 本场模拟可按环境变量暂时关闭走神（"诶我说到哪了"）
+        if os.getenv("ECHUU_DISABLE_THREAD_LOSS", "").strip().lower() in ("1", "true", "yes", "on"):
+            return script_lines
+
         markers_zh = [
             "诶我说到哪了？对，",
             "刚才说什么来着...对，",

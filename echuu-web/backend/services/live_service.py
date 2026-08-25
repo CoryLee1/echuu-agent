@@ -216,10 +216,7 @@ class LiveService:
                 generator = iter(events)
             else:
                 # storytelling（默认）：现有引擎路径，保留弹幕实时穿插
-                for dm_text in (initial_danmaku or []):
-                    dm = Danmaku.from_text(dm_text, user="观众")
-                    engine.state.danmaku_queue.append(dm)
-
+                # engine.state 要等 setup() 之后才存在，弹幕必须在 setup 完成后注入
                 opening_events, _ = await asyncio.gather(
                     loop.run_in_executor(None, produce_opening_safe),
                     loop.run_in_executor(
@@ -234,6 +231,9 @@ class LiveService:
                         ),
                     ),
                 )
+                for dm_text in (initial_danmaku or []):
+                    dm = Danmaku.from_text(dm_text, user="观众")
+                    engine.state.danmaku_queue.append(dm)
 
                 # 复制剧本到 session 目录
                 script_sources = sorted(engine.scripts_dir.glob("*.json"), key=os.path.getmtime)
