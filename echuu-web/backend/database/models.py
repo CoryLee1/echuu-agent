@@ -145,6 +145,10 @@ class LiveSession(Base):
     status = Column(Enum(SessionStatus), default=SessionStatus.PENDING, nullable=False)
     script_path = Column(String(255))
     audio_dir = Column(String(255))
+    s3_prefix = Column(String(512))
+    uploaded_count = Column(Integer, default=0, nullable=False)
+    archive_status = Column(String(32), default="pending", nullable=False)
+    archive_error = Column(Text)
     started_at = Column(DateTime)
     ended_at = Column(DateTime)
     session_metadata = Column("metadata", JSON, default=dict)  # 使用 session_metadata 作为属性名，metadata 作为列名

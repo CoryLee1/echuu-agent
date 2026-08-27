@@ -68,8 +68,56 @@ def _dump_session_memory(engine, character_name: str, session_dir: Path) -> None
         print(f"[memory] 记忆落盘失败（跳过）: {exc}")
 
 
+def _finish_session_record(session_id: str, archive: dict | None = None, error: str | None = None) -> None:
+    """Persist final status for both inline and DB-backed runs."""
+    try:
+        from ..database.database import SessionLocal
+    except ImportError:
+        from database.database import SessionLocal
+    db = SessionLocal()
+    try:
+        record = db.query(LiveSession).filter(LiveSession.session_id == session_id).first()
+        if not record:
+            return
+        record.ended_at = datetime.utcnow()
+        record.status = SessionStatus.FAILED if error else SessionStatus.COMPLETED
+        if archive:
+            record.s3_prefix = archive.get("prefix")
+            record.uploaded_count = int(archive.get("uploaded_count") or 0)
+            record.archive_status = str(archive.get("status") or "failed")
+            record.archive_error = archive.get("error")
+        elif error:
+            record.archive_status = "failed"
+            record.archive_error = error[:2000]
+        db.commit()
+    finally:
+        db.close()
+
+
 class LiveService:
     """直播引擎服务"""
+
+    @staticmethod
+    async def archive_existing_session(session_id: str, room_id: str | None = None) -> dict:
+        session_dir = SCRIPTS_DIR / session_id
+        if not session_dir.exists():
+            raise FileNotFoundError(f"Session does not exist: {session_id}")
+        if room_id:
+            try:
+                from ..database.database import SessionLocal
+            except ImportError:
+                from database.database import SessionLocal
+            db = SessionLocal()
+            try:
+                record = db.query(LiveSession).filter(LiveSession.session_id == session_id).first()
+                recorded_room = (record.session_metadata or {}).get("room_id") if record else None
+                if not record or recorded_room != room_id:
+                    raise PermissionError("Session does not belong to this room")
+            finally:
+                db.close()
+        archive = await archive_session_to_s3(session_id, session_dir)
+        _finish_session_record(session_id, archive=archive)
+        return archive
 
     @staticmethod
     async def run_live_engine_inline(
@@ -316,17 +364,25 @@ class LiveService:
                 _dump_session_memory(engine, character_name, session_dir)
 
             # 归档音频+脚本到 S3（失败只 log 不中断）
+            archive = {
+                "prefix": f"streaming_content/{session_id}/",
+                "uploaded_count": 0,
+                "status": "failed",
+                "error": "archive did not run",
+            }
             try:
-                uploaded = await archive_session_to_s3(session_id, session_dir)
+                archive = await archive_session_to_s3(session_id, session_dir)
+                _finish_session_record(session_id, archive=archive)
                 await bcast({
                     "type": "archived",
                     "session_id": session_id,
-                    "uploaded_count": uploaded,
+                    **archive,
                 })
             except Exception as archive_err:
                 print(f"[archive] S3 归档失败（不影响直播结束）: {archive_err}")
 
         except Exception as e:
+            _finish_session_record(session_id, error=str(e))
             await bcast({"type": "error", "content": str(e)})
             print(traceback.format_exc())
         finally:
@@ -490,21 +546,37 @@ class LiveService:
             })
 
             # 归档音频+脚本到 S3（失败只 log 不中断）
+            archive = {
+                "prefix": f"streaming_content/{session_id}/",
+                "uploaded_count": 0,
+                "status": "failed",
+                "error": "archive did not run",
+            }
             try:
-                uploaded = await archive_session_to_s3(session_id, session_dir)
+                archive = await archive_session_to_s3(session_id, session_dir)
                 await bcast({
                     "type": "archived",
                     "session_id": session_id,
-                    "uploaded_count": uploaded,
+                    **archive,
                 })
             except Exception as archive_err:
                 print(f"[archive] S3 归档失败（不影响直播结束）: {archive_err}")
 
             live_session.status = SessionStatus.COMPLETED
             live_session.ended_at = datetime.utcnow()
+            live_session.s3_prefix = archive.get("prefix")
+            live_session.uploaded_count = int(archive.get("uploaded_count") or 0)
+            live_session.archive_status = str(archive.get("status") or "failed")
+            live_session.archive_error = archive.get("error")
             db.commit()
 
         except Exception as e:
+            if live_session:
+                live_session.status = SessionStatus.FAILED
+                live_session.ended_at = datetime.utcnow()
+                live_session.archive_status = "failed"
+                live_session.archive_error = str(e)[:2000]
+                db.commit()
             await bcast({"type": "error", "content": str(e)})
             print(traceback.format_exc())
 

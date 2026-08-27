@@ -20,7 +20,7 @@ try:
     from ..services.live_service import LiveService
     from ..auth.auth import get_current_active_user
     from ..database.database import get_db
-    from ..database.models import User, LiveSession, Character
+    from ..database.models import User, LiveSession, Character, VoiceConfig, LLMModel, SessionStatus
 except ImportError:
     from config import SCRIPTS_DIR
     from models import LiveConfig, StatusResponse
@@ -28,7 +28,7 @@ except ImportError:
     from services.live_service import LiveService
     from auth.auth import get_current_active_user
     from database.database import get_db
-    from database.models import User, LiveSession, Character
+    from database.models import User, LiveSession, Character, VoiceConfig, LLMModel, SessionStatus
 
 router = APIRouter()
 
@@ -106,6 +106,8 @@ class InlineStartRequest(BaseModel):
     # 结构化人设卡（Phase 2-①，可选）：speech_tics/audience_nickname/stances/fears/
     # prides/running_gags/metaphor_domain 等，见 echuu/core/persona_card.py
     persona_card: Optional[dict] = None
+    # 主平台用户 ID（可选），只用于归档归属元数据。
+    owner_id: Optional[str] = None
 
 
 @router.post("/start")
@@ -131,7 +133,7 @@ async def start_live(
     if not character:
         raise HTTPException(status_code=404, detail="角色不存在或无权限")
 
-    session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    session_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     state.active_session_id = session_id
 
     background_tasks.add_task(
@@ -150,6 +152,11 @@ class StopRequest(BaseModel):
     owner_token: str
 
 
+class ArchiveRetryRequest(BaseModel):
+    room_id: str
+    owner_token: str
+
+
 @router.post("/stop")
 async def stop_live(request: StopRequest):
     """房主提前终止直播（广播 success 事件后结束）"""
@@ -164,10 +171,26 @@ async def stop_live(request: StopRequest):
     return {"message": "停止信号已发送"}
 
 
+@router.post("/archive/{session_id}/retry")
+async def retry_archive(session_id: str, request: ArchiveRetryRequest):
+    """房主重试一次已落盘 Session 的 S3 归档。"""
+    if not state.room_exists(request.room_id):
+        raise HTTPException(status_code=404, detail="房间不存在")
+    if not state.verify_owner(request.room_id, request.owner_token):
+        raise HTTPException(status_code=403, detail="owner_token 验证失败")
+    try:
+        return await LiveService.archive_existing_session(session_id, room_id=request.room_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
 @router.post("/start-inline")
 async def start_live_inline(
     request: InlineStartRequest,
     background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
 ):
     """启动直播（内联模式）：无需数据库角色，用 owner_token 验证房主身份"""
     if state.is_running:
@@ -179,9 +202,69 @@ async def start_live_inline(
     if not state.verify_owner(request.room_id, request.owner_token):
         raise HTTPException(status_code=403, detail="owner_token 验证失败")
 
-    session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    session_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     state.active_session_id = session_id
     state.current_room_id = request.room_id
+
+    # Inline 也写标准 LiveSession。它没有 Agent JWT，所以使用受控的
+    # 内置用户作为外键 owner，真实主平台 owner_id 放在 metadata 中。
+    inline_user = db.query(User).filter(User.username == "admin").first()
+    llm_model = db.query(LLMModel).filter(LLMModel.is_default == True).first()
+    if not inline_user or not llm_model:
+        raise HTTPException(status_code=503, detail="Agent inline persistence is not initialized")
+    character = db.query(Character).filter(
+        Character.user_id == inline_user.id,
+        Character.name == request.character_name,
+    ).first()
+    if not character:
+        character = Character(
+            user_id=inline_user.id,
+            name=request.character_name,
+            persona=request.persona,
+            background=request.background,
+            default_llm_model_id=llm_model.id,
+        )
+        db.add(character)
+        db.flush()
+    voice_name = request.voice or "Cherry"
+    voice_config = db.query(VoiceConfig).filter(
+        VoiceConfig.character_id == character.id,
+        VoiceConfig.voice_name == voice_name,
+    ).first()
+    if not voice_config:
+        voice_config = VoiceConfig(
+            character_id=character.id,
+            voice_name=voice_name,
+            tts_model=os.getenv("TTS_MODEL", "qwen3-tts-flash-realtime"),
+            is_default=False,
+        )
+        db.add(voice_config)
+        db.flush()
+    session_dir = SCRIPTS_DIR / session_id
+    db.add(LiveSession(
+        session_id=session_id,
+        user_id=inline_user.id,
+        character_id=character.id,
+        topic=request.topic,
+        llm_model_id=llm_model.id,
+        voice_config_id=voice_config.id,
+        status=SessionStatus.RUNNING,
+        script_path=str(session_dir / "full_script.json"),
+        audio_dir=str(session_dir),
+        archive_status="pending",
+        started_at=datetime.utcnow(),
+        session_metadata={
+            "source": "start-inline",
+            "owner_id": request.owner_id,
+            "room_id": request.room_id,
+            "mode": request.mode,
+            "character_name": request.character_name,
+            "persona": request.persona,
+            "background": request.background,
+            "voice": voice_name,
+        },
+    ))
+    db.commit()
 
     background_tasks.add_task(
         LiveService.run_live_engine_inline,
@@ -235,6 +318,10 @@ async def get_history(
             "status": session.status.value,
             "started_at": session.started_at.isoformat() if session.started_at else None,
             "ended_at": session.ended_at.isoformat() if session.ended_at else None,
+            "s3_prefix": session.s3_prefix,
+            "uploaded_count": session.uploaded_count,
+            "archive_status": session.archive_status,
+            "archive_error": session.archive_error,
         })
 
     return result
