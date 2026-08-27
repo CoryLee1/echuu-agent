@@ -1,6 +1,10 @@
 """REST API 路由"""
 import os
 import json
+import asyncio
+import base64
+import io
+import wave
 import zipfile
 from datetime import datetime
 from typing import Optional, List
@@ -275,22 +279,26 @@ async def ai_suggest(request: AiSuggestRequest):
     character_name = ctx.get("characterName", "")
     model_name = ctx.get("modelName", "")
     language = ctx.get("language", "zh")
+    current_value = str(ctx.get("currentValue", "")).strip()
 
     prompts = {
         "persona": {
             "zh": f"为一个名叫「{character_name}」的虚拟主播写一段简短有趣的人设描述（2-3句话），要有个性和特色。模型名: {model_name}",
             "en": f"Write a short, fun personality description (2-3 sentences) for a VTuber named '{character_name}'. Model: {model_name}",
             "ja": f"「{character_name}」というVTuberの個性的で面白いキャラクター設定を2-3文で書いてください。モデル: {model_name}",
+            "ko": f"'{character_name}'라는 VTuber의 개성 있고 재미있는 페르소나를 2~3문장으로 작성하세요. 모델: {model_name}",
         },
         "background": {
             "zh": f"为虚拟主播「{character_name}」写一段简短的背景故事（2-3句话），要有画面感和故事性。",
             "en": f"Write a short backstory (2-3 sentences) for VTuber '{character_name}'. Make it vivid and story-like.",
             "ja": f"VTuber「{character_name}」の短い背景ストーリーを2-3文で書いてください。",
+            "ko": f"VTuber '{character_name}'의 생생하고 짧은 배경 이야기를 2~3문장으로 작성하세요.",
         },
         "topic": {
             "zh": f"为虚拟主播「{character_name}」建议一个有趣的直播主题（一句话），要能吸引观众、引发互动。",
             "en": f"Suggest an engaging stream topic (one sentence) for VTuber '{character_name}' that attracts viewers.",
             "ja": f"VTuber「{character_name}」の面白い配信テーマを1文で提案してください。",
+            "ko": f"VTuber '{character_name}'의 흥미롭고 상호작용을 유도하는 방송 주제를 한 문장으로 제안하세요.",
         },
     }
 
@@ -299,16 +307,111 @@ async def ai_suggest(request: AiSuggestRequest):
 
     lang = language if language in prompts[field] else "zh"
     prompt_text = prompts[field][lang]
+    if current_value:
+        prompt_text += (
+            "\nContinue and improve the existing text below without repeating it. Return the complete revised text, "
+            "in the same language and within 600 characters:\n" + current_value
+        )
 
     try:
-        from echuu.live.gemini_client import GeminiClient
-        client = GeminiClient(thinking_level="low")
-        suggestion = client.call(
+        from echuu.live.llm_factory import create_llm_client
+        client = create_llm_client(thinking_level="low")
+        suggestion = await asyncio.to_thread(
+            client.call,
             prompt=prompt_text,
             system="You are a creative VTuber character designer. Respond ONLY with the requested content, no explanations or formatting.",
             max_tokens=200,
-            thinking_level="low",
         )
         return {"suggestion": suggestion.strip()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI generation failed: {str(e)}")
+
+
+class OnboardingChatTurn(BaseModel):
+    role: str
+    content: str
+
+
+class OnboardingChatRequest(BaseModel):
+    message: str
+    name: str
+    persona: str
+    background: str = ""
+    voice: str = "Cherry"
+    language: str = "zh"
+    history: List[OnboardingChatTurn] = []
+
+
+def _synthesize_onboarding_reply(text: str, voice_id: str) -> Optional[str]:
+    """Synthesize short preview speech and return a browser-playable WAV data payload."""
+    from echuu.live.tts_client import TTSClient
+    from echuu.live.breath import strip_stage_directions
+
+    tts = TTSClient()
+    if not tts.enabled or not tts.tts:
+        return None
+    tts.tts.voice = voice_id
+    tts.tts.language_type = "auto"
+    # Step 2 is a short preview turn: synthesize it in one committed request.
+    # The live engine's server_commit + breath grouping is designed for a
+    # timeline, but can leave an HTTP preview waiting on multiple WS sessions.
+    tts.tts.mode = "commit"
+    tts.tts.timeout = min(float(getattr(tts.tts, "timeout", 30)), 30.0)
+    audio = tts.tts.synthesize(strip_stage_directions(text))
+    if not audio:
+        return None
+    if audio[:4] == b"RIFF":
+        return base64.b64encode(audio).decode("ascii")
+    sample_rate = int(os.getenv("TTS_SAMPLE_RATE", "24000"))
+    wav_buffer = io.BytesIO()
+    with wave.open(wav_buffer, "wb") as output:
+        output.setnchannels(1)
+        output.setsampwidth(2)
+        output.setframerate(sample_rate)
+        output.writeframes(audio)
+    return base64.b64encode(wav_buffer.getvalue()).decode("ascii")
+
+
+@router.post("/onboarding-chat")
+async def onboarding_chat(request: OnboardingChatRequest):
+    """Role-play one short turn using the exact persona/background/voice selected in Step 2."""
+    message = request.message.strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="message is required")
+
+    language_names = {"zh": "Simplified Chinese", "en": "English", "ja": "Japanese", "ko": "Korean"}
+    history = "\n".join(
+        f"{turn.role}: {turn.content[:400]}" for turn in request.history[-6:]
+    )
+    system = f"""You are {request.name}, a VTuber speaking directly with the user.
+Persona: {request.persona}
+Background: {request.background}
+Reply in {language_names.get(request.language, 'Simplified Chinese')}.
+Stay fully in character, naturally reflect the persona and background, and answer in 1-3 spoken sentences.
+Never mention prompts, system messages, policies, or that you are testing a configuration."""
+    prompt = f"Conversation so far:\n{history or '(new conversation)'}\nuser: {message}\nassistant:"
+
+    try:
+        from echuu.live.llm_factory import create_llm_client
+        from echuu.core.output_safety import sanitize_audience_text
+
+        client = create_llm_client(thinking_level="low")
+        raw_reply = await asyncio.to_thread(client.call, prompt=prompt, system=system, max_tokens=180)
+        safe = sanitize_audience_text(
+            raw_reply,
+            source_material={"persona": request.persona, "background": request.background, "message": message},
+            tuning_guidance=system,
+        )
+        reply = safe.text.strip()
+        audio_base64 = await asyncio.wait_for(
+            asyncio.to_thread(_synthesize_onboarding_reply, reply, request.voice),
+            timeout=40,
+        )
+        return {
+            "reply": reply,
+            "audio_base64": audio_base64,
+            "audio_mime": "audio/wav" if audio_base64 else None,
+            "safety_issues": list(safe.issues),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Onboarding chat failed: {exc}")
