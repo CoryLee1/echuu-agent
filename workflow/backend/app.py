@@ -16,6 +16,9 @@ from pathlib import Path
 # Project root (still used for SCRIPTS_DIR below)
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
+from dotenv import load_dotenv
+load_dotenv(PROJECT_ROOT / ".env")
+
 from echuu.live.engine import EchuuLiveEngine
 
 app = FastAPI(title="ECHUU Agent Control Panel")
@@ -47,7 +50,6 @@ class LiveRequest(BaseModel):
 class DanmakuRequest(BaseModel):
     text: str
     user: str = "观众"
-
 
 class RoomState:
     """单个直播间的状态，按 room_id 隔离。"""
@@ -387,6 +389,20 @@ async def run_engine_task(room: RoomState, req: StartLiveRequest):
         except Exception as e:
             print(f"[memory] final broadcast error: {e}")
         await room.broadcast({"type": "success", "content": "直播表演圆满结束！"})
+
+        # 上传到 S3：streaming_content（文+声音）、memory（收藏/日记）
+        try:
+            from services.s3_upload import upload_after_run, is_s3_configured
+            if is_s3_configured():
+                r = upload_after_run(engine.scripts_dir, memory=engine.state.memory)
+                if not r.get("skipped"):
+                    await room.broadcast({
+                        "type": "s3_upload",
+                        "streaming_content": r.get("streaming_content", {}),
+                        "memory": r.get("memory"),
+                    })
+        except Exception as s3_err:
+            print("S3 上传跳过:", s3_err)
 
     except Exception as e:
         error_msg = f"引擎运行出错: {str(e)}\n{traceback.format_exc()}"

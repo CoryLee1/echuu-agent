@@ -46,6 +46,17 @@ def demo_streaming():
         convert_to_mp3=True,
     )
 
+    # 上传到 S3：streaming_content（文+声音）、memory（收藏/日记）
+    try:
+        from services.s3_upload import upload_after_run, is_s3_configured
+        if is_s3_configured():
+            r = upload_after_run(engine.scripts_dir, memory=engine.state.memory)
+            if not r.get("skipped"):
+                print("\n📤 S3 上传完成:", r.get("streaming_content", {}), r.get("memory"))
+            else:
+                print("\n📤 S3 未配置，跳过上传")
+    except Exception as e:
+        print("\n📤 S3 上传跳过:", e)
 
 def demo_mp3_only():
     """
@@ -79,6 +90,16 @@ def demo_mp3_only():
         print(f"[{i+1}] {stage}: {speech[:60]}...")
 
     print("\n✅ MP3 文件已保存到 output/scripts/")
+
+    # 上传到 S3：streaming_content（文+声音）、memory（收藏/日记）
+    try:
+        from services.s3_upload import upload_after_run, is_s3_configured
+        if is_s3_configured():
+            result = upload_after_run(engine.scripts_dir, memory=engine.state.memory)
+            if not result.get("skipped"):
+                print("📤 S3 上传完成:", result.get("streaming_content", {}), result.get("memory"))
+    except Exception as exc:
+        print("📤 S3 上传跳过:", exc)
 
 
 def demo_acceptance():
@@ -180,7 +201,6 @@ if __name__ == "__main__":
     try:
         if args.acceptance:
             demo_acceptance()
-
         if args.streaming or args.both:
             demo_streaming()
 
