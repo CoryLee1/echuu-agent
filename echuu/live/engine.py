@@ -25,8 +25,9 @@ from ..core.persona_analyst import PersonaAnalyst, PROMPT_VERSION as ANALYST_PRO
 from ..core.persona_expander import PersonaExpander, PROMPT_VERSION as DOSSIER_PROMPT_VERSION
 from ..core.persona_dossier import CharacterDossier
 from ..core.prompt_leakage import find_prompt_leaks
+from ..core.output_safety import sanitize_audience_text
 from ..core.story_core import StoryCore
-from ..core.unit import Show
+from ..core.unit import ScriptLine, Show
 from ..core.unit_planner import UnitPlanner
 from ..core.structure_breaker import StructureBreaker
 from ..core.tuning_guidance import (
@@ -38,6 +39,7 @@ from ..core.tuning_guidance import (
 )
 from ..generators.example_sampler import ExampleSampler
 from ..generators.script_writer import ScriptWriter, PROMPT_VERSION as WRITER_PROMPT_VERSION
+from ..generators.legacy_v4 import ScriptGeneratorV4
 from .danmaku import DanmakuEvaluator, DanmakuHandler
 from .danmaku_interleave import DanmakuInterleaver
 from .llm_factory import create_llm_client
@@ -53,6 +55,7 @@ _DOSSIER_CACHE_VERSION = "v2-soft-conflict"
 _DOSSIER_CACHE_MAX_SIZE = 128
 _DOSSIER_CACHE: "OrderedDict[str, CharacterDossier]" = OrderedDict()
 _DOSSIER_CACHE_LOCK = Lock()
+_LEGACY_RANDOM_LOCK = Lock()
 
 
 def _dossier_cache_key(
@@ -130,6 +133,38 @@ class _LLMGenerateAdapter:
                 response = native(prompt)
             else:
                 response = self._client.call(prompt, max_tokens=self._max_tokens)
+            call.update({
+                "status": "completed",
+                "response_chars": len(response or ""),
+                "duration_ms": round((perf_counter() - started) * 1000, 1),
+            })
+            return response
+        except Exception as exc:
+            call.update({
+                "status": "failed",
+                "response_chars": 0,
+                "duration_ms": round((perf_counter() - started) * 1000, 1),
+                "error_type": exc.__class__.__name__,
+            })
+            raise
+        finally:
+            self.calls.append(call)
+
+    def call(self, prompt: str, system: str | None = None, max_tokens: int | None = None) -> str:
+        """Expose the historical V4 client contract while retaining telemetry."""
+        started = perf_counter()
+        token_limit = int(max_tokens or self._max_tokens)
+        call = {
+            "provider": self.provider,
+            "model": self.model,
+            "prompt_chars": len(prompt or "") + len(system or ""),
+            "prompt_sha256": hashlib.sha256(
+                ((system or "") + "\0" + (prompt or "")).encode("utf-8")
+            ).hexdigest()[:16],
+            "max_tokens": token_limit,
+        }
+        try:
+            response = self._client.call(prompt, system=system, max_tokens=token_limit)
             call.update({
                 "status": "completed",
                 "response_chars": len(response or ""),
@@ -238,7 +273,9 @@ class EchuuLiveEngine:
         character_config: Optional[dict] = None,
         on_phase_callback: Optional[callable] = None,
         persona_card: Optional[dict] = None,
-        enable_dossier: bool = True,
+        enable_dossier: bool = False,
+        story_pipeline: Optional[str] = None,
+        generation_seed: Optional[int] = None,
         retrieval_allowed_ids: Optional[List[str]] = None,
         retrieval_exclude_ids: Optional[List[str]] = None,
         retrieval_seed: Optional[int] = None,
@@ -259,6 +296,8 @@ class EchuuLiveEngine:
             on_phase_callback=on_phase_callback,
             persona_card=persona_card,
             enable_dossier=enable_dossier,
+            story_pipeline=story_pipeline,
+            generation_seed=generation_seed,
             retrieval_allowed_ids=retrieval_allowed_ids,
             retrieval_exclude_ids=retrieval_exclude_ids,
             retrieval_seed=retrieval_seed,
@@ -303,6 +342,137 @@ class EchuuLiveEngine:
             print(f"[engine] 人物小传扩充失败（跳过）: {exc}")
             return None
 
+    def _create_legacy_v4_performance(
+        self,
+        *,
+        name: str,
+        persona: str,
+        background: str,
+        topic: str,
+        language: str,
+        character_config: Optional[dict],
+        on_phase_callback: Optional[callable],
+        generation_seed: Optional[int],
+    ) -> PerformanceState:
+        """Run the pre-refactor V4 writer and adapt its lines to today's Show."""
+        from echuu.core.gag_ledger import GagLedger
+
+        self.dossier = None
+        self._dossier_cache_hit = False
+        self.gag_ledger = GagLedger()
+        seed = int(generation_seed if generation_seed is not None else random.randrange(2**32))
+        if on_phase_callback:
+            on_phase_callback("Legacy V4: 生成故事内核、沉浸状态和完整剧本...")
+        started = perf_counter()
+        call_start = len(self.llm_gen.calls)
+        generator = ScriptGeneratorV4(self.llm_gen, self.example_sampler)
+        # V4 and its helper banks use module-global random. Serialize the small
+        # seeded generation window so concurrent requests remain reproducible.
+        with _LEGACY_RANDOM_LOCK:
+            previous_random_state = random.getstate()
+            random.seed(seed)
+            try:
+                legacy_lines = generator.generate(
+                    name=name,
+                    persona=persona,
+                    background=background,
+                    topic=topic,
+                    language=language,
+                    character_config=character_config,
+                )
+            finally:
+                random.setstate(previous_random_state)
+
+        source_material = {
+            "name": name,
+            "persona": persona,
+            "background": background,
+            "topic": topic,
+        }
+        safety_issues: list[str] = []
+        safe_lines = []
+        for line in legacy_lines:
+            result = sanitize_audience_text(
+                line.text,
+                source_material=source_material,
+                tuning_guidance=self.tuning_guidance,
+            )
+            safety_issues.extend(result.issues)
+            if result.text:
+                line.text = result.text
+                safe_lines.append(line)
+
+        n_units = max(2, min(4, (len(safe_lines) + 2) // 3))
+        units = self.unit_planner.plan(n_units)
+        for index, legacy_line in enumerate(safe_lines):
+            unit_index = min(n_units - 1, index * n_units // max(1, len(safe_lines)))
+            unit = units[unit_index]
+            line_index = len(unit.lines)
+            unit.lines.append(ScriptLine(
+                id=legacy_line.id or f"u{unit_index}l{line_index}",
+                text=legacy_line.text,
+                stage="hook" if index == 0 else "pad",
+                is_rupture=False,
+                interruption_cost=float(legacy_line.interruption_cost),
+            ))
+        for unit in units:
+            if unit.lines:
+                unit.lines[-1].stage = "turn"
+        if units and units[0].lines:
+            units[0].lines[0].stage = "hook"
+
+        verbal_tics = tuple(getattr(self.persona_card, "speech_tics", ()) or ())
+        rich_persona = RichPersona(
+            identity=(persona or name).strip(),
+            belief="",
+            flaw="保留真实的不完美和临场反应",
+            verbal_tics=verbal_tics,
+        )
+        show = Show(persona=rich_persona, topic=topic, units=units, story_core=None)
+        flat_lines = [line for unit in units for line in unit.lines]
+        self.debug_trace["stages"].append({
+            "id": "legacy_v4_generation",
+            "label": "Legacy V4 故事生成",
+            "status": "degraded" if safety_issues else "completed",
+            "duration_ms": round((perf_counter() - started) * 1000, 1),
+            "ai": self.llm_gen.summarize_since(call_start),
+            "input": {"seed": seed, **source_material},
+            "metrics": {
+                "seed": seed,
+                "line_count": len(flat_lines),
+                "unit_count": len(units),
+                "safety_issue_count": len(set(safety_issues)),
+                "safety_issues": list(dict.fromkeys(safety_issues)),
+                "dossier_enabled": False,
+            },
+            "output": [asdict(unit) for unit in units],
+        })
+
+        catchphrases = []
+        if self.analyzer:
+            catchphrases = [cp for cp, _ in self.analyzer.extract_catchphrases(language)[:5]]
+        memory = PerformerMemory()
+        memory.script_progress["total_lines"] = len(flat_lines)
+        memory.script_progress["current_stage"] = flat_lines[0].stage if flat_lines else "hook"
+        self.performer = PerformerV3(
+            self.llm,
+            self.tts,
+            self.danmaku_handler,
+            stream_lang_context=self.stream_lang_context,
+        )
+        self._save_script_v5(show, name, topic)
+        self._print_script_preview_v5(show)
+        return PerformanceState(
+            name=name,
+            persona=persona,
+            background=background,
+            topic=topic,
+            show=show,
+            script_lines=flat_lines,
+            memory=memory,
+            catchphrases=catchphrases,
+        )
+
     def create_performance(
         self,
         name: str,
@@ -313,7 +483,9 @@ class EchuuLiveEngine:
         character_config: Optional[dict] = None,
         on_phase_callback: Optional[callable] = None,
         persona_card: Optional[dict] = None,
-        enable_dossier: bool = True,
+        enable_dossier: bool = False,
+        story_pipeline: Optional[str] = None,
+        generation_seed: Optional[int] = None,
         retrieval_allowed_ids: Optional[List[str]] = None,
         retrieval_exclude_ids: Optional[List[str]] = None,
         retrieval_seed: Optional[int] = None,
@@ -322,15 +494,28 @@ class EchuuLiveEngine:
         depth_budget: str = "auto",
         entertainment_mechanism: str = "",
     ) -> PerformanceState:
-        """V2: PersonaAnalyst → UnitPlanner(自适应段数) → ScriptWriter → 去升华。"""
+        """Generate a show with legacy V4 by default or the refactored pipeline."""
         from echuu.core.persona_card import PersonaCard
 
+        pipeline = str(
+            story_pipeline or os.getenv("ECHUU_STORY_PIPELINE", "legacy_v4")
+        ).strip().lower()
+        if pipeline not in {"legacy_v4", "refactor"}:
+            raise ValueError(f"unsupported story pipeline: {pipeline}")
+        if hasattr(self.llm, "seed"):
+            self.llm.seed = generation_seed
         self.tuning_guidance = normalize_tuning_guidance(tuning_guidance)
+        self._source_material = {
+            "name": name,
+            "persona": persona,
+            "background": background,
+            "topic": topic,
+        }
         guidance_ids = tuning_guidance_ids(self.tuning_guidance)
         guidance_categories = tuning_guidance_categories(self.tuning_guidance)
         self.debug_trace = {
             "version": 1,
-            "pipeline": "EchuuLiveEngine.create_performance",
+            "pipeline": pipeline,
             "stages": [{
                 "id": "input",
                 "label": "输入",
@@ -344,6 +529,8 @@ class EchuuLiveEngine:
                     "topic": topic,
                     "language": language,
                     "enable_dossier": enable_dossier,
+                    "story_pipeline": pipeline,
+                    "generation_seed": generation_seed,
                     "persona_card": persona_card,
                     "retrieval_allowed_ids": retrieval_allowed_ids,
                     "retrieval_exclude_ids": retrieval_exclude_ids,
@@ -383,6 +570,18 @@ class EchuuLiveEngine:
         if self.persona_card:
             print(f"🎴 人设卡已加载: 口癖={list(self.persona_card.speech_tics)}, "
                   f"观众称呼={self.persona_card.audience_nickname or '（无）'}")
+
+        if pipeline == "legacy_v4":
+            return self._create_legacy_v4_performance(
+                name=name,
+                persona=persona,
+                background=background,
+                topic=topic,
+                language=language,
+                character_config=character_config,
+                on_phase_callback=on_phase_callback,
+                generation_seed=generation_seed,
+            )
 
         if on_phase_callback:
             on_phase_callback("Phase 0: 扩充人物小传 + 推导冲突...")
@@ -779,6 +978,12 @@ class EchuuLiveEngine:
                 # 长台词按呼吸组切成短 step：字幕短、动作切换勤、step 间自带换气
                 chunks = chunk_text(line.text) or [line.text]
                 for ci, chunk in enumerate(chunks):
+                    safe = sanitize_audience_text(
+                        chunk,
+                        source_material=getattr(self, "_source_material", None),
+                        tuning_guidance=getattr(self, "tuning_guidance", None),
+                    )
+                    chunk = safe.text
                     try:
                         audio = self.tts.synthesize(chunk)
                     except Exception:
@@ -867,6 +1072,11 @@ class EchuuLiveEngine:
         )
         if not reply:
             return None
+        reply = sanitize_audience_text(
+            reply,
+            source_material=getattr(self, "_source_material", None),
+            tuning_guidance=getattr(self, "tuning_guidance", None),
+        ).text
         try:
             audio = self.tts.synthesize(reply) if getattr(self, "tts", None) else None
         except Exception:
@@ -885,6 +1095,11 @@ class EchuuLiveEngine:
         )
         if not quip:
             return None
+        quip = sanitize_audience_text(
+            quip,
+            source_material=getattr(self, "_source_material", None),
+            tuning_guidance=getattr(self, "tuning_guidance", None),
+        ).text
         try:
             audio = self.tts.synthesize(quip) if getattr(self, "tts", None) else None
         except Exception:

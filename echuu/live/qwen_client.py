@@ -18,6 +18,7 @@ class QwenClient:
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or os.getenv("DASHSCOPE_API_KEY")
         self.model = model or os.getenv("QWEN_MODEL", "qwen-plus")
+        self.seed: Optional[int] = None
         self.client = None
 
         if not self.api_key:
@@ -43,10 +44,15 @@ class QwenClient:
             if system:
                 messages.append({"role": "system", "content": system})
             messages.append({"role": "user", "content": prompt})
+            request = {
+                "model": self.model,
+                "messages": messages,
+                "max_tokens": max_tokens,
+            }
+            if self.seed is not None:
+                request["seed"] = int(self.seed)
             response = self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                max_tokens=max_tokens,
+                **request,
             )
             return response.choices[0].message.content
         except Exception as exc:

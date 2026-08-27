@@ -1,7 +1,4 @@
-"""pairwise 评测 CLI：generate（生成三方变体）+ report（读 judgments 出胜率）。
-
-report 把 (with_dossier vs no_dossier) 作为核心消融：胜率落 40-60% → 扩充无效。
-"""
+"""Three-way blind evaluation for legacy V4 and the two refactor variants."""
 from __future__ import annotations
 
 import json
@@ -13,10 +10,10 @@ from pathlib import Path
 EVAL_DIR = Path(__file__).resolve().parent
 RUNS_DIR = EVAL_DIR / "runs"
 JUDGMENTS = EVAL_DIR / "judgments.jsonl"
-FIXTURES = EVAL_DIR / "fixtures.jsonl"
+FIXTURES = Path(os.getenv("ECHUU_EVAL_FIXTURES", EVAL_DIR / "legacy_v4_cases.jsonl"))
 PERSONAS = EVAL_DIR / "personas.json"
 
-VARIANTS = ("human", "with_dossier", "no_dossier")
+VARIANTS = ("legacy_v4", "refactor_no_dossier", "refactor_full")
 
 
 def wilson_interval(wins: float, n: int, z: float = 1.96) -> tuple[float, float]:
@@ -74,18 +71,20 @@ def _load_fixtures() -> list[dict]:
     return [{**fx, **profiles.get(fx.get("id"), {})} for fx in fixtures]
 
 
-def cmd_generate(repeats: int = 3) -> None:
+def cmd_generate(repeats: int = 3, *, synthesize_audio: bool = True) -> None:
+    from dotenv import load_dotenv
     from echuu.live.engine import EchuuLiveEngine
     from echuu.live.tts_client import TTSClient
     from echuu.eval.generate import generate_variant
 
     if repeats < 1:
         raise ValueError("repeats must be >= 1")
+    load_dotenv(EVAL_DIR.parents[1] / ".env")
     fixtures = _load_fixtures()
     train_ids = [fx["id"] for fx in fixtures if fx.get("split", "train") == "train"]
     if not train_ids:
         train_ids = [fx["id"] for fx in fixtures]
-    tts = TTSClient()
+    tts = TTSClient() if synthesize_audio else None
     for fx in fixtures:
         for repeat in range(1, repeats + 1):
             run_fx = {
@@ -114,14 +113,15 @@ def cmd_generate(repeats: int = 3) -> None:
 
 def cmd_report() -> None:
     judgments = _load_jsonl(JUDGMENTS)
-    pairs = [("with_dossier", "no_dossier"), ("with_dossier", "human"),
-             ("no_dossier", "human")]
+    pairs = [("legacy_v4", "refactor_no_dossier"),
+             ("legacy_v4", "refactor_full"),
+             ("refactor_no_dossier", "refactor_full")]
     print(f"judgments: {len(judgments)}")
     for a, b in pairs:
         r = win_rate(judgments, a, b)
         verdict = ""
-        if a == "with_dossier" and b == "no_dossier" and r["n"]:
-            verdict = "  ← 40-60% 判扩充无效" if 0.4 <= r["rate"] <= 0.6 else ""
+        if a == "legacy_v4" and b == "refactor_no_dossier" and r["n"]:
+            verdict = "  ← 当前默认候选" if r["rate"] > 0.5 else ""
         print(f"{a:>13} vs {b:<12} n={r['n']:>3} 胜率={r['rate']:.0%} "
               f"[{r['low']:.0%},{r['high']:.0%}]{verdict}")
 
@@ -129,6 +129,7 @@ def cmd_report() -> None:
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "report"
     if cmd == "generate":
-        cmd_generate(int(sys.argv[2]) if len(sys.argv) > 2 else 3)
+        repeats = int(sys.argv[2]) if len(sys.argv) > 2 else 3
+        cmd_generate(repeats, synthesize_audio="--text-only" not in sys.argv[3:])
     else:
         cmd_report()

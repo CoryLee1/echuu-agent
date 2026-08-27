@@ -11,3 +11,14 @@ durations were 243 s, 301 s, and 255 s respectively.
 The canonical inputs live in `echuu/eval/legacy_v4_cases.jsonl`. Future
 three-way comparisons must reuse the same model, character, topic, and seed for
 `legacy_v4`, `refactor_no_dossier`, and `refactor_full`.
+
+Generate a text-first blind set (recommended while iterating):
+
+```bash
+python -m echuu.eval.pairwise generate 1 --text-only
+uvicorn echuu.eval.serve:app --port 8900
+```
+
+Omit `--text-only` when stable TTS audio is required. The evaluator does not
+create an empty WAV when TTS is skipped or fails, so missing audio remains
+distinguishable from a successful synthesis.

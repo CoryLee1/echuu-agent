@@ -18,15 +18,15 @@ EVAL_DIR = Path(__file__).resolve().parent
 RUNS_DIR = EVAL_DIR / "runs"
 JUDGMENTS = EVAL_DIR / "judgments.jsonl"
 STATIC = EVAL_DIR / "static"
-VARIANTS = ("human", "with_dossier", "no_dossier")
+VARIANTS = ("legacy_v4", "refactor_no_dossier", "refactor_full")
 
 app = FastAPI(title="echuu eval")
 
 
 class Judge(BaseModel):
     fixture_id: str
-    variant_a: Literal["human", "with_dossier", "no_dossier"]
-    variant_b: Literal["human", "with_dossier", "no_dossier"]
+    variant_a: Literal["legacy_v4", "refactor_no_dossier", "refactor_full"]
+    variant_b: Literal["legacy_v4", "refactor_no_dossier", "refactor_full"]
     winner: Literal["a", "b", "tie"]
 
 

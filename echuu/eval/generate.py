@@ -1,4 +1,4 @@
-"""三方变体生成：真人 transcript / 有扩充 / 无扩充，各产出 text + 一段 TTS wav。
+"""三路故事管线盲测：legacy V4 / refactor 无 dossier / refactor 完整版。
 
 机器变体驱动完整引擎（setup + run），拿 step 事件文本拼成整份剧本再整段合成音频，
 保证评测台三栏都能试听、盲测不被"有没有音频"泄底。
@@ -14,6 +14,7 @@ from time import perf_counter
 from typing import Any, Callable
 
 from echuu.core.prompt_leakage import find_prompt_leaks
+from echuu.core.output_safety import sanitize_audience_text
 
 
 def render_script(engine, script_only: bool = False) -> str:
@@ -22,11 +23,17 @@ def render_script(engine, script_only: bool = False) -> str:
         state = getattr(engine, "state", None)
         lines = getattr(state, "script_lines", None)
         if isinstance(lines, list):
-            return "\n".join(
-                str(getattr(line, "text", "")).strip()
-                for line in lines
-                if str(getattr(line, "text", "")).strip()
-            )
+            safe_lines = []
+            for line in lines:
+                text = str(getattr(line, "text", "")).strip()
+                if not text:
+                    continue
+                safe_lines.append(sanitize_audience_text(
+                    text,
+                    source_material=getattr(engine, "_source_material", None),
+                    tuning_guidance=getattr(engine, "tuning_guidance", None),
+                ).text)
+            return "\n".join(safe_lines)
     lines = []
     # max_steps=15 caps machine variants at the production inline default (see
     # start-inline). This makes the `vs human` comparison length-biased (human
@@ -42,8 +49,16 @@ def render_script(engine, script_only: bool = False) -> str:
 
 def synth_audio(tts, text: str, out_wav: Path) -> dict:
     started = perf_counter()
+    if tts is None:
+        return {
+            "duration_ms": 0,
+            "audio_bytes": 0,
+            "text_chars": len(text),
+            "skipped": True,
+        }
     audio = tts.synthesize(text) if text else b""
-    out_wav.write_bytes(audio or b"")
+    if audio:
+        out_wav.write_bytes(audio)
     return {
         "duration_ms": round((perf_counter() - started) * 1000, 1),
         "audio_bytes": len(audio or b""),
@@ -59,10 +74,27 @@ def stable_retrieval_seed(fixture: dict) -> int:
     return int.from_bytes(hashlib.sha256(payload.encode("utf-8")).digest()[:4], "big")
 
 
-def _machine_text(fixture: dict, enable_dossier: bool, engine_factory: Callable) -> tuple[str, dict]:
+def stable_generation_seed(fixture: dict) -> int:
+    """Pair all variants with the same story-generation random seed."""
+    if fixture.get("seed") is not None:
+        return int(fixture["seed"])
+    source_id = fixture.get("source_fixture_id", fixture.get("id", ""))
+    repeat = fixture.get("repeat", 1)
+    payload = f"{source_id}\0{repeat}\0story-generation-v1"
+    return int.from_bytes(hashlib.sha256(payload.encode("utf-8")).digest()[:4], "big")
+
+
+def _machine_text(
+    fixture: dict,
+    *,
+    story_pipeline: str,
+    enable_dossier: bool,
+    engine_factory: Callable,
+) -> tuple[str, dict]:
     engine = engine_factory()
     source_id = fixture.get("source_fixture_id", fixture.get("id", ""))
     retrieval_seed = int(fixture.get("_retrieval_seed", stable_retrieval_seed(fixture)))
+    generation_seed = int(fixture.get("_generation_seed", stable_generation_seed(fixture)))
     allowed_ids = fixture.get("_retrieval_allowed_ids")
     engine.setup(
         name=fixture.get("character_name", "评测主播"),
@@ -70,6 +102,8 @@ def _machine_text(fixture: dict, enable_dossier: bool, engine_factory: Callable)
         background=fixture.get("background", ""),
         topic=fixture["topic"],
         enable_dossier=enable_dossier,
+        story_pipeline=story_pipeline,
+        generation_seed=generation_seed,
         retrieval_allowed_ids=allowed_ids,
         retrieval_exclude_ids=[source_id] if source_id else [],
         retrieval_seed=retrieval_seed,
@@ -89,6 +123,9 @@ def _machine_text(fixture: dict, enable_dossier: bool, engine_factory: Callable)
         "source_fixture_id": source_id,
         "split": fixture.get("split", "unspecified"),
         "retrieval_seed": retrieval_seed,
+        "generation_seed": generation_seed,
+        "story_pipeline": story_pipeline,
+        "enable_dossier": enable_dossier,
         "retrieval_allowed_pool_size": len(allowed_ids) if allowed_ids is not None else None,
         "retrieval_exclude_ids": [source_id] if source_id else [],
         "tuning_guidance_ids": [
@@ -158,10 +195,21 @@ def generate_variant(fixture: dict, variant: str, out_dir: str,
                 },
             ],
         }
-    elif variant == "with_dossier":
-        text, trace = _machine_text(fixture, True, engine_factory)
-    elif variant == "no_dossier":
-        text, trace = _machine_text(fixture, False, engine_factory)
+    elif variant == "legacy_v4":
+        text, trace = _machine_text(
+            fixture, story_pipeline="legacy_v4", enable_dossier=False,
+            engine_factory=engine_factory,
+        )
+    elif variant in {"refactor_full", "with_dossier"}:
+        text, trace = _machine_text(
+            fixture, story_pipeline="refactor", enable_dossier=True,
+            engine_factory=engine_factory,
+        )
+    elif variant in {"refactor_no_dossier", "no_dossier"}:
+        text, trace = _machine_text(
+            fixture, story_pipeline="refactor", enable_dossier=False,
+            engine_factory=engine_factory,
+        )
     else:
         raise ValueError(f"unknown variant: {variant}")
 
@@ -171,6 +219,7 @@ def generate_variant(fixture: dict, variant: str, out_dir: str,
         "source_fixture_id": source_id,
         "split": fixture.get("split", "unspecified"),
         "retrieval_seed": stable_retrieval_seed(fixture),
+        "generation_seed": stable_generation_seed(fixture),
         "retrieval_allowed_pool_size": len(allowed_ids) if allowed_ids is not None else None,
         "retrieval_exclude_ids": [source_id] if source_id else [],
         "tuning_guidance_ids": [
@@ -195,9 +244,12 @@ def generate_variant(fixture: dict, variant: str, out_dir: str,
             "uses_ai": bool(text),
             "provider": "DashScope",
             "model": os.getenv("TTS_MODEL", "qwen3-tts-flash-realtime"),
-            "call_count": 1 if text else 0,
+            "call_count": 1 if text and tts is not None else 0,
             "duration_ms": audio_metrics["duration_ms"],
-            "failed_calls": 0 if audio_metrics["audio_bytes"] else (1 if text else 0),
+            "failed_calls": (
+                0 if audio_metrics.get("skipped") or audio_metrics["audio_bytes"]
+                else (1 if text else 0)
+            ),
         },
         "output": {"audio_path": str(vdir / "audio.wav")},
     })
@@ -212,6 +264,7 @@ def generate_variant(fixture: dict, variant: str, out_dir: str,
         "repeat": fixture.get("repeat", 1),
         "evaluation_split": fixture.get("split", "unspecified"),
         "retrieval_seed": stable_retrieval_seed(fixture),
+        "generation_seed": stable_generation_seed(fixture),
         "retrieval_allowed_pool_size": (
             len(fixture["_retrieval_allowed_ids"])
             if "_retrieval_allowed_ids" in fixture
