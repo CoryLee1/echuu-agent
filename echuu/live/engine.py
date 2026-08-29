@@ -42,6 +42,7 @@ from ..generators.script_writer import ScriptWriter, PROMPT_VERSION as WRITER_PR
 from ..generators.legacy_v4 import ScriptGeneratorV4
 from .danmaku import DanmakuEvaluator, DanmakuHandler
 from .danmaku_interleave import DanmakuInterleaver
+from .story_steerer import StorySteerer, annotate_remaining_beats
 from .llm_factory import create_llm_client
 from .performer import PerformerV3
 from .state import Danmaku, PerformanceState, PerformerMemory
@@ -255,6 +256,8 @@ class EchuuLiveEngine:
         self.script_writer = ScriptWriter(self.llm_gen, self.example_sampler)
         self.danmaku_handler = DanmakuHandler(DanmakuEvaluator())
         self.danmaku_interleaver = DanmakuInterleaver(self.llm_gen)
+        self.story_steerer = StorySteerer(self.llm_gen)
+        self.on_steering = None
         self.performer = PerformerV3(self.llm, self.tts, self.danmaku_handler)
 
         self.scripts_dir = self.project_root / "output" / "scripts"
@@ -1042,25 +1045,94 @@ class EchuuLiveEngine:
             "audio": audio,
         }
 
+    def emit_steering(self, dm, status: str, **extra):
+        """广播一条观众触发的排队状态（queued → processing → applied → replied）。"""
+        if dm is None:
+            return None
+        dm.status = status
+        queue = getattr(self.state, "danmaku_queue", []) if self.state else []
+        position = next((i + 1 for i, item in enumerate(queue) if getattr(item, "id", None) == dm.id), 0)
+        payload = {
+            "type": "steering",
+            "item": {**dm.to_public(), **extra},
+            "queue_size": len(queue),
+            "queue_position": position,
+        }
+        callback = getattr(self, "on_steering", None)
+        if callback:
+            callback(payload)
+        return payload
+
     def _pick_danmaku(self):
-        """从队列里挑一条最该回应的弹幕（SC > 问题 > 其它），并移除它。"""
+        """从队列里挑一条最该回应的触发（投喂/SC > 问题 > 其它），并移除它。"""
         q = self.state.danmaku_queue
         if not q:
             return None
-        # 稳定优先级：SC 优先，其次问题，其余按到达顺序
-        best_i, best_key = 0, (-1, -1)
+        best_i, best_key = 0, (-1, -1, -1)
         for i, d in enumerate(q):
-            key = (1 if getattr(d, "is_sc", False) else 0,
-                   1 if d.is_question() else 0)
+            gift = 1 if getattr(d, "kind", "chat") == "gift" else 0
+            key = (
+                gift or (1 if getattr(d, "is_sc", False) else 0),
+                1 if d.is_question() else 0,
+                int(getattr(d, "amount", 0) or 0),
+            )
             if key > best_key:
                 best_key, best_i = key, i
-        return q.pop(best_i)
+        picked = q.pop(best_i)
+        self.emit_steering(picked, "processing")
+        return picked
+
+    def _upcoming_script_lines(self):
+        """还没播出的台词（当前行之后）。"""
+        show = getattr(self.state, "show", None)
+        if not show or not getattr(show, "units", None):
+            return []
+        unit_idx = getattr(self.state, "current_unit_idx", 0)
+        line_idx = getattr(self.state, "current_line_in_unit", 0)
+        upcoming = []
+        for index, unit in enumerate(show.units):
+            if index < unit_idx:
+                continue
+            start = line_idx + 1 if index == unit_idx else 0
+            for offset, line in enumerate(unit.lines[start:]):
+                upcoming.append((unit, start + offset, line))
+        return upcoming
+
+    def _steer_remaining_show(self, dm) -> str:
+        """改还没讲的走向：挂 beats + 重写下一句。失败不挡当场回应。"""
+        show = getattr(self.state, "show", None)
+        if show is None:
+            return "已记下"
+        trigger = dm.text
+        if getattr(dm, "kind", "chat") == "gift":
+            trigger = trigger or f"投喂了 {getattr(dm, 'gift_id', '') or '礼物'}"
+        if getattr(show, "story_core", None) is not None:
+            show.story_core = annotate_remaining_beats(show.story_core, trigger)
+        upcoming = self._upcoming_script_lines()
+        if not upcoming:
+            return "已记下，后面会接住"
+        _, _, line = upcoming[0]
+        core = getattr(show, "story_core", None)
+        rewritten = self.story_steerer.rewrite_line(
+            spine=getattr(core, "spine", "") if core else "",
+            topic=self.state.topic,
+            user=dm.user,
+            trigger=trigger,
+            kind=getattr(dm, "kind", "chat"),
+            line=getattr(line, "text", "") or "",
+        )
+        if rewritten:
+            line.text = rewritten
+            return rewritten[:48]
+        return "后续会往观众推的方向收"
 
     def _maybe_interleave_danmaku(self, unit_idx: int, last_line: str):
         """生成一条人设化弹幕回应并构造 step 事件；失败返回 None（跳过穿插）。"""
         dm = self._pick_danmaku()
         if dm is None:
             return None
+        note = self._steer_remaining_show(dm)
+        self.emit_steering(dm, "applied", note=note)
         persona = getattr(self.state.show, "persona", None)
         identity = getattr(persona, "identity", "") if persona else ""
         verbal_tics = getattr(persona, "verbal_tics", ()) if persona else ()
@@ -1071,6 +1143,7 @@ class EchuuLiveEngine:
             gags=self.gag_ledger.unrecalled() if getattr(self, "gag_ledger", None) else None,
         )
         if not reply:
+            self.emit_steering(dm, "dropped", note="没接住，先继续讲")
             return None
         reply = sanitize_audience_text(
             reply,
@@ -1082,7 +1155,9 @@ class EchuuLiveEngine:
         except Exception:
             audio = None
         unit = self.state.show.units[unit_idx]
-        return self._build_danmaku_event(unit, dm, reply, audio)
+        event = self._build_danmaku_event(unit, dm, reply, audio)
+        self.emit_steering(dm, "replied")
+        return event
 
     def _maybe_no_reaction_quip(self, unit_idx: int, question: str):
         """互动点没人理时的自嘲兜底 step（人设化生成，失败返回 None 直接跳过）。"""
@@ -1136,7 +1211,12 @@ class EchuuLiveEngine:
                 "cue": None,
             },
             "speech": reply,
-            "danmaku": {"text": danmaku.text, "user": danmaku.user} if danmaku else None,
+            "danmaku": {
+                "id": getattr(danmaku, "id", ""),
+                "text": danmaku.text,
+                "user": danmaku.user,
+                "kind": getattr(danmaku, "kind", "chat"),
+            } if danmaku else None,
             "is_danmaku_response": danmaku is not None,
             "motion": pick_motion_for_danmaku(unit, danmaku) if danmaku else {"state": "speaking"},
             "audio": audio,

@@ -189,6 +189,9 @@ class LiveService:
 
             # 预生产跑在 executor 线程里，on_phase 不能在线程内 get_event_loop()
             main_loop = asyncio.get_running_loop()
+            engine.on_steering = lambda payload: asyncio.run_coroutine_threadsafe(
+                bcast(payload), main_loop,
+            )
 
             def on_phase(msg: str):
                 asyncio.run_coroutine_threadsafe(
@@ -477,6 +480,9 @@ class LiveService:
             state.set_engine(engine)
 
             db_main_loop = asyncio.get_running_loop()
+            engine.on_steering = lambda payload: asyncio.run_coroutine_threadsafe(
+                bcast(payload), db_main_loop,
+            )
 
             def on_phase(msg: str):
                 asyncio.run_coroutine_threadsafe(
@@ -594,17 +600,36 @@ class LiveService:
                 db.close()
 
     @staticmethod
-    def inject_danmaku(text: str, user: str = "观众"):
-        """
-        注入实时弹幕
-
-        Args:
-            text: 弹幕文本
-            user: 用户名
-        """
+    def inject_danmaku(
+        text: str,
+        user: str = "观众",
+        *,
+        kind: str = "chat",
+        gift_id: str = "",
+        client_id: str = "",
+        amount: int = 0,
+    ):
+        """注入弹幕或投喂，进入同一条 steering 队列。"""
         if not state.is_running or not state.current_engine:
             raise ValueError("直播未运行")
 
-        dm = Danmaku.from_text(text, user=user)
-        state.current_engine.state.danmaku_queue.append(dm)
+        engine = state.current_engine
+        if not getattr(engine, "state", None):
+            raise ValueError("直播尚未就绪")
+
+        dm = Danmaku.from_input(
+            text,
+            user=user,
+            kind=kind,
+            gift_id=gift_id,
+            client_id=client_id,
+            amount=amount,
+        )
+        show = getattr(engine.state, "show", None)
+        if show is None:
+            engine.emit_steering(dm, "applied", note="已记下，下个互动点会接住")
+            return dm
+
+        engine.state.danmaku_queue.append(dm)
+        engine.emit_steering(dm, "queued")
         return dm

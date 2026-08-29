@@ -61,22 +61,28 @@ class DanmakuRequest(BaseModel):
     room_id: Optional[str] = None
     text: str
     user: str = "观众"
+    kind: str = "chat"
+    gift_id: str = ""
+    client_id: str = ""
+    amount: int = 0
 
 
 @router.post("/danmaku")
 async def send_realtime_danmaku(request: DanmakuRequest):
-    """发送实时弹幕（接受 JSON body）"""
+    """发送实时弹幕或投喂（进入 steering 队列，状态走 WS type=steering）。"""
     if not state.is_running or not state.current_engine:
         raise HTTPException(status_code=400, detail="直播未运行")
 
     try:
-        LiveService.inject_danmaku(request.text, request.user)
-        await state.broadcast_to_room({
-            "type": "danmaku",
-            "text": request.text,
-            "user": request.user,
-        })
-        return {"message": "弹幕已注入队列"}
+        dm = LiveService.inject_danmaku(
+            request.text,
+            request.user,
+            kind=request.kind,
+            gift_id=request.gift_id,
+            client_id=request.client_id,
+            amount=request.amount,
+        )
+        return {"message": "已进入处理队列", "item": dm.to_public()}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

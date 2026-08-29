@@ -5,6 +5,7 @@ Enhanced with user memory and bonding system.
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional, TYPE_CHECKING
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class Danmaku:
-    """弹幕（带优先级计算字段）。"""
+    """弹幕 / 投喂（带优先级与 Cursor 式排队状态）。"""
 
     text: str
     user: str = "观众"
@@ -25,6 +26,12 @@ class Danmaku:
 
     relevance: float = 0.0
     priority: float = 0.0
+
+    id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
+    kind: str = "chat"  # chat | gift
+    gift_id: str = ""
+    client_id: str = ""
+    status: str = "queued"  # queued | processing | applied | replied | dropped
 
     @classmethod
     def from_text(cls, text: str, user: str = "观众") -> "Danmaku":
@@ -41,6 +48,44 @@ class Danmaku:
                 amount = int(match.group(1))
 
         return cls(text=text, user=user, is_sc=is_sc, amount=amount)
+
+    @classmethod
+    def from_input(
+        cls,
+        text: str,
+        user: str = "观众",
+        *,
+        kind: str = "chat",
+        gift_id: str = "",
+        client_id: str = "",
+        amount: int = 0,
+    ) -> "Danmaku":
+        """观众触发：聊天或投喂，进入同一条 steering 队列。"""
+        parsed = cls.from_text(text, user=user)
+        parsed.kind = kind if kind in ("chat", "gift") else "chat"
+        parsed.gift_id = gift_id or ""
+        parsed.client_id = client_id or ""
+        if parsed.kind == "gift":
+            parsed.is_sc = True
+            parsed.amount = amount or parsed.amount or 10
+        elif amount > 0:
+            parsed.amount = amount
+            parsed.is_sc = True
+        return parsed
+
+    def to_public(self) -> Dict:
+        """WS / REST 上给前端的排队状态。"""
+        return {
+            "id": self.id,
+            "client_id": self.client_id,
+            "kind": self.kind,
+            "gift_id": self.gift_id,
+            "text": self.text,
+            "user": self.user,
+            "status": self.status,
+            "is_sc": self.is_sc,
+            "amount": self.amount,
+        }
 
     def is_question(self) -> bool:
         """判断是否是问题。"""
