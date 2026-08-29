@@ -28,7 +28,8 @@ class Danmaku:
     priority: float = 0.0
 
     id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
-    kind: str = "chat"  # chat | gift
+    kind: str = "chat"  # chat | gift | tangent | collect
+    entities: list = field(default_factory=list)
     gift_id: str = ""
     client_id: str = ""
     status: str = "queued"  # queued | processing | applied | replied | dropped
@@ -59,12 +60,14 @@ class Danmaku:
         gift_id: str = "",
         client_id: str = "",
         amount: int = 0,
+        entities: list | None = None,
     ) -> "Danmaku":
-        """观众触发：聊天或投喂，进入同一条 steering 队列。"""
+        """观众触发：聊天、投喂或跑毛卡，进入同一条 steering 队列。"""
         parsed = cls.from_text(text, user=user)
-        parsed.kind = kind if kind in ("chat", "gift") else "chat"
+        parsed.kind = kind if kind in ("chat", "gift", "tangent", "collect") else "chat"
         parsed.gift_id = gift_id or ""
         parsed.client_id = client_id or ""
+        parsed.entities = list(entities or [])
         if parsed.kind == "gift":
             parsed.is_sc = True
             parsed.amount = amount or parsed.amount or 10
@@ -85,6 +88,7 @@ class Danmaku:
             "status": self.status,
             "is_sc": self.is_sc,
             "amount": self.amount,
+            "entities": self.entities,
         }
 
     def is_question(self) -> bool:
@@ -372,3 +376,5 @@ class PerformanceState:
     memory: PerformerMemory = field(default_factory=PerformerMemory)
     danmaku_queue: List[Danmaku] = field(default_factory=list)
     catchphrases: List[str] = field(default_factory=list)
+    lines_since_tangent: int = 99
+    token_hunt: object | None = None

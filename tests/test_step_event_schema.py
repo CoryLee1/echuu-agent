@@ -15,7 +15,7 @@ def _show():
         axis="identity", density="high",
         acoustic=AcousticHint(),
         rupture_slots=[Rupture(kind="meme", nucleus_mode="tiny_shame", intensity=0.5)],
-        lines=[ScriptLine(id="x", text="t", stage="turn", is_rupture=True)],
+        lines=[ScriptLine(id="x", text="t", stage="turn", is_rupture=True, key_info=["伞", "那天晚上"])],
     ) for i in range(4)]
     return Show(persona=persona, topic="t", units=units)
 
@@ -37,6 +37,7 @@ def test_step_event_v2_shape():
     assert ev["line"]["stage"] in ("hook", "pad", "turn")
     assert ev["line"]["is_rupture"] is True
     assert ev["speech"] == "t"  # compat alias
+    assert [token["label"] for token in ev["tokens"]] == ["伞", "那天晚上"]
     assert ev["motion"]["state"] == "reacting"
     assert ev["motion"]["clip"] in RUPTURE_CLIPS
     assert ev["motion"]["loop"] is False

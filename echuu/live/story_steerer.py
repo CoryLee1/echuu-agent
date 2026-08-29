@@ -34,21 +34,82 @@ _REWRITE_PROMPT = """\
 - 不要另开一个新故事，不要复述设定表。
 """
 
+_TANGENT_BRANCH_PROMPT = """\
+你在给一场正在直播的故事改「下一句还没播出的台词」。
+主播刚触发跑毛点，这一句必须沿着三个线索讲一小段支线，不能另开新故事。
+
+主轴（讲完支线后还得回来）：{spine}
+正在讲的话题：{topic}
+三个线索（必须都出现在这一句里）：{entities}
+约束：{trigger}
+
+原定下一句：
+{line}
+
+要求：
+- 只输出一句口语台词，不要解释、不要引号、不要括号说明。
+- 三个线索都要被点到，像随口想起的一件小事。
+- 这是支线第一句，不要收束回主线，也不要说「好了不说了」。
+"""
+
+_TANGENT_RETURN_PROMPT = """\
+你在给一场正在直播的故事改「下一句还没播出的台词」。
+上一句刚沿着三个线索跑了一小段，这一句必须回到主线。
+
+主轴（必须说回这件事）：{spine}
+正在讲的话题：{topic}
+刚才用过的线索：{entities}
+
+原定下一句：
+{line}
+
+要求：
+- 只输出一句口语台词，不要解释、不要引号、不要括号说明。
+- 用一句短接回主线，不要继续展开支线，不要念话题原文。
+- 可以说「刚才那事」或「正说的这茬」，不要念完整标题。
+"""
+
 
 class StorySteerer:
     def __init__(self, llm: _LLM) -> None:
         self.llm = llm
 
     def rewrite_line(self, *, spine: str, topic: str, user: str, trigger: str,
-                     kind: str, line: str) -> str | None:
-        prompt = _REWRITE_PROMPT.format(
-            kind="投喂" if kind == "gift" else "弹幕",
-            spine=spine or topic or "正在讲的事",
-            topic=topic or "（正在讲的事）",
-            user=sanitize_untrusted(user or "观众", max_chars=24),
-            trigger=sanitize_untrusted(trigger or "", max_chars=120),
-            line=line or "",
-        )
+                     kind: str, line: str, entities: list | None = None,
+                     role: str = "follow") -> str | None:
+        labels = []
+        for item in entities or []:
+            if isinstance(item, dict):
+                label = str(item.get("label") or "").strip()
+            else:
+                label = str(getattr(item, "label", "") or "").strip()
+            if label:
+                labels.append(label)
+        entity_text = "、".join(labels) if labels else "刚才那几件事"
+        if kind == "tangent" and role == "return":
+            prompt = _TANGENT_RETURN_PROMPT.format(
+                spine=spine or topic or "正在讲的事",
+                topic=topic or "（正在讲的事）",
+                entities=entity_text,
+                line=line or "",
+            )
+        elif kind == "tangent":
+            prompt = _TANGENT_BRANCH_PROMPT.format(
+                spine=spine or topic or "正在讲的事",
+                topic=topic or "（正在讲的事）",
+                entities=entity_text,
+                trigger=sanitize_untrusted(trigger or "", max_chars=120),
+                line=line or "",
+            )
+        else:
+            prompt = _REWRITE_PROMPT.format(
+                kind="投喂" if kind == "gift" else "弹幕",
+                spine=spine or topic or "正在讲的事",
+                topic=topic or "（正在讲的事）",
+                user=sanitize_untrusted(user or "观众", max_chars=24),
+                trigger=sanitize_untrusted(trigger or "", max_chars=120),
+                line=line or "",
+            )
         try:
             text = self.llm.generate(prompt)
         except Exception as exc:  # noqa: BLE001 — 转向失败不挡当场回应

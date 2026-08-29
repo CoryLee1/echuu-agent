@@ -200,6 +200,9 @@ class LiveService:
             engine.on_steering = lambda payload: asyncio.run_coroutine_threadsafe(
                 bcast(payload), main_loop,
             )
+            engine.on_token_hunt = lambda payload: asyncio.run_coroutine_threadsafe(
+                bcast(payload), main_loop,
+            )
 
             def on_phase(msg: str):
                 asyncio.run_coroutine_threadsafe(
@@ -491,6 +494,9 @@ class LiveService:
             engine.on_steering = lambda payload: asyncio.run_coroutine_threadsafe(
                 bcast(payload), db_main_loop,
             )
+            engine.on_token_hunt = lambda payload: asyncio.run_coroutine_threadsafe(
+                bcast(payload), db_main_loop,
+            )
 
             def on_phase(msg: str):
                 asyncio.run_coroutine_threadsafe(
@@ -624,8 +630,9 @@ class LiveService:
         gift_id: str = "",
         client_id: str = "",
         amount: int = 0,
+        entities: list | None = None,
     ):
-        """注入弹幕或投喂，进入同一条 steering 队列。"""
+        """注入弹幕、投喂、线索收集或跑毛卡。"""
         if not state.is_running or not state.current_engine:
             raise ValueError("直播未运行")
 
@@ -640,7 +647,24 @@ class LiveService:
             gift_id=gift_id,
             client_id=client_id,
             amount=amount,
+            entities=entities,
         )
+        if dm.kind == "collect":
+            token = (dm.entities[0] if dm.entities else None) or {
+                "id": dm.text,
+                "label": dm.text,
+                "kind": "event",
+            }
+            engine.collect_story_token(token)
+            dm.status = "applied"
+            return dm
+        if dm.kind == "tangent":
+            from echuu.live.story_tokens import compose_tangent_text
+            card = engine.consume_tangent_card()
+            if not card:
+                raise ValueError("还没有跑毛点")
+            dm.entities = card
+            dm.text = compose_tangent_text(card)
         show = getattr(engine.state, "show", None)
         if show is None:
             engine.emit_steering(dm, "applied", note="已记下，下个互动点会接住")

@@ -11,7 +11,7 @@ from typing import Optional, List
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 try:
     from ..config import SCRIPTS_DIR
@@ -65,11 +65,12 @@ class DanmakuRequest(BaseModel):
     gift_id: str = ""
     client_id: str = ""
     amount: int = 0
+    entities: List = Field(default_factory=list)
 
 
 @router.post("/danmaku")
 async def send_realtime_danmaku(request: DanmakuRequest):
-    """发送实时弹幕或投喂（进入 steering 队列，状态走 WS type=steering）。"""
+    """发送实时弹幕、投喂、线索收集或跑毛卡。"""
     if not state.is_running or not state.current_engine:
         raise HTTPException(status_code=400, detail="直播未运行")
 
@@ -81,7 +82,10 @@ async def send_realtime_danmaku(request: DanmakuRequest):
             gift_id=request.gift_id,
             client_id=request.client_id,
             amount=request.amount,
+            entities=request.entities,
         )
+        if request.kind == "collect":
+            return {"message": "已记下线索", "item": dm.to_public()}
         return {"message": "已进入处理队列", "item": dm.to_public()}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

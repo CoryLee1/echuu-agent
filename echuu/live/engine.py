@@ -258,6 +258,7 @@ class EchuuLiveEngine:
         self.danmaku_interleaver = DanmakuInterleaver(self.llm_gen)
         self.story_steerer = StorySteerer(self.llm_gen)
         self.on_steering = None
+        self.on_token_hunt = None
         self.performer = PerformerV3(self.llm, self.tts, self.danmaku_handler)
 
         self.scripts_dir = self.project_root / "output" / "scripts"
@@ -417,6 +418,7 @@ class EchuuLiveEngine:
                 stage="hook" if index == 0 else "pad",
                 is_rupture=False,
                 interruption_cost=float(legacy_line.interruption_cost),
+                key_info=list(getattr(legacy_line, "key_info", None) or []),
             ))
         for unit in units:
             if unit.lines:
@@ -916,6 +918,8 @@ class EchuuLiveEngine:
             if not is_last_chunk:
                 continue  # 行没播完不计弹幕冷却、不判停
             lines_since_resp += 1
+            self.state.lines_since_tangent = getattr(self.state, "lines_since_tangent", 99) + 1
+            self._maybe_release_tangent_card()
 
             # interact 行落地 → 开互动窗口
             if ev["line"]["stage"] == "interact":
@@ -934,7 +938,8 @@ class EchuuLiveEngine:
             in_window = interact_window > 0
             cooldown_ok = lines_since_resp >= (1 if in_window else 2)
             quota_ok = resp_in_unit < (2 if in_window else 1)
-            if cooldown_ok and quota_ok and self.state.danmaku_queue:
+            has_tangent = any(getattr(d, "kind", "") == "tangent" for d in self.state.danmaku_queue)
+            if self.state.danmaku_queue and (has_tangent or (cooldown_ok and quota_ok)):
                 resp_ev = self._maybe_interleave_danmaku(unit_idx, last_line_text)
                 if resp_ev is not None:
                     resp_in_unit += 1
@@ -1015,8 +1020,17 @@ class EchuuLiveEngine:
                 pause_after = round(random.uniform(6.0, 10.0), 1)
             elif line_in_unit == len(unit.lines) - 1:
                 pause_after = round(random.uniform(5.0, 8.0), 1)
+        tokens = []
+        if chunk_index == 0:
+            from echuu.live.story_tokens import extract_tokens_from_line
+            tokens = extract_tokens_from_line(
+                speech,
+                getattr(line, "key_info", None),
+                getattr(line, "id", "") or f"u{unit.index}l{line_in_unit}",
+            )
         return {
             "type": "step",
+            "tokens": tokens,
             "show": {
                 "total_units": len(self.state.show.units),
                 "total_lines": sum(len(u.lines) for u in self.state.show.units),
@@ -1063,16 +1077,64 @@ class EchuuLiveEngine:
             callback(payload)
         return payload
 
+    def emit_token_hunt(self, payload: dict):
+        """广播线索收集 / 跑毛点就绪。"""
+        callback = getattr(self, "on_token_hunt", None)
+        if callback:
+            callback(payload)
+        return payload
+
+    def _ensure_token_hunt(self):
+        from echuu.live.story_tokens import TokenHunt
+        hunt = getattr(self.state, "token_hunt", None) if self.state else None
+        if hunt is None and self.state is not None:
+            hunt = TokenHunt()
+            self.state.token_hunt = hunt
+        return hunt
+
+    def collect_story_token(self, token: dict | None) -> dict:
+        hunt = self._ensure_token_hunt()
+        if hunt is None:
+            return {"slots": [], "pending": None, "crafted": None}
+        result = hunt.collect(token)
+        ready = getattr(self.state, "lines_since_tangent", 99) >= 2
+        crafted = hunt.maybe_craft(ready)
+        if crafted.get("crafted"):
+            result = crafted
+        else:
+            result = {"slots": crafted["slots"], "pending": crafted["pending"], "crafted": None}
+        self.emit_token_hunt({"type": "token_collect", "token": token, **result})
+        if result.get("crafted"):
+            self.emit_token_hunt({"type": "tangent_ready", "pending": result["pending"], "slots": result["slots"]})
+        return result
+
+    def consume_tangent_card(self) -> list | None:
+        hunt = self._ensure_token_hunt()
+        if hunt is None:
+            return None
+        return hunt.consume_pending()
+
+    def _maybe_release_tangent_card(self):
+        hunt = getattr(self.state, "token_hunt", None) if self.state else None
+        if hunt is None or self.state is None:
+            return
+        if getattr(self.state, "lines_since_tangent", 0) < 2:
+            return
+        result = hunt.maybe_craft(True)
+        if result.get("crafted"):
+            self.emit_token_hunt({"type": "tangent_ready", "pending": result["pending"], "slots": result["slots"]})
+
     def _pick_danmaku(self):
-        """从队列里挑一条最该回应的触发（投喂/SC > 问题 > 其它），并移除它。"""
+        """从队列里挑一条最该回应的触发（跑毛卡 > 投喂/SC > 问题 > 其它），并移除它。"""
         q = self.state.danmaku_queue
         if not q:
             return None
-        best_i, best_key = 0, (-1, -1, -1)
+        best_i, best_key = 0, (-1, -1, -1, -1)
         for i, d in enumerate(q):
-            gift = 1 if getattr(d, "kind", "chat") == "gift" else 0
+            kind = getattr(d, "kind", "chat")
             key = (
-                gift or (1 if getattr(d, "is_sc", False) else 0),
+                3 if kind == "tangent" else 0,
+                2 if kind == "gift" or getattr(d, "is_sc", False) else 0,
                 1 if d.is_question() else 0,
                 int(getattr(d, "amount", 0) or 0),
             )
@@ -1104,21 +1166,56 @@ class EchuuLiveEngine:
         if show is None:
             return "已记下"
         trigger = dm.text
-        if getattr(dm, "kind", "chat") == "gift":
+        kind = getattr(dm, "kind", "chat")
+        if kind == "gift":
             trigger = trigger or f"投喂了 {getattr(dm, 'gift_id', '') or '礼物'}"
+        if kind == "tangent":
+            from echuu.live.story_tokens import compose_tangent_text
+            trigger = compose_tangent_text(getattr(dm, "entities", None) or [])
         if getattr(show, "story_core", None) is not None:
             show.story_core = annotate_remaining_beats(show.story_core, trigger)
         upcoming = self._upcoming_script_lines()
         if not upcoming:
             return "已记下，后面会接住"
-        _, _, line = upcoming[0]
         core = getattr(show, "story_core", None)
+        spine = getattr(core, "spine", "") if core else ""
+        if kind == "tangent":
+            notes = []
+            branch = self.story_steerer.rewrite_line(
+                spine=spine,
+                topic=self.state.topic,
+                user=dm.user,
+                trigger=trigger,
+                kind=kind,
+                line=getattr(upcoming[0][2], "text", "") or "",
+                entities=getattr(dm, "entities", None) or [],
+                role="branch",
+            )
+            if branch:
+                upcoming[0][2].text = branch
+                notes.append(branch[:32])
+            if len(upcoming) > 1:
+                back = self.story_steerer.rewrite_line(
+                    spine=spine,
+                    topic=self.state.topic,
+                    user=dm.user,
+                    trigger=trigger,
+                    kind=kind,
+                    line=getattr(upcoming[1][2], "text", "") or "",
+                    entities=getattr(dm, "entities", None) or [],
+                    role="return",
+                )
+                if back:
+                    upcoming[1][2].text = back
+                    notes.append("回主线")
+            return " · ".join(notes) if notes else "沿着线索讲一小段再回来"
+        _, _, line = upcoming[0]
         rewritten = self.story_steerer.rewrite_line(
-            spine=getattr(core, "spine", "") if core else "",
+            spine=spine,
             topic=self.state.topic,
             user=dm.user,
             trigger=trigger,
-            kind=getattr(dm, "kind", "chat"),
+            kind=kind,
             line=getattr(line, "text", "") or "",
         )
         if rewritten:
@@ -1132,6 +1229,11 @@ class EchuuLiveEngine:
         if dm is None:
             return None
         note = self._steer_remaining_show(dm)
+        if getattr(dm, "kind", "chat") == "tangent":
+            self.state.lines_since_tangent = 0
+            self.emit_steering(dm, "applied", note=note)
+            self.emit_steering(dm, "replied")
+            return None
         self.emit_steering(dm, "applied", note=note)
         persona = getattr(self.state.show, "persona", None)
         identity = getattr(persona, "identity", "") if persona else ""

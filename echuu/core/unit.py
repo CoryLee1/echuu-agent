@@ -33,6 +33,7 @@ class ScriptLine:
     is_rupture: bool = False
     interruption_cost: float = 0.5
     cue: object | None = None  # echuu.core.performer_cue.PerformerCue — late import to avoid cycle
+    key_info: list[str] = field(default_factory=list)
 
 
 @dataclass
