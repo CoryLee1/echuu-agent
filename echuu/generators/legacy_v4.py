@@ -8,7 +8,7 @@ from typing import List, Dict, Optional
 from dataclasses import dataclass, field
 
 from ..core.trigger_bank import TriggerBank
-from ..core.digression_db import DigressionDB
+from ..core.digression_db import DigressionDB, scrub_recited_topic
 from ..core.structure_breaker import StructureBreaker
 from ..core.emotion_mixer import EmotionMixer
 from ..core.story_nucleus import StoryNucleus
@@ -88,8 +88,22 @@ class ScriptGeneratorV4_1:
 **表现：**
 ```
 ❌ 每句都推进主线
-✅ "汇率多少来着，七块多...现在才四块八，差太远了...诶说到哪了？对，腰果"
+✅ "汇率多少来着，七块多...现在才四块八，差太远了...诶说到哪了？对，刚才那事"
+❌ "好了不说了下一个话题" / 把策划写的整句标题念出来当拉回
 ```
+
+拉回只用短钩子：「刚才那事」「正说的这茬」。跑题最多一句，下一句必须接回主线。
+
+---
+
+## 🍜 幽默感与生活感
+
+像跟熟朋友半夜打电话，不是脱口秀稿，也不是导演对讲机。
+
+- 笑点来自具体物件和身体细节（保温灯、外卖袋勒手、纸条字迹），不是「内心戏？」「失控？」这种口令
+- 自嘲可以，卖惨、升华、讲道理不行
+- 禁止把「话题」字段整句念进台词
+- 禁止出现：严重跑题一下、好了不说了下一个话题、内心戏？、失控？
 
 ---
 
@@ -151,7 +165,7 @@ class ScriptGeneratorV4_1:
 - "词语重复": 自然卡壳（不是设计感重复）
 - "思路中断": 跑题或忘词
 - "跑题细节": 无关但真实的细节
-- "严重跑题": 50字+跑题然后拉回
+- "跑题": 一句生活联想后立刻用短钩子接回
 
     ### 必须做到
 1. **体现分享欲**（为什么现在要说）
@@ -183,8 +197,8 @@ class ScriptGeneratorV4_1:
 ## ⚠️ 重要提醒
 
 1. **八卦要劲爆** - 重点在于反差和不为人知的细节。
-2. **减少无意义跑神** - 说话可以碎，但故事主线要清晰，不要让观众觉得你在梦游。
-3. **内心戏 > 事件** - 体现你听到八卦时的震惊和纠结。
+2. **减少无意义跑神** - 说话可以碎，但故事主线要清晰。跑题必须 1 句内接回，接回用「刚才那事」这类短钩子，禁止念话题原文。
+3. **内心戏藏进细节** - 用物件、身体、对话露出震惊和纠结，不要喊「内心戏？」。
 """
 
     def __init__(self, llm, example_sampler=None):
@@ -281,9 +295,12 @@ class ScriptGeneratorV4_1:
 - {min_units}-{max_units}个单元，每个80-120字
 - 开场必须用上面的触发
 - 开场必须体现“为什么现在要说”
-- 至少1段严重跑题（50字+）
+- 可以有最多1句生活联想跑题，下一句必须用「刚才那事 / 正说的这茬」接回主线
+- 禁止把上面「话题」字段整句写进任何一句台词
+- 禁止出现：严重跑题一下、好了不说了下一个话题、内心戏？、失控？
 - 必须有反常点（行为/反应/逻辑/身份/结果/认知落差）
-- 至少一处内心独白 + 一处身体记忆 + 一处笨拙失控
+- 至少一处藏进细节的内心反应 + 一处身体记忆 + 一处笨拙失控（都用生活物件说，不要导演口令）
+- 幽默感来自具体生活，像跟朋友讲，不要脱口秀包袱
 - 不要升华结尾
 - 只输出JSON数组
 """
@@ -303,6 +320,8 @@ class ScriptGeneratorV4_1:
             lines_dict = broken_lines_dict
 
         result = [self._dict_to_line(d) for d in lines_dict]
+        for line in result:
+            line.text = scrub_recited_topic(line.text, topic)
 
         print(f"生成完成，共 {len(result)} 个单元")
         return result

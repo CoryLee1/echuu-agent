@@ -7,7 +7,48 @@
 """
 
 import random
+import re
 from typing import Optional
+
+# 拉回只用短钩子，绝不把策划写的 topic 整句念出来。
+_RETURN_HOOKS = ("刚才那事", "正说的这茬", "刚才说到的")
+
+_STOCK_ASIDES = (
+    ("严重跑题一下哈……", ""),
+    ("严重跑题一下哈", ""),
+    ("严重跑题一下——", ""),
+    ("严重跑题一下", ""),
+    ("好了不说了，下一个话题", "好了就这样"),
+    ("下一个话题", "弹幕那边"),
+    ("内心戏？", ""),
+    ("失控？", ""),
+    ("对说回", "对，"),
+)
+
+
+def topic_return_hook(topic: str = "") -> str:
+    """Audience-facing pull-back. Never echo the full topic brief."""
+    return random.choice(_RETURN_HOOKS)
+
+
+def scrub_recited_topic(text: str, topic: str) -> str:
+    """If the model pasted the topic title, swap it for a short hook."""
+    if not text:
+        return text
+    cleaned = text
+    brief = (topic or "").strip()
+    hook = topic_return_hook(brief)
+    if len(brief) >= 6 and brief in cleaned:
+        cleaned = cleaned.replace(brief, hook)
+    elif len(brief) >= 14:
+        head = brief[:14]
+        if head in cleaned:
+            cleaned = cleaned.replace(head, hook)
+    for src, dst in _STOCK_ASIDES:
+        cleaned = cleaned.replace(src, dst)
+    cleaned = re.sub(r"[。．]{2,}", "。", cleaned)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned)
+    return cleaned.strip()
 
 
 class DigressionDB:
@@ -16,8 +57,8 @@ class DigressionDB:
         "money_chain": {
             "triggers": ["钱", "贵", "便宜", "买", "花", "多少钱", "日元", "块钱"],
             "templates_zh": [
-                "那时候{currency}多少来着...{guess1}还是{guess2}？反正比现在{comparison}多了，现在都{current}了，差太远了...诶我说到哪了？对，{return_topic}",
-                "多少钱来着...好像是{guess1}？不对{guess2}吧，反正挺{cost_adj}的，我那时候{cost_context}...算了不说这个了，继续说{return_topic}",
+                "那时候{currency}多少来着...{guess1}还是{guess2}？反正比现在{comparison}，诶对，{return_topic}",
+                "多少钱来着...{guess1}？不对{guess2}吧，挺{cost_adj}的——对，{return_topic}",
             ],
             "variables": {
                 "currency": ["汇率", "那边的物价"],
@@ -33,8 +74,8 @@ class DigressionDB:
         "location_chain": {
             "triggers": ["住", "家", "房子", "公寓", "宿舍", "楼"],
             "templates_zh": [
-                "那时候我住{location}那边，就是那个{location_detail}，{location_memory}，租金多少来着...{rent_guess}？反正{rent_comment}...对说回{return_topic}",
-                "我那个房子{floor_detail}，每天{daily_pain}，{location_tangent}...不说这个了，{return_topic}",
+                "那时候我住{location}那边，{location_detail}，租金{rent_guess}来着——对，{return_topic}",
+                "我那个房子{floor_detail}，每天{daily_pain}，不说这个了，{return_topic}",
             ],
             "variables": {
                 "location": ["市中心", "郊区", "学校旁边", "那条街"],
@@ -51,7 +92,7 @@ class DigressionDB:
         "time_chain": {
             "triggers": ["那时候", "以前", "当时", "那年", "那会儿"],
             "templates_zh": [
-                "那是{year}年吧...还是{year_alt}年？反正是{vague_time}的时候，{time_context}，天哪那都{time_ago}了...说什么来着？{return_topic}",
+                "那是{year}年吧...还是{year_alt}？反正{vague_time}，都{time_ago}了——说什么来着？{return_topic}",
             ],
             "variables": {
                 "year": ["19", "20", "18", "17"],
@@ -65,7 +106,7 @@ class DigressionDB:
         "food_chain": {
             "triggers": ["吃", "饿", "好吃", "餐厅", "外卖", "饭"],
             "templates_zh": [
-                "说到吃的，那时候我经常吃{food}，就那种{food_detail}，多少钱来着...{price_guess}吧，{food_tangent}...跑题了，{return_topic}",
+                "说到吃的，那时候常吃{food}，{food_detail}，{price_guess}——跑题了，{return_topic}",
             ],
             "variables": {
                 "food": ["泡面", "便利店饭团", "路边摊", "食堂"],
@@ -78,7 +119,7 @@ class DigressionDB:
         "person_chain": {
             "triggers": ["他", "她", "室友", "朋友", "同学", "同事"],
             "templates_zh": [
-                "说到{person}，{person}这个人{trait}，有一次{anecdote}...算了这个以后再说，反正{return_summary}，我继续说{return_topic}",
+                "说到{person}，人{trait}，有一次{anecdote}——算了，{return_topic}",
             ],
             "variables": {
                 "person": ["我室友", "我那个朋友", "我同学"],
@@ -92,10 +133,10 @@ class DigressionDB:
 
     RETURN_MARKERS_ZH = [
         "诶我说到哪了？对，{topic}",
-        "跑题了跑题了，继续说{topic}",
+        "跑题了，继续说{topic}",
         "不说这个了，{topic}",
         "算了，说回{topic}",
-        "...对{topic}的事",
+        "...对，{topic}",
     ]
 
     RETURN_MARKERS_EN = [
@@ -161,7 +202,7 @@ class DigressionDB:
             if f"{{{var_name}}}" in result:
                 result = result.replace(f"{{{var_name}}}", random.choice(options))
 
-        result = result.replace("{return_topic}", return_topic)
+        result = result.replace("{return_topic}", topic_return_hook(return_topic))
 
         return result
 

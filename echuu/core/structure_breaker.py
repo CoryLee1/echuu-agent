@@ -140,7 +140,7 @@ class StructureBreaker:
             template = template.replace("{pet_name}", pet_name)
 
         if "{next_topic}" in template:
-            next_topics = ["我看看弹幕", "聊点别的", "下一个话题", "看看SC"]
+            next_topics = ["我看看弹幕", "聊点别的", "看看SC"]
             template = template.replace("{next_topic}", random.choice(next_topics))
 
         text = text.rstrip()

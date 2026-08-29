@@ -49,6 +49,19 @@ def test_fabricated_family_hospital_story_uses_safe_exit():
     assert "unsupported_fact:family_death" in result.issues
 
 
+def test_topic_title_is_not_recited_and_stock_asides_are_stripped():
+    topic = "搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温"
+    result = sanitize_audience_text(
+        f"严重跑题一下——对说回{topic}。内心戏？好了不说了，下一个话题",
+        source_material={"topic": topic},
+    )
+    assert topic not in result.text
+    assert "严重跑题一下" not in result.text
+    assert "下一个话题" not in result.text
+    assert "内心戏？" not in result.text
+    assert "topic_recital_or_stock_aside" in result.issues
+
+
 def test_fabricated_hospital_anecdote_is_removed_as_a_clause():
     result = sanitize_audience_text(
         "他说第一天就把奶茶送到产科病房，护士长还塞给他一颗糖。",

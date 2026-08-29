@@ -11,6 +11,7 @@ import json
 import re
 from typing import Any
 
+from .digression_db import scrub_recited_topic
 from .prompt_leakage import find_prompt_leaks
 
 
@@ -87,6 +88,13 @@ def sanitize_audience_text(
         return _vague_number(value)
 
     cleaned = _EXACT_NUMBER_RE.sub(blur_number, cleaned)
+    topic = ""
+    if isinstance(source_material, dict):
+        topic = str(source_material.get("topic") or "")
+    scrubbed = scrub_recited_topic(cleaned, topic)
+    if scrubbed != cleaned:
+        issues.append("topic_recital_or_stock_aside")
+        cleaned = scrubbed
     for term in _HIGH_RISK_TERMS:
         if term in cleaned and term not in source_text:
             issues.append(f"unsupported_fact:{term}")

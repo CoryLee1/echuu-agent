@@ -1,0 +1,82 @@
+[
+  {
+    "id": "moving_rice_cooker",
+    "topic": "搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温",
+    "pipeline": "legacy_v4",
+    "line_count": 9,
+    "chars": 1222,
+    "prompt_leaks": [],
+    "meta_slips": [],
+    "anchors_hit": [
+      "电饭锅",
+      "搬家",
+      "保温"
+    ],
+    "anchors_missing": [],
+    "topic_string_dumped": false,
+    "stock_asides": [],
+    "stray_long_lines": [
+      "后来我把这事讲给朋友听，她说‘哎呀，这是锅在等你回来’。我说不是，它就是在等一个没被拔掉的电。但…这话我没说完。因为刚说完，我摸到锅盖内侧有道浅浅的划痕，是小时",
+      "但…但有时候我挺不好意思的。比如今天直播前，我下意识又摸了摸锅盖——它凉了。我赶紧把它插上电，等红灯亮起来才松口气。刚才那事说完了，可我现在手还停在插头上，没拔",
+      "对了，说到插头——我昨天整理旧充电器，翻出我妈那个老式诺基亚，电池居然还有电。按一下，屏幕亮了，壁纸还是我小学春游照片，日期显示一阵子一阵子…等等，这时间不对吧"
+    ],
+    "ok_complete": true,
+    "ok_leak": true,
+    "ok_on_topic": true,
+    "ok_no_topic_dump": true,
+    "ok_no_stock": true
+  },
+  {
+    "id": "wrong_takeout",
+    "topic": "出去送外卖送错了，最后和收错餐的人一起想办法补救",
+    "pipeline": "legacy_v4",
+    "line_count": 9,
+    "chars": 1099,
+    "prompt_leaks": [],
+    "meta_slips": [],
+    "anchors_hit": [
+      "外卖",
+      "送错"
+    ],
+    "anchors_missing": [],
+    "topic_string_dumped": false,
+    "stock_asides": [],
+    "stray_long_lines": [
+      "他看我傻站着，居然没骂我，反而把门开大点，说‘进来躲会儿雨吧，我煮个面’。我脚跟钉在门口，手还在抖，不是冷的，是那种……突然被温柔击中后想立刻逃走的慌。伞还斜靠",
+      "他转身去厨房，我盯着他后颈那颗小痣，脑子里却在演灾难片：‘他是不是刚报警了？’‘我骑车摔过三次，这次会不会被拍下来发抖音？’‘泡面里有我写的纸条，字丑得像小学生",
+      "我接筷子时手一滑，‘啪’掉进汤里，溅起一点油星子，烫得我缩手又不敢缩——太尴尬了，就低头猛吹汤面，结果吹得面条全贴在嘴唇上，像挂了条白虫……他笑出声，我也跟着笑",
+      "回家路上雨小了，我骑车慢得像散步，耳机里播着歌，歌词是‘你总在逃避善意’……我立马关掉。不是不想听，是那句太准了，准得我捏着车把的手心又开始冒汗。刚才那事，我其",
+      "前两天整理旧手机，翻到那张订单截图——收件人叫‘林先生’，备注写‘不吃香菜，多加葱’，可我送的那家，门上贴着‘王女士’的快递单……我盯着看了两分钟，没删，也没转"
+    ],
+    "ok_complete": true,
+    "ok_leak": true,
+    "ok_on_topic": true,
+    "ok_no_topic_dump": true,
+    "ok_no_stock": true
+  },
+  {
+    "id": "rainy_day_umbrella",
+    "topic": "下雨天把伞借给陌生人，第二天在门口收到一张手写纸条",
+    "pipeline": "legacy_v4",
+    "line_count": 9,
+    "chars": 1053,
+    "prompt_leaks": [],
+    "meta_slips": [],
+    "anchors_hit": [
+      "伞",
+      "雨"
+    ],
+    "anchors_missing": [],
+    "topic_string_dumped": false,
+    "stock_asides": [],
+    "stray_long_lines": [
+      "诶我说到哪了？哦对，那三个点——我后来才反应过来，是他校服左胸口袋上别着的三颗纽扣，我昨天扶他拎书包时瞥见的。所以那不是随便戳的，是……是认出我了。我站在门口，",
+      "刚才那事想起来，我顺手把衬衫挂回晾衣绳了——湿的那面朝外。弹幕说‘小梅你衣服反着挂’？嗯……可能吧。反正它干得慢点，我就能多想一会儿那三个铅笔点。差不多就这样吧"
+    ],
+    "ok_complete": true,
+    "ok_leak": true,
+    "ok_on_topic": true,
+    "ok_no_topic_dump": true,
+    "ok_no_stock": true
+  }
+]
