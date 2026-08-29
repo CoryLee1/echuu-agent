@@ -89,7 +89,15 @@ def _finish_session_record(session_id: str, archive: dict | None = None, error: 
         elif error:
             record.archive_status = "failed"
             record.archive_error = error[:2000]
-        db.commit()
+        try:
+            from .diary import persist_diary
+        except ImportError:
+            from services.diary import persist_diary
+        try:
+            persist_diary(record, db)
+        except Exception as exc:  # noqa: BLE001 — 日记失败不回滚归档
+            print(f"[diary] persist failed: {exc}")
+            db.commit()
     finally:
         db.close()
 
@@ -574,7 +582,15 @@ class LiveService:
             live_session.uploaded_count = int(archive.get("uploaded_count") or 0)
             live_session.archive_status = str(archive.get("status") or "failed")
             live_session.archive_error = archive.get("error")
-            db.commit()
+            try:
+                from .diary import persist_diary
+            except ImportError:
+                from services.diary import persist_diary
+            try:
+                persist_diary(live_session, db)
+            except Exception as exc:  # noqa: BLE001
+                print(f"[diary] persist failed: {exc}")
+                db.commit()
 
         except Exception as e:
             if live_session:

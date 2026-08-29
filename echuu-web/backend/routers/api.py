@@ -268,6 +268,7 @@ async def start_live_inline(
             "persona": request.persona,
             "background": request.background,
             "voice": voice_name,
+            "diary": {"visibility": "public"},
         },
     ))
     db.commit()
@@ -302,6 +303,43 @@ async def get_status():
         is_running=state.is_running,
         session_id=state.active_session_id
     )
+
+
+@router.get("/diaries")
+async def list_public_diaries(db: Session = Depends(get_db)):
+    """公开直播日记：默认公开，日历和社媒分发共用。"""
+    try:
+        from ..services.diary import compose_diary, is_public_diary
+    except ImportError:
+        from services.diary import compose_diary, is_public_diary
+
+    sessions = (
+        db.query(LiveSession)
+        .order_by(LiveSession.created_at.desc())
+        .limit(120)
+        .all()
+    )
+    diaries = []
+    for session in sessions:
+        if session.status not in {SessionStatus.COMPLETED, SessionStatus.RUNNING}:
+            continue
+        if not is_public_diary(session.session_metadata):
+            continue
+        diaries.append(compose_diary(session))
+    return {"diaries": diaries}
+
+
+@router.get("/diaries/{session_id}")
+async def get_public_diary(session_id: str, db: Session = Depends(get_db)):
+    try:
+        from ..services.diary import compose_diary, is_public_diary
+    except ImportError:
+        from services.diary import compose_diary, is_public_diary
+
+    session = db.query(LiveSession).filter(LiveSession.session_id == session_id).first()
+    if not session or not is_public_diary(session.session_metadata):
+        raise HTTPException(status_code=404, detail="日记不存在或未公开")
+    return compose_diary(session)
 
 
 @router.get("/history", response_model=list)
