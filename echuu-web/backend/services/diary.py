@@ -101,7 +101,7 @@ def compose_diary(session: Any) -> dict[str, Any]:
         lede = ""
     lede = lede or _lede(lines, topic)
     scene = str(cached.get("scene") or "")
-    if duration and scene and f"{duration} 分钟" not in scene:
+    if cached.get("source") != "llm" and duration and scene and f"{duration} 分钟" not in scene:
         scene = ""
     scene = scene or _scene(story_points, duration, voice)
     voice_note = str(cached.get("voice_note") or "") or _voice_note(voice, started)
