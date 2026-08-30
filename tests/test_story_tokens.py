@@ -18,6 +18,14 @@ def test_extract_tokens_uses_key_info_and_skips_stopwords():
     assert tokens[2]["kind"] == "person"
 
 
+def test_extract_tokens_falls_back_to_speech_when_key_info_empty():
+    tokens = extract_tokens_from_line("那天晚上我把伞忘在前任那儿了", [], "u0l1")
+    labels = [item["label"] for item in tokens]
+    assert "那天晚上" in labels
+    assert "前任" in labels
+    assert 1 <= len(tokens) <= 3
+
+
 def test_collect_three_crafts_when_ready():
     hunt = TokenHunt()
     hunt.collect({"id": "a", "label": "伞", "kind": "item"})
@@ -83,6 +91,7 @@ def test_pick_danmaku_prefers_tangent():
 
 if __name__ == "__main__":
     test_extract_tokens_uses_key_info_and_skips_stopwords()
+    test_extract_tokens_falls_back_to_speech_when_key_info_empty()
     test_collect_three_crafts_when_ready()
     test_collect_holds_until_cooldown()
     test_compose_tangent_text_joins_labels()

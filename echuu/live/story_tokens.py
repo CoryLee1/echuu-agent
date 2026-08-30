@@ -25,6 +25,41 @@ def classify_kind(label: str) -> str:
     return "event"
 
 
+def _push_token(tokens: list[dict[str, str]], seen: set[str], label: str, line_id: str, limit: int) -> bool:
+    if not label or label in STOPWORDS or label in seen:
+        return False
+    tokens.append({
+        "id": f"t_{label}_{line_id}",
+        "label": label,
+        "kind": classify_kind(label),
+        "sourceLineId": line_id,
+    })
+    seen.add(label)
+    return len(tokens) >= limit
+
+
+def extract_from_speech(text: str, line_id: str, *, limit: int = 3) -> list[dict[str, str]]:
+    """When V4 key_info is empty, still pull a few entities from the spoken line."""
+    tokens: list[dict[str, str]] = []
+    seen: set[str] = set()
+    speech = str(text or "").strip()
+    if not speech:
+        return tokens
+    for marker in sorted((*TIME_MARKERS, *PERSON_MARKERS), key=len, reverse=True):
+        if marker in speech and _push_token(tokens, seen, marker, line_id, limit):
+            return tokens
+    parts = [part.strip() for part in re.split(r"[的了呢吧啊把在和与跟，。！？、；：\s,.!?]+", speech) if part.strip()]
+    for part in parts:
+        if part in STOPWORDS:
+            continue
+        label = part[:4] if len(part) > 4 else part
+        if len(label) < 2:
+            continue
+        if _push_token(tokens, seen, label, line_id, limit):
+            return tokens
+    return tokens
+
+
 def extract_tokens_from_line(
     text: str,
     key_info: Iterable[str] | None,
@@ -36,17 +71,17 @@ def extract_tokens_from_line(
     seen: set[str] = set()
     for raw in key_info or []:
         label = str(raw or "").strip()
-        if not label or label in STOPWORDS or label in seen:
-            continue
-        if text and label not in text and not any(part in text for part in re.split(r"[的了]", label) if len(part) >= 2):
-            # still allow key_info that names the entity even if the spoken chunk split it
-            pass
-        kind = classify_kind(label)
-        token_id = f"t_{label}_{line_id}"
-        tokens.append({"id": token_id, "label": label, "kind": kind, "sourceLineId": line_id})
-        seen.add(label)
-        if len(tokens) >= limit:
+        if _push_token(tokens, seen, label, line_id, limit):
             return tokens
+    if len(tokens) >= limit:
+        return tokens
+    for extra in extract_from_speech(text, line_id, limit=limit):
+        if extra["label"] in seen:
+            continue
+        tokens.append(extra)
+        seen.add(extra["label"])
+        if len(tokens) >= limit:
+            break
     return tokens
 
 
