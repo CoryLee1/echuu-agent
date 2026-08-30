@@ -7,7 +7,7 @@ BACKEND = Path(__file__).resolve().parents[1] / "echuu-web" / "backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from services.diary import compose_diary, diary_title, is_public_diary, tags_from_topic
+from services.diary import compose_diary, diary_title, is_public_diary, parse_diary_llm, tags_from_topic
 
 
 class DiaryRules(unittest.TestCase):
@@ -92,6 +92,26 @@ class DiaryCompose(unittest.TestCase):
             )
             diary = compose_diary(session)
             self.assertIn("便当", diary["lede"])
+
+
+class DiaryLlmParse(unittest.TestCase):
+    def test_parse_json_fence_and_reject_full_topic_title(self):
+        topic = "搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温"
+        raw = """```json
+{"title":"%s","lede":"我半夜摸回去，灯还亮着。","scene":"锅还温着。","voice_note":"嗓子停在门口。","tags":["保温灯","旧房"]}
+```""" % topic
+        parsed = parse_diary_llm(raw, topic=topic)
+        self.assertEqual(parsed["title"], "")
+        self.assertIn("灯还亮着", parsed["lede"])
+        self.assertEqual(parsed["tags"][:2], ["保温灯", "旧房"])
+
+    def test_parse_accepts_short_title(self):
+        parsed = parse_diary_llm(
+            '{"title":"今晚，便当还热着","lede":"我对着盒子发呆，一口都没动。","scene":"筷子搁在盖上。","voice_note":"下午的嗓子还有点黏。","tags":["便当","没胃口"]}',
+            topic="午饭没胃口",
+        )
+        self.assertIn("便当", parsed["title"])
+        self.assertIn("发呆", parsed["lede"])
 
 
 def load_tests(loader, tests, pattern):

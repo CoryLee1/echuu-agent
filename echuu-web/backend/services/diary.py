@@ -7,10 +7,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
 try:
     from ..config import SCRIPTS_DIR
 except ImportError:
     from config import SCRIPTS_DIR
+
+load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
 VISIBILITY_PUBLIC = "public"
 VISIBILITY_PRIVATE = "private"
@@ -122,8 +126,17 @@ def compose_diary(session: Any) -> dict[str, Any]:
     }
 
 
-def persist_diary(record: Any, db: Any) -> dict[str, Any]:
+def persist_diary(record: Any, db: Any, rewrite: bool = False) -> dict[str, Any]:
     diary = compose_diary(record)
+    cached = (record.session_metadata or {}).get("diary") if isinstance(record.session_metadata, dict) else {}
+    already_written = isinstance(cached, dict) and cached.get("source") == "llm" and cached.get("lede") not in {"", GENERIC_LEDE}
+    if rewrite or not already_written:
+        try:
+            diary = {**diary, **write_diary_with_llm(record, diary)}
+            diary["source"] = "llm"
+        except Exception as exc:  # noqa: BLE001 — 创作失败仍保存模板日记
+            print(f"[diary] llm write skipped: {exc}")
+            diary["source"] = diary.get("source") or "template"
     meta = dict(record.session_metadata or {})
     meta["diary"] = diary
     record.session_metadata = meta
@@ -132,8 +145,115 @@ def persist_diary(record: Any, db: Any) -> dict[str, Any]:
         flag_modified(record, "session_metadata")
     except Exception:
         pass
+    _write_diary_file(record, diary)
     db.commit()
     return diary
+
+
+def write_diary_with_llm(session: Any, draft: dict[str, Any] | None = None) -> dict[str, Any]:
+    """再调用一次 LLM，把本场收成第一人称公开日记。"""
+    draft = draft or compose_diary(session)
+    lines = _session_speeches(session)
+    story_points = list(draft.get("tags") or [])
+    topic = str(getattr(session, "topic", "") or "")
+    name = str(draft.get("character_name") or "我")
+    prompt = (
+        f"角色名：{name}\n"
+        f"本场由头（不要整句复述）：{topic or '今晚随口聊了一会儿'}\n"
+        f"时长：{draft.get('duration_minutes') or 0} 分钟\n"
+        f"当场说过的话：\n" + ("\n".join(f"- {line}" for line in lines[:16]) or "- （没有留下台词文本）")
+    )
+    from echuu.live.llm_factory import create_llm_client
+
+    raw = create_llm_client(thinking_level="low").call(
+        prompt=prompt,
+        system=_DIARY_SYSTEM,
+        max_tokens=400,
+    )
+    written = parse_diary_llm(raw, topic=topic)
+    source_material = {"topic": topic, "lines": lines, "story_points": story_points}
+    for key in ("title", "lede", "scene", "voice_note"):
+        if written.get(key):
+            written[key] = _safe_audience(str(written[key]), source_material, draft.get(key) or "")
+    if topic and written.get("title") == topic:
+        written["title"] = draft.get("title") or diary_title(topic, story_points, name)
+    return {key: written[key] for key in ("title", "lede", "scene", "voice_note", "tags") if written.get(key)}
+
+
+_DIARY_SYSTEM = """你是刚下播的主播本人，用第一人称写一条很短的公开直播日记。
+只根据本场说过的话来写，不要编造没发生的大情节，不要复述策划标题全文，不要提 AI / 模型 / prompt。
+像写给熟人和观众看的随手记录：有一点余温，不要工作汇报。
+有台词：只能用台词里出现过的物件和感觉。
+没有台词：只写空落落的余温，不要发明具体食物、地点、人名。
+只输出 JSON，不要 markdown：
+{"title":"今晚，……（不超过14字）","lede":"第一人称一两句，40到90字","scene":"这一场留下的物件或停顿，一句话","voice_note":"嗓子或气氛的一句余韵","tags":["两到四个短词"]}"""
+
+
+def parse_diary_llm(raw: str, topic: str = "") -> dict[str, Any]:
+    data = _extract_json_object(raw)
+    title = str(data.get("title") or "").strip("。．… \n")[:18]
+    lede = str(data.get("lede") or "").strip()[:120]
+    scene = str(data.get("scene") or "").strip()[:80]
+    voice_note = str(data.get("voice_note") or "").strip()[:80]
+    tags: list[str] = []
+    for item in data.get("tags") or []:
+        chunk = str(item).strip()[:6]
+        if 2 <= len(chunk) and chunk not in tags:
+            tags.append(chunk)
+        if len(tags) >= 4:
+            break
+    if topic and title:
+        bare = title.removeprefix("今晚，").removeprefix("今晚")
+        if title == topic or topic.startswith(title) or (bare and topic.startswith(bare)):
+            title = ""
+    if lede == GENERIC_LEDE:
+        lede = ""
+    return {
+        "title": title,
+        "lede": lede,
+        "scene": scene,
+        "voice_note": voice_note,
+        "tags": tags,
+    }
+
+
+def _extract_json_object(text: str) -> dict[str, Any]:
+    cleaned = (text or "").strip()
+    cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+    cleaned = re.sub(r"\s*```$", "", cleaned)
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start < 0 or end <= start:
+        raise ValueError("diary llm did not return JSON")
+    data = json.loads(cleaned[start:end + 1])
+    if not isinstance(data, dict):
+        raise ValueError("diary llm JSON was not an object")
+    return data
+
+
+def _safe_audience(text: str, source_material: Any, fallback: str) -> str:
+    try:
+        from echuu.core.output_safety import sanitize_audience_text
+        return sanitize_audience_text(text, source_material=source_material, fallback=fallback).text or fallback
+    except Exception:
+        return text or fallback
+
+
+def _session_speeches(session: Any) -> list[str]:
+    script = _read_json(getattr(session, "script_path", None) or _session_file(session, "full_script.json"))
+    lines = _script_lines(script)
+    if not lines:
+        lines = _script_lines(_read_json(_session_file(session, "timeline.json")))
+    return [line for line in lines if line]
+
+
+def _write_diary_file(session: Any, diary: dict[str, Any]) -> None:
+    try:
+        path = _session_file(session, "diary.json")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(diary, ensure_ascii=False, indent=2), encoding="utf-8")
+    except OSError as exc:
+        print(f"[diary] write file skipped: {exc}")
 
 
 def _tonight(hook: str) -> str:
