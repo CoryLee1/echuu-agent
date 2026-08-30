@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -196,10 +196,24 @@ def write_session_script(
 
 
 def _proxy_get_sync(path: str) -> Any:
-    request = urllib.request.Request(f"{ECHUU_WEB_URL}{path}", method="GET")
+    return _proxy_request_sync("GET", path)
+
+
+def _proxy_request_sync(method: str, path: str, body: bytes | None = None) -> Any:
+    headers = {"Accept": "application/json"}
+    if body:
+        headers["Content-Type"] = "application/json"
+    request = urllib.request.Request(
+        f"{ECHUU_WEB_URL}{path}",
+        data=body,
+        headers=headers,
+        method=method,
+    )
+    timeout = 90 if method != "GET" else 60
     try:
-        with urllib.request.urlopen(request, timeout=20) as response:
-            return json.loads(response.read().decode("utf-8"))
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            raw = response.read().decode("utf-8")
+            return json.loads(raw) if raw else {}
     except urllib.error.HTTPError as exc:
         raise HTTPException(status_code=exc.code, detail=exc.read().decode("utf-8", errors="replace")[:500]) from exc
     except Exception as exc:  # noqa: BLE001
@@ -359,6 +373,16 @@ async def list_diaries() -> Any:
 @app.get("/api/diaries/{session_id}")
 async def get_diary(session_id: str) -> Any:
     return await asyncio.to_thread(_proxy_get_sync, f"/api/diaries/{session_id}")
+
+
+@app.api_route("/api/analytics/{rest:path}", methods=["GET", "POST"])
+async def proxy_analytics(rest: str, request: Request) -> Any:
+    """对照服不写 S3，看板和上报都转给 echuu-web。"""
+    path = f"/api/analytics/{rest}"
+    if request.url.query:
+        path = f"{path}?{request.url.query}"
+    body = await request.body() if request.method != "GET" else None
+    return await asyncio.to_thread(_proxy_request_sync, request.method, path, body or None)
 
 
 @app.post("/api/danmaku")
