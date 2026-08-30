@@ -23,12 +23,12 @@ from fastapi.staticfiles import StaticFiles
 try:
     # 作为包导入时使用相对导入
     from .config import SCRIPTS_DIR, CORS_ORIGINS, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS, SERVER_HOST, SERVER_PORT
-    from .routers import api, websocket, auth, characters, evaluation, models, settings
+    from .routers import api, websocket, auth, characters, evaluation, models, settings, analytics
     from .database.database import init_db
 except ImportError:
     # 直接运行时使用绝对导入
     from config import SCRIPTS_DIR, CORS_ORIGINS, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS, SERVER_HOST, SERVER_PORT
-    from routers import api, websocket, auth, characters, evaluation, models, settings
+    from routers import api, websocket, auth, characters, evaluation, models, settings, analytics
     from database.database import init_db
 
 # 创建 FastAPI 应用
@@ -69,6 +69,7 @@ app.include_router(characters.router, prefix="/api")
 app.include_router(models.router, prefix="/api")
 app.include_router(settings.router, prefix="/api")
 app.include_router(evaluation.router, prefix="/api")
+app.include_router(analytics.router, prefix="/api")
 app.include_router(api.router, prefix="/api", tags=["api"])
 
 
