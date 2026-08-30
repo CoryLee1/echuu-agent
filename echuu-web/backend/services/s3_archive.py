@@ -8,11 +8,24 @@ from functools import partial
 
 import boto3
 from botocore.exceptions import ClientError
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[3] / ".env")
 
 logger = logging.getLogger(__name__)
 
-S3_BUCKET = os.getenv("S3_BUCKET", "echuu-storage")
-S3_REGION = os.getenv("S3_REGION", "us-east-2")
+def _s3_bucket() -> str:
+    return os.getenv("S3_BUCKET", "echuu-storage")
+
+
+def _s3_region() -> str:
+    return os.getenv("S3_REGION") or os.getenv("AWS_REGION") or "us-east-2"
+
+
+def _s3_credentials() -> tuple[str | None, str | None]:
+    access_key = os.getenv("AWS_ACCESS_KEY_ID") or os.getenv("S3_ACCESS_KEY")
+    secret_key = os.getenv("AWS_SECRET_ACCESS_KEY") or os.getenv("S3_SECRET_KEY")
+    return access_key, secret_key
 
 
 @dataclass(frozen=True)
@@ -26,11 +39,12 @@ class ArchiveResult:
 
 def _upload_session_sync(session_id: str, session_dir: Path) -> ArchiveResult:
     """同步上传 session 目录中的所有文件到 S3（在 executor 中运行）"""
+    access_key, secret_key = _s3_credentials()
     s3 = boto3.client(
         "s3",
-        region_name=S3_REGION,
-        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        region_name=_s3_region(),
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
     )
 
     prefix = f"streaming_content/{session_id}/"
@@ -44,7 +58,7 @@ def _upload_session_sync(session_id: str, session_dir: Path) -> ArchiveResult:
         try:
             s3.upload_file(
                 str(filepath),
-                S3_BUCKET,
+                _s3_bucket(),
                 key,
                 ExtraArgs={"ContentType": content_type},
             )
@@ -55,7 +69,7 @@ def _upload_session_sync(session_id: str, session_dir: Path) -> ArchiveResult:
 
     status = "completed" if uploaded > 0 and not errors else "failed"
     return ArchiveResult(
-        bucket=S3_BUCKET,
+        bucket=_s3_bucket(),
         prefix=prefix,
         uploaded_count=uploaded,
         status=status,
@@ -77,7 +91,7 @@ async def archive_session_to_s3(session_id: str, session_dir: Path) -> dict:
     except Exception as exc:
         logger.exception("Failed to archive session %s to S3", session_id)
         return asdict(ArchiveResult(
-            bucket=S3_BUCKET,
+            bucket=_s3_bucket(),
             prefix=f"streaming_content/{session_id}/",
             uploaded_count=0,
             status="failed",

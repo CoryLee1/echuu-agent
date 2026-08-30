@@ -183,11 +183,10 @@ async def stop_live(request: StopRequest):
 
 @router.post("/archive/{session_id}/retry")
 async def retry_archive(session_id: str, request: ArchiveRetryRequest):
-    """房主重试一次已落盘 Session 的 S3 归档。"""
-    if not state.room_exists(request.room_id):
-        raise HTTPException(status_code=404, detail="房间不存在")
-    if not state.verify_owner(request.room_id, request.owner_token):
-        raise HTTPException(status_code=403, detail="owner_token 验证失败")
+    """重试一次已落盘 Session 的 S3 归档。房间关掉后仍可按 session 文件重试。"""
+    if state.room_exists(request.room_id):
+        if not state.verify_owner(request.room_id, request.owner_token):
+            raise HTTPException(status_code=403, detail="owner_token 验证失败")
     try:
         return await LiveService.archive_existing_session(session_id, room_id=request.room_id)
     except FileNotFoundError as exc:

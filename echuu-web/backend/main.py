@@ -1,4 +1,10 @@
 """ECHUU Web 后端主入口"""
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+
 # Fail fast if echuu package is not installed. The canonical install is
 # `pip install -e ../../echuu-agent` (or `pip install -e .` from the
 # echuu-agent root). No more sys.path shims.
