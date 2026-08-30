@@ -17,9 +17,25 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from dotenv import load_dotenv
 from pydantic import BaseModel
 
 from echuu.live.engine import EchuuLiveEngine
+
+
+def _load_agent_env() -> None:
+    here = Path(__file__).resolve().parent
+    candidates = [here / ".env"]
+    for parent in here.parents:
+        candidates.append(parent / "echuu-agent" / ".env")
+        candidates.append(parent / ".env")
+    for path in candidates:
+        if path.is_file():
+            load_dotenv(path, override=False)
+            return
+
+
+_load_agent_env()
 
 # V4 对照服自己不装 boto3；归档交给本机 echuu-web（默认 :8000）。
 ECHUU_WEB_URL = os.getenv("ECHUU_WEB_URL", "http://127.0.0.1:8000").rstrip("/")
