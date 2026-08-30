@@ -5,21 +5,24 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Iterable
 
-TOKEN_KINDS = ("item", "time", "person", "event")
+TOKEN_KINDS = ("item", "time", "person", "event", "place")
 STOPWORDS = {
     "的", "了", "呢", "吧", "啊", "然后", "就是", "这个", "那个",
     "我们", "你们", "一下", "什么", "怎么", "因为", "所以",
 }
 TIME_MARKERS = ("那天", "那天晚上", "夜里", "半夜", "那年", "去年", "春天", "梅雨", "昨天", "早上")
 PERSON_MARKERS = ("姐姐", "阿姨", "前任", "朋友", "小孩", "同学", "妈妈", "我妈", "林先生", "王女士")
+PLACE_MARKERS = ("便利店", "出租屋", "办公室", "旧房", "门口", "公园", "学校", "公司", "车站", "地铁", "家里", "宿舍", "厨房", "阳台")
 
 
 def classify_kind(label: str) -> str:
     text = (label or "").strip()
-    if any(marker in text for marker in TIME_MARKERS) or text.endswith("年"):
+    if any(marker in text for marker in TIME_MARKERS) or text.endswith("年") or text.endswith("晚上"):
         return "time"
     if any(marker in text for marker in PERSON_MARKERS):
         return "person"
+    if any(marker in text for marker in PLACE_MARKERS) or text.endswith("店") or text.endswith("屋") or text.endswith("站"):
+        return "place"
     if len(text) <= 4 and not text.endswith("了"):
         return "item"
     return "event"
@@ -38,14 +41,14 @@ def _push_token(tokens: list[dict[str, str]], seen: set[str], label: str, line_i
     return len(tokens) >= limit
 
 
-def extract_from_speech(text: str, line_id: str, *, limit: int = 3) -> list[dict[str, str]]:
+def extract_from_speech(text: str, line_id: str, *, limit: int = 4) -> list[dict[str, str]]:
     """When V4 key_info is empty, still pull a few entities from the spoken line."""
     tokens: list[dict[str, str]] = []
     seen: set[str] = set()
     speech = str(text or "").strip()
     if not speech:
         return tokens
-    for marker in sorted((*TIME_MARKERS, *PERSON_MARKERS), key=len, reverse=True):
+    for marker in sorted((*TIME_MARKERS, *PERSON_MARKERS, *PLACE_MARKERS), key=len, reverse=True):
         if marker in speech and _push_token(tokens, seen, marker, line_id, limit):
             return tokens
     parts = [part.strip() for part in re.split(r"[的了呢吧啊把在和与跟，。！？、；：\s,.!?]+", speech) if part.strip()]
@@ -65,7 +68,7 @@ def extract_tokens_from_line(
     key_info: Iterable[str] | None,
     line_id: str,
     *,
-    limit: int = 3,
+    limit: int = 4,
 ) -> list[dict[str, str]]:
     tokens: list[dict[str, str]] = []
     seen: set[str] = set()
