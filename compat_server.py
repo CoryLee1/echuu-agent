@@ -149,6 +149,32 @@ async def archive_session(session_id: str, room_id: str = "", owner_token: str =
     return await asyncio.to_thread(_proxy_archive_sync, session_id, room_id, owner_token)
 
 
+def write_session_meta(session_id: str, request: StartRequest) -> None:
+    payload = {
+        "topic": request.topic,
+        "character_name": request.character_name,
+        "persona": request.persona,
+        "background": request.background,
+        "voice": request.voice,
+        "room_id": request.room_id,
+    }
+    (AUDIO_DIR / f"{session_id}.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _proxy_get_sync(path: str) -> Any:
+    request = urllib.request.Request(f"{ECHUU_WEB_URL}{path}", method="GET")
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        raise HTTPException(status_code=exc.code, detail=exc.read().decode("utf-8", errors="replace")[:500]) from exc
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"echuu-web unreachable: {exc}") from exc
+
+
 async def broadcast(room: Room, payload: dict[str, Any]) -> None:
     dead: list[WebSocket] = []
     for socket in room.sockets:
@@ -196,6 +222,7 @@ async def room_socket(websocket: WebSocket, room_id: str) -> None:
 
 async def run_v4(request: StartRequest, room: Room, session_id: str) -> None:
     try:
+        write_session_meta(session_id, request)
         await broadcast(room, {"type": "reasoning", "content": "V4 · 正在确定故事内核…"})
         engine = EchuuLiveEngine()
         await broadcast(room, {"type": "reasoning", "content": "V4 · 正在建立第一人称沉浸状态…"})
@@ -288,6 +315,16 @@ async def retry_archive(session_id: str, request: ArchiveRetryRequest) -> dict[s
     return await archive_session(session_id, request.room_id, request.owner_token)
 
 
+@app.get("/api/diaries")
+async def list_diaries() -> Any:
+    return await asyncio.to_thread(_proxy_get_sync, "/api/diaries")
+
+
+@app.get("/api/diaries/{session_id}")
+async def get_diary(session_id: str) -> Any:
+    return await asyncio.to_thread(_proxy_get_sync, f"/api/diaries/{session_id}")
+
+
 @app.post("/api/danmaku")
 async def danmaku(payload: dict[str, Any]) -> dict[str, str]:
     room = rooms.get(str(payload.get("room_id", "")))
@@ -303,4 +340,8 @@ async def danmaku(payload: dict[str, Any]) -> dict[str, str]:
 @app.get("/api/status")
 async def status() -> dict[str, Any]:
     active = sum(1 for room in rooms.values() if room.task and not room.task.done())
-    return {"pipeline": "v4.1-f0d4260", "active_rooms": active}
+    return {
+        "pipeline": "v4.1-f0d4260",
+        "active_rooms": active,
+        "llm_ready": bool(os.getenv("ANTHROPIC_API_KEY") or os.getenv("DASHSCOPE_API_KEY")),
+    }

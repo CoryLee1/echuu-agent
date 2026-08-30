@@ -41,6 +41,8 @@ def diary_title(topic: str, story_points: list[str], character_name: str = "") -
     hook = _first_clause(brief)
     if hook and hook != brief and len(hook) <= 14:
         return _tonight(hook)
+    if hook and len(brief) <= 14:
+        return _tonight(hook)
     if character_name:
         return f"今晚这一场 · {character_name}"
     return "今晚这一场"

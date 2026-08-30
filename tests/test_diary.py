@@ -23,6 +23,10 @@ class DiaryRules(unittest.TestCase):
         self.assertNotIn(topic, title)
         self.assertIn("保温", title)
 
+    def test_short_topic_can_be_title(self):
+        title = diary_title("午饭没胃口", [], "Echuu")
+        self.assertIn("午饭没胃口", title)
+
     def test_title_falls_back_without_story_points(self):
         topic = "下雨天把伞借给陌生人，第二天在门口收到一张手写纸条"
         title = diary_title(topic, [], "小梅")

@@ -4,7 +4,7 @@ import asyncio
 import traceback
 import shutil
 from pathlib import Path
-from typing import Callable, Optional, List
+from typing import Any, Callable, Optional, List
 from datetime import datetime
 from sqlalchemy.orm import Session
 
@@ -68,6 +68,147 @@ def _dump_session_memory(engine, character_name: str, session_dir: Path) -> None
         print(f"[memory] 记忆落盘失败（跳过）: {exc}")
 
 
+def _compat_meta(session_dir: Path, session_id: str) -> dict:
+    import json
+    for name in (f"{session_id}.json", "session.json", "meta.json"):
+        path = session_dir / name
+        if not path.is_file():
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(data, dict):
+            return data
+    return {}
+
+
+def _wav_time_range(session_dir: Path):
+    wavs = [path for path in session_dir.glob("*.wav") if path.is_file()]
+    if not wavs:
+        return None, None
+    times = [datetime.utcfromtimestamp(path.stat().st_mtime) for path in wavs]
+    return min(times), max(times)
+
+
+def _parse_meta_time(value: Any):
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value
+    text = str(value).strip().replace("Z", "")
+    try:
+        return datetime.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def ensure_live_session_record(session_id: str, session_dir: Path, room_id: str | None = None) -> None:
+    """对照服场次没有 LiveSession 时补一行，否则归档完写不出公开日记。"""
+    try:
+        from ..database.database import SessionLocal
+        from ..database.models import User, Character, VoiceConfig, LLMModel
+    except ImportError:
+        from database.database import SessionLocal
+        from database.models import User, Character, VoiceConfig, LLMModel
+
+    db = SessionLocal()
+    try:
+        meta = _compat_meta(session_dir, session_id)
+        existing = db.query(LiveSession).filter(LiveSession.session_id == session_id).first()
+        if existing:
+            if meta.get("topic"):
+                existing.topic = str(meta["topic"])[:255]
+                cached = dict(existing.session_metadata or {})
+                diary = dict(cached.get("diary") or {})
+                diary.pop("title", None)
+                cached["diary"] = diary
+                existing.session_metadata = cached
+                try:
+                    from sqlalchemy.orm.attributes import flag_modified
+                    flag_modified(existing, "session_metadata")
+                except Exception:
+                    pass
+            started = _parse_meta_time(meta.get("started_at"))
+            ended = _parse_meta_time(meta.get("ended_at"))
+            if started:
+                existing.started_at = started
+            if ended:
+                existing.ended_at = ended
+            db.commit()
+            return
+        inline_user = db.query(User).filter(User.username == "admin").first()
+        llm_model = db.query(LLMModel).filter(LLMModel.is_default == True).first()
+        if not inline_user or not llm_model:
+            print(f"[diary] skip {session_id}: inline persistence is not initialized")
+            return
+        meta = _compat_meta(session_dir, session_id)
+        character_name = str(meta.get("character_name") or "Echuu")
+        topic = str(meta.get("topic") or "今晚这一场")[:255]
+        voice_name = str(meta.get("voice") or "Cherry")
+        character = db.query(Character).filter(
+            Character.user_id == inline_user.id,
+            Character.name == character_name,
+        ).first()
+        if not character:
+            character = Character(
+                user_id=inline_user.id,
+                name=character_name,
+                persona=str(meta.get("persona") or ""),
+                background=str(meta.get("background") or ""),
+                default_llm_model_id=llm_model.id,
+            )
+            db.add(character)
+            db.flush()
+        voice_config = db.query(VoiceConfig).filter(
+            VoiceConfig.character_id == character.id,
+            VoiceConfig.voice_name == voice_name,
+        ).first()
+        if not voice_config:
+            voice_config = VoiceConfig(
+                character_id=character.id,
+                voice_name=voice_name,
+                tts_model=os.getenv("TTS_MODEL", "qwen3-tts-flash-realtime"),
+                is_default=False,
+            )
+            db.add(voice_config)
+            db.flush()
+        started_at = _parse_meta_time(meta.get("started_at"))
+        ended_at = _parse_meta_time(meta.get("ended_at"))
+        if started_at is None or ended_at is None:
+            wav_start, wav_end = _wav_time_range(session_dir)
+            started_at = started_at or wav_start
+            ended_at = ended_at or wav_end
+        db.add(LiveSession(
+            session_id=session_id,
+            user_id=inline_user.id,
+            character_id=character.id,
+            topic=topic,
+            llm_model_id=llm_model.id,
+            voice_config_id=voice_config.id,
+            status=SessionStatus.COMPLETED,
+            script_path=str(session_dir / "full_script.json"),
+            audio_dir=str(session_dir),
+            archive_status="pending",
+            started_at=started_at or datetime.utcnow(),
+            ended_at=ended_at,
+            session_metadata={
+                "source": "compat-archive",
+                "room_id": room_id or meta.get("room_id"),
+                "character_name": character_name,
+                "persona": meta.get("persona") or "",
+                "voice": voice_name,
+                "diary": {"visibility": "public"},
+            },
+        ))
+        db.commit()
+    except Exception as exc:  # noqa: BLE001 — 补记录失败不挡归档
+        print(f"[diary] ensure session failed: {exc}")
+        db.rollback()
+    finally:
+        db.close()
+
+
 def _finish_session_record(session_id: str, archive: dict | None = None, error: str | None = None) -> None:
     """Persist final status for both inline and DB-backed runs."""
     try:
@@ -79,7 +220,8 @@ def _finish_session_record(session_id: str, archive: dict | None = None, error: 
         record = db.query(LiveSession).filter(LiveSession.session_id == session_id).first()
         if not record:
             return
-        record.ended_at = datetime.utcnow()
+        if record.ended_at is None:
+            record.ended_at = datetime.utcnow()
         record.status = SessionStatus.FAILED if error else SessionStatus.COMPLETED
         if archive:
             record.s3_prefix = archive.get("prefix")
@@ -112,6 +254,7 @@ class LiveService:
         except ImportError:
             from services.session_files import resolve_session_dir
         session_dir = resolve_session_dir(session_id)
+        ensure_live_session_record(session_id, session_dir, room_id=room_id)
         if room_id:
             try:
                 from ..database.database import SessionLocal
