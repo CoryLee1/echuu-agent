@@ -14,6 +14,7 @@ except ImportError:
 
 VISIBILITY_PUBLIC = "public"
 VISIBILITY_PRIVATE = "private"
+GENERIC_LEDE = "今晚聊了一件很小、但想起来还是会停一下的事。"
 _SKIP_TAG_CHUNKS = {
     "时候", "最后", "发现", "一起", "半夜", "第二天", "下雨天",
     "出去", "却发现", "想办法",
@@ -78,6 +79,8 @@ def compose_diary(session: Any) -> dict[str, Any]:
 
     memory = _read_json(_session_file(session, "memory.json"))
     script = _read_json(getattr(session, "script_path", None) or _session_file(session, "full_script.json"))
+    if not _script_lines(script):
+        script = _read_json(_session_file(session, "timeline.json"))
     story_points = [str(item).strip() for item in (memory.get("story_points") or []) if str(item).strip()]
     lines = _script_lines(script)
     started = getattr(session, "started_at", None)
@@ -89,8 +92,14 @@ def compose_diary(session: Any) -> dict[str, Any]:
     if topic and (title == topic or topic in title):
         title = diary_title(topic, story_points, character_name)
 
-    lede = str(cached.get("lede") or "") or _lede(lines, topic)
-    scene = str(cached.get("scene") or "") or _scene(story_points, duration, voice)
+    lede = str(cached.get("lede") or "")
+    if lede == GENERIC_LEDE:
+        lede = ""
+    lede = lede or _lede(lines, topic)
+    scene = str(cached.get("scene") or "")
+    if duration and scene and f"{duration} 分钟" not in scene:
+        scene = ""
+    scene = scene or _scene(story_points, duration, voice)
     voice_note = str(cached.get("voice_note") or "") or _voice_note(voice, started)
     tags = list(cached.get("tags") or tags_from_topic(topic, story_points))
 
@@ -146,7 +155,7 @@ def _lede(lines: list[str], topic: str) -> str:
             cleaned = cleaned.replace(topic, "刚才那事")
         if len(cleaned) >= 12:
             return cleaned[:90]
-    return "今晚聊了一件很小、但想起来还是会停一下的事。"
+    return GENERIC_LEDE
 
 
 def _scene(story_points: list[str], duration: int, voice: str) -> str:
@@ -181,6 +190,12 @@ def _script_lines(script: Any) -> list[str]:
     if not isinstance(script, dict):
         return []
     lines: list[str] = []
+    for event in script.get("events") or []:
+        if not isinstance(event, dict):
+            continue
+        text = str(event.get("speech") or event.get("text") or "").strip()
+        if text:
+            lines.append(text)
     for unit in script.get("units") or []:
         if not isinstance(unit, dict):
             continue

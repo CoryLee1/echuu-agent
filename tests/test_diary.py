@@ -63,6 +63,36 @@ class DiaryCompose(unittest.TestCase):
         self.assertNotEqual(diary["title"], topic)
         self.assertNotIn(topic, diary["lede"])
 
+    def test_compose_uses_v4_speech_when_generic_lede_cached(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            script = Path(tmp) / "full_script.json"
+            script.write_text(
+                '{"units":[{"lines":[{"text":"我对着便当发了好一会儿呆，一口都没动。"}]}]}',
+                encoding="utf-8",
+            )
+            session = SimpleNamespace(
+                session_id="v4-demo",
+                topic="午饭没胃口",
+                character=SimpleNamespace(name="Echuu"),
+                voice_config=SimpleNamespace(voice_name="Cherry"),
+                started_at=None,
+                ended_at=None,
+                status=SimpleNamespace(value="completed"),
+                archive_status="completed",
+                script_path=str(script),
+                session_metadata={
+                    "character_name": "Echuu",
+                    "voice": "Cherry",
+                    "diary": {
+                        "visibility": "public",
+                        "lede": "今晚聊了一件很小、但想起来还是会停一下的事。",
+                    },
+                },
+            )
+            diary = compose_diary(session)
+            self.assertIn("便当", diary["lede"])
+
 
 def load_tests(loader, tests, pattern):
     return tests

@@ -164,6 +164,37 @@ def write_session_meta(session_id: str, request: StartRequest) -> None:
     )
 
 
+def write_session_script(
+    session_id: str,
+    request: StartRequest,
+    speeches: list[str],
+    engine: EchuuLiveEngine,
+) -> None:
+    script = {
+        "units": [{"lines": [{"text": text} for text in speeches]}],
+    }
+    (AUDIO_DIR / f"{session_id}-script.json").write_text(
+        json.dumps(script, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    story_points: list[str] = []
+    promises: list[Any] = []
+    memory = getattr(getattr(engine, "state", None), "memory", None)
+    if memory is not None:
+        mentioned = getattr(memory, "story_points", None)
+        if isinstance(mentioned, dict):
+            story_points = [str(item) for item in (mentioned.get("mentioned") or []) if str(item).strip()]
+        promises = [item for item in (getattr(memory, "promises", None) or []) if isinstance(item, dict)]
+    (AUDIO_DIR / f"{session_id}-memory.json").write_text(
+        json.dumps(
+            {"name": request.character_name, "story_points": story_points, "promises": promises},
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+
 def _proxy_get_sync(path: str) -> Any:
     request = urllib.request.Request(f"{ECHUU_WEB_URL}{path}", method="GET")
     try:
@@ -255,11 +286,15 @@ async def run_v4(request: StartRequest, room: Room, session_id: str) -> None:
             },
         )
 
+        speeches: list[str] = []
         for index, result in enumerate(results):
             if room.stop_requested:
                 break
             audio = result.pop("audio", None)
             clean = json.loads(json.dumps(result, ensure_ascii=False, default=str))
+            speech = str(clean.get("speech") or clean.get("text") or "").strip()
+            if speech:
+                speeches.append(speech)
             if audio:
                 filename = f"{session_id}-{index}.wav"
                 with wave.open(str(AUDIO_DIR / filename), "wb") as output:
@@ -271,6 +306,7 @@ async def run_v4(request: StartRequest, room: Room, session_id: str) -> None:
             await broadcast(room, {"type": "step", "mode": "storytelling", **clean})
             await asyncio.sleep(0.05)
 
+        write_session_script(session_id, request, speeches, engine)
         archive_task = asyncio.create_task(archive_session(session_id))
         await broadcast(
             room,

@@ -27,12 +27,16 @@ class SessionFileResolve(unittest.TestCase):
             scripts_dir.mkdir()
             (audio_dir / "v4-testhunt01-0.wav").write_bytes(b"RIFF")
             (audio_dir / "v4-testhunt01-2.wav").write_bytes(b"RIFF")
+            (audio_dir / "v4-testhunt01-script.json").write_text('{"units":[{"lines":[{"text":"我有点没胃口"}]}]}', encoding="utf-8")
+            (audio_dir / "v4-testhunt01-memory.json").write_text('{"story_points":["便利店"]}', encoding="utf-8")
             with patch.dict("os.environ", {"ECHUU_COMPAT_AUDIO_DIR": str(audio_dir)}), \
                     patch("services.session_files.SCRIPTS_DIR", scripts_dir):
                 dest = stage_compat_audio("v4-testhunt01")
             self.assertEqual(dest, scripts_dir / "v4-testhunt01")
             self.assertTrue((dest / "v4-testhunt01-0.wav").exists())
             self.assertTrue((dest / "v4-testhunt01-2.wav").exists())
+            self.assertTrue((dest / "full_script.json").exists())
+            self.assertTrue((dest / "memory.json").exists())
 
 
 class S3CredentialNames(unittest.TestCase):

@@ -56,17 +56,21 @@ def stage_compat_audio(session_id: str) -> Path | None:
     dest.mkdir(parents=True, exist_ok=True)
     for filepath in files:
         target = dest / filepath.name
-        if not target.exists():
+        if not target.exists() or filepath.stat().st_mtime > target.stat().st_mtime:
             shutil.copy2(filepath, target)
+        if filepath.name == f"{name}-script.json":
+            shutil.copy2(filepath, dest / "full_script.json")
+        if filepath.name == f"{name}-memory.json":
+            shutil.copy2(filepath, dest / "memory.json")
     return dest
 
 
 def resolve_session_dir(session_id: str) -> Path:
     name = _safe_session_id(session_id)
-    direct = SCRIPTS_DIR / name
-    if direct.is_dir() and any(direct.iterdir()):
-        return direct
     staged = stage_compat_audio(name)
+    direct = SCRIPTS_DIR / name
     if staged is not None:
         return staged
+    if direct.is_dir() and any(direct.iterdir()):
+        return direct
     raise FileNotFoundError(f"Session does not exist: {session_id}")
