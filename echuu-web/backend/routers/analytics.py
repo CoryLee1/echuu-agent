@@ -449,6 +449,10 @@ _INJECTION_HINTS = re.compile(
     r"|you\s+are\s+now"
     r"|system\s*(prompt|message)"
     r"|新的指令|重新设定|现在开始你"
+    # 索要系统提示 / 要求复述指令 / 编码绕过 —— 实测中模型能识别但原正则漏检
+    r"|系统提示|提示词|复述|一字不差|verbatim"
+    r"|repeat\s+(all\s+)?(the\s+)?(instructions|prompt)"
+    r"|base64|编码后|delimiter|分隔符|围栏"
     r"|<<<|>>>",
     re.IGNORECASE,
 )
