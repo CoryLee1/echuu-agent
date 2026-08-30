@@ -103,15 +103,16 @@ class DiaryLlmParse(unittest.TestCase):
         parsed = parse_diary_llm(raw, topic=topic)
         self.assertEqual(parsed["title"], "")
         self.assertIn("灯还亮着", parsed["lede"])
-        self.assertEqual(parsed["tags"][:2], ["保温灯", "旧房"])
+        self.assertEqual(parsed["tags"], [])
 
-    def test_parse_accepts_short_title(self):
+    def test_parse_keeps_social_tags(self):
         parsed = parse_diary_llm(
-            '{"title":"今晚，便当还热着","lede":"我对着盒子发呆，一口都没动。","scene":"筷子搁在盖上。","voice_note":"下午的嗓子还有点黏。","tags":["便当","没胃口"]}',
+            '{"title":"今晚，便当还热着","lede":"我对着盒子发呆，一口都没动。","scene":"筷子搁在盖上。","voice_note":"下午的嗓子还有点黏。","tags":["#今日份没胃口","胃比人诚实","便当"]}',
             topic="午饭没胃口",
         )
         self.assertIn("便当", parsed["title"])
         self.assertIn("发呆", parsed["lede"])
+        self.assertEqual(parsed["tags"], ["今日份没胃口", "胃比人诚实"])
 
 
 def load_tests(loader, tests, pattern):

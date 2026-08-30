@@ -180,13 +180,19 @@ def write_diary_with_llm(session: Any, draft: dict[str, Any] | None = None) -> d
     return {key: written[key] for key in ("title", "lede", "scene", "voice_note", "tags") if written.get(key)}
 
 
-_DIARY_SYSTEM = """你是刚下播的主播本人，用第一人称写一条很短的公开直播日记。
+_DIARY_SYSTEM = """你是刚下播的主播本人，用第一人称写一条很短的公开直播日记，语气靠近抖音口播收尾 + 小红书生活碎片。
 只根据本场说过的话来写，不要编造没发生的大情节，不要复述策划标题全文，不要提 AI / 模型 / prompt。
-像写给熟人和观众看的随手记录：有一点余温，不要工作汇报。
+像发动态：有一点余温，不要工作汇报，不要说明书。
 有台词：只能用台词里出现过的物件和感觉。
 没有台词：只写空落落的余温，不要发明具体食物、地点、人名。
+
+tags 必须是能被搜到、被点进去的话题，不要名词清单。
+- 像：今日份没胃口、胃比人诚实、精神状态已下线、先过了这顿、淡人午饭、热气散了也不想动
+- 不像：空碗、斜筷子、Cherry、夜聊、干喉咙
+- 2到4个；每个 4 到 10 个字；不要加 #；不要重复标题原文
+
 只输出 JSON，不要 markdown：
-{"title":"今晚，……（不超过14字）","lede":"第一人称一两句，40到90字","scene":"这一场留下的物件或停顿，一句话","voice_note":"嗓子或气氛的一句余韵","tags":["两到四个短词"]}"""
+{"title":"今晚，……（不超过14字）","lede":"第一人称一两句，40到90字","scene":"这一场留下的停顿，一句话","voice_note":"嗓子或气氛的一句余韵","tags":["今日份没胃口","胃比人诚实"]}"""
 
 
 def parse_diary_llm(raw: str, topic: str = "") -> dict[str, Any]:
@@ -197,8 +203,9 @@ def parse_diary_llm(raw: str, topic: str = "") -> dict[str, Any]:
     voice_note = str(data.get("voice_note") or "").strip()[:80]
     tags: list[str] = []
     for item in data.get("tags") or []:
-        chunk = str(item).strip()[:6]
-        if 2 <= len(chunk) and chunk not in tags:
+        chunk = str(item).strip().lstrip("#＃").strip()
+        chunk = re.sub(r"\s+", "", chunk)[:10]
+        if 4 <= len(chunk) and chunk not in tags:
             tags.append(chunk)
         if len(tags) >= 4:
             break
