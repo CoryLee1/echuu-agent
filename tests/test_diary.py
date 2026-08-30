@@ -7,7 +7,15 @@ BACKEND = Path(__file__).resolve().parents[1] / "echuu-web" / "backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from services.diary import compose_diary, diary_title, is_public_diary, parse_diary_llm, tags_from_topic
+from services.diary import (
+    build_diary_llm_user_prompt,
+    compose_diary,
+    diary_title,
+    is_public_diary,
+    parse_diary_llm,
+    tags_from_topic,
+)
+from services.diary_cover import build_diary_cover_prompt, cover_visual_beat
 
 
 class DiaryRules(unittest.TestCase):
@@ -113,6 +121,72 @@ class DiaryLlmParse(unittest.TestCase):
         self.assertIn("便当", parsed["title"])
         self.assertIn("发呆", parsed["lede"])
         self.assertEqual(parsed["tags"], ["今日份没胃口", "胃比人诚实"])
+
+
+class DiaryLlmPrompt(unittest.TestCase):
+    def test_user_prompt_asks_for_one_share_and_pays_off_title(self):
+        prompt = build_diary_llm_user_prompt(
+            name="Cathy",
+            topic="要不要睡午觉",
+            duration=12,
+            lines=["同事放了盒酸奶在我桌上，我推回去了。"],
+            published_title="怕暖的人碰不了酸奶",
+        )
+        self.assertIn("怕暖的人碰不了酸奶", prompt)
+        self.assertIn("兑现", prompt)
+        self.assertIn("具体想分享的是", prompt)
+        self.assertIn("酸奶", prompt)
+
+
+class DiaryCoverPrompt(unittest.TestCase):
+    def test_prompt_keeps_screenshot_and_diary_text(self):
+        prompt = build_diary_cover_prompt({
+            "title": "怕暖的人碰不了酸奶",
+            "lede": "掌心是热的，指尖却凉。玻璃酸奶瓶上贴着太阳便利贴。",
+            "scene": "吸管弯成一条没气的线。",
+            "character_name": "Cathy",
+        })
+        self.assertIn("screenshot", prompt)
+        self.assertIn("3:4", prompt)
+        self.assertIn("怕暖的人碰不了酸奶", prompt)
+        self.assertIn("NO TEXT", prompt)
+        self.assertIn("酸奶", prompt)
+        self.assertIn("吸管", prompt)
+        self.assertIn("Change the composition and pose a lot", prompt)
+        self.assertIn("2D anime illustration", prompt)
+        self.assertIn("THIS diary only", prompt)
+        self.assertIn("seated indoor", prompt)
+        self.assertNotIn("character photo", prompt)
+
+    def test_visual_beat_follows_this_diary(self):
+        lunch = cover_visual_beat({"title": "胃比人诚实", "lede": "饭盒盖一掀", "scene": "筷子斜搁在盖上"})
+        gossip = cover_visual_beat({"title": "八卦到嘴边又咽回去", "lede": "上司那档事"})
+        self.assertIn("lunch box", lunch)
+        self.assertIn("sits", lunch)
+        self.assertIn("chopsticks", lunch)
+        self.assertIn("gossip", gossip)
+        self.assertIn("swallows", gossip)
+        self.assertIn("white studio", gossip)
+        self.assertNotIn("yogurt", lunch)
+
+    def test_remove_text_prompt_erases_letters_only(self):
+        prompt = build_diary_cover_prompt({"cover_remove_text": True})
+        self.assertIn("ONLY erase every letter", prompt)
+        self.assertIn("Clothes must have no words", prompt)
+
+    def test_fix_prompt_changes_acting_only(self):
+        prompt = build_diary_cover_prompt({"cover_fix": "put the chopsticks down"})
+        self.assertIn("ONLY change this acting beat", prompt)
+        self.assertIn("chopsticks", prompt)
+
+    def test_refine_prompt_only_swaps_the_bottle(self):
+        prompt = build_diary_cover_prompt({
+            "cover_refine": True,
+            "title": "怕暖的人碰不了酸奶",
+        })
+        self.assertIn("ONLY replace", prompt)
+        self.assertIn("Yakult", prompt)
+        self.assertIn("Keep the exact composition", prompt)
 
 
 def load_tests(loader, tests, pattern):

@@ -22,6 +22,8 @@ SERVER_PORT = int(os.getenv("SERVER_PORT", "8000"))
 # 数据库配置
 DB_DIR = PROJECT_ROOT / "echuu-web" / "backend" / "data"
 DB_DIR.mkdir(parents=True, exist_ok=True)
+DIARY_COVERS_DIR = DB_DIR / "diary-covers"
+DIARY_COVERS_DIR.mkdir(parents=True, exist_ok=True)
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_DIR / 'echuu.db'}")
 DB_ECHO = os.getenv("DB_ECHO", "false").lower() == "true"
 

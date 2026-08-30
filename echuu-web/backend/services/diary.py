@@ -137,8 +137,21 @@ def persist_diary(record: Any, db: Any, rewrite: bool = False) -> dict[str, Any]
         except Exception as exc:  # noqa: BLE001 — 创作失败仍保存模板日记
             print(f"[diary] llm write skipped: {exc}")
             diary["source"] = diary.get("source") or "template"
+    if not diary.get("cover_url"):
+        try:
+            from .diary_cover import ensure_diary_cover
+        except ImportError:
+            from services.diary_cover import ensure_diary_cover
+        try:
+            cover_url = ensure_diary_cover(diary)
+            if cover_url:
+                diary["cover_url"] = cover_url
+        except Exception as exc:  # noqa: BLE001 — 封面失败不影响日记正文
+            print(f"[diary] cover skipped: {exc}")
     meta = dict(record.session_metadata or {})
     meta["diary"] = diary
+    if diary.get("cover_url"):
+        meta["cover_url"] = diary["cover_url"]
     record.session_metadata = meta
     try:
         from sqlalchemy.orm.attributes import flag_modified
@@ -150,6 +163,27 @@ def persist_diary(record: Any, db: Any, rewrite: bool = False) -> dict[str, Any]
     return diary
 
 
+def build_diary_llm_user_prompt(
+    *,
+    name: str,
+    topic: str,
+    duration: int,
+    lines: list[str],
+    published_title: str = "",
+) -> str:
+    parts = [
+        f"角色名：{name}",
+        f"本场由头（不要整句复述）：{topic or '今晚随口聊了一会儿'}",
+        f"时长：{duration or 0} 分钟",
+        "当场说过的话：",
+        ("\n".join(f"- {line}" for line in lines[:16]) or "- （没有留下台词文本）"),
+    ]
+    if published_title:
+        parts.append(f"已发布标题（正文必须兑现这句钩子，不要另起炉灶）：{published_title}")
+    parts.append("先用一句话回答：这场我具体想分享的是____。再写 JSON。")
+    return "\n".join(parts)
+
+
 def write_diary_with_llm(session: Any, draft: dict[str, Any] | None = None) -> dict[str, Any]:
     """再调用一次 LLM，把本场收成第一人称公开日记。"""
     draft = draft or compose_diary(session)
@@ -157,18 +191,19 @@ def write_diary_with_llm(session: Any, draft: dict[str, Any] | None = None) -> d
     story_points = list(draft.get("tags") or [])
     topic = str(getattr(session, "topic", "") or "")
     name = str(draft.get("character_name") or "我")
-    prompt = (
-        f"角色名：{name}\n"
-        f"本场由头（不要整句复述）：{topic or '今晚随口聊了一会儿'}\n"
-        f"时长：{draft.get('duration_minutes') or 0} 分钟\n"
-        f"当场说过的话：\n" + ("\n".join(f"- {line}" for line in lines[:16]) or "- （没有留下台词文本）")
+    prompt = build_diary_llm_user_prompt(
+        name=name,
+        topic=topic,
+        duration=int(draft.get("duration_minutes") or 0),
+        lines=lines,
+        published_title=str(draft.get("title") or ""),
     )
     from echuu.live.llm_factory import create_llm_client
 
     raw = create_llm_client(thinking_level="low").call(
         prompt=prompt,
         system=_DIARY_SYSTEM,
-        max_tokens=400,
+        max_tokens=500,
     )
     written = parse_diary_llm(raw, topic=topic)
     source_material = {"topic": topic, "lines": lines, "story_points": story_points}
@@ -180,35 +215,40 @@ def write_diary_with_llm(session: Any, draft: dict[str, Any] | None = None) -> d
     return {key: written[key] for key in ("title", "lede", "scene", "voice_note", "tags") if written.get(key)}
 
 
-_DIARY_SYSTEM = """你是刚下播的主播本人，在写一条要发出去的小红书笔记。读者是刷到的路人，三秒内要停下来。
-只根据本场说过的话来写，不要编造没发生的大情节，不要复述策划标题全文，不要提 AI / 模型 / prompt。
-有台词：只能用台词里出现过的物件和感觉。
-没有台词：只写空落落的余温，不要发明具体食物、地点、人名。
-像跟熟人发动态：有余温、有停顿、有一点没说完。不要工作汇报，不要说明书，不要总结陈词。
+_DIARY_SYSTEM = """你是刚下播的主播本人，在发一条小红书。读者三秒内要能转述：她今天想分享的就一件事。
 
-title：转发钩子。反差、情绪、疑问、「谁懂」都可以。不超过16字。
-不要写「直播日记」，不要说明书标题，不要硬套「今晚，」——钩子本身够就不加今晚。
-像：胃比人诚实 / 谁懂午饭这件事 / 热气散了也不想动
+硬规则：
+- 第一人称「我」，有网感：口语、短句、像跟熟人发动态，不要散文堆意象。
+- 题目、正文、场景必须说同一件事，有因果：谁做了什么，我怎么接，我现在怎么想。
+- 只根据本场台词里出现过的物件和情节。不要编大情节，不要复述策划标题全文，不要提 AI / 模型 / prompt。
+- 不要无厘头拼盘。爪垫、挂钟、便签、登记表不能各来一句就散开；最多拿一个细节给主线当陪衬。
+- 有已发布标题时，正文必须兑现这句钩子，不要另起炉灶。
+- 没有台词：只写空落落的余温，不要发明具体食物、地点、人名。
+- 不要工作汇报、说明书、升华鸡汤。
 
-lede：开口就像跟宝子碎碎念，有口语、有停顿，40到90字。第一句就要有感觉。
+怎么选这件事：从台词里抓一件最具体、最好转述的事当主线。例如别人递来酸奶我推回去。
 
-scene：只留一个停顿，一句话。像封面里那个没拍全的角落。
+title：钩子，必须能被正文兑现。不超过16字。不要「直播日记」，不要硬套「今晚，」。
+像：怕暖的人碰不了酸奶 / 胃比人诚实 / 谁懂午饭这件事
 
-voice_note：关麦以后的余温，小声，不要升华。
+lede：第一人称把这件事讲清楚。60到120字。有口语，但读者看完知道你在说什么。
 
-tags 必须是能被搜到、被点进去的话题，不要名词清单。
-- 像：今日份没胃口、胃比人诚实、精神状态已下线、先过了这顿、淡人午饭、热气散了也不想动
-- 不像：空碗、斜筷子、Cherry、夜聊、干喉咙
-- 2到4个；每个 4 到 10 个字；不要加 #；不要重复标题原文
+scene：还是这件事里的一个画面，一句话。
+
+voice_note：关麦后还停在这件事上的一句，不要另开话题。
+
+tags：2到4个可搜话题，4到10字，不要加 #，不要重复标题原文。
+像：今日份没胃口、胃比人诚实、精神状态已下线
+不像：空碗、斜筷子、Cherry、夜聊
 
 只输出 JSON，不要 markdown：
-{"title":"胃比人诚实","lede":"第一人称碎碎念，40到90字","scene":"一个停顿","voice_note":"关麦后的一句余温","tags":["今日份没胃口","胃比人诚实"]}"""
+{"title":"怕暖的人碰不了酸奶","lede":"第一人称把一件事讲清楚，60到120字","scene":"这件事里的一个画面","voice_note":"还停在这件事上的一句","tags":["推回去的酸奶","今日份没胃口"]}"""
 
 
 def parse_diary_llm(raw: str, topic: str = "") -> dict[str, Any]:
     data = _extract_json_object(raw)
     title = str(data.get("title") or "").strip("。．… \n")[:18]
-    lede = str(data.get("lede") or "").strip()[:120]
+    lede = str(data.get("lede") or "").strip()[:160]
     scene = str(data.get("scene") or "").strip()[:80]
     voice_note = str(data.get("voice_note") or "").strip()[:80]
     tags: list[str] = []

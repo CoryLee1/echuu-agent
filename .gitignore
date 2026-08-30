@@ -190,3 +190,7 @@ output/scripts/*
 
 # Node modules (for echuu-web)
 node_modules/
+
+# Generated diary covers (keep the folder)
+echuu-web/backend/data/diary-covers/*
+!echuu-web/backend/data/diary-covers/.gitkeep
