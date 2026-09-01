@@ -25,6 +25,10 @@ class GlobalStateManager:
 
         # Stop signal — set to True to request graceful early stop
         self.stop_requested: bool = False
+        # Host must click 开始直播 before the engine consumes the show.
+        # Without this gate the generator races ahead of playback and later
+        # gifts / danmaku / tangents hit "直播未运行".
+        self._play_gate: Optional[asyncio.Event] = None
 
     # ------------------------------------------------------------------
     # Room management
@@ -110,6 +114,21 @@ class GlobalStateManager:
 
     def clear_engine(self):
         self.current_engine = None
+
+    def reset_play_gate(self) -> None:
+        self._play_gate = asyncio.Event()
+
+    def request_play(self) -> None:
+        if self._play_gate is not None:
+            self._play_gate.set()
+
+    def play_requested(self) -> bool:
+        return bool(self._play_gate and self._play_gate.is_set())
+
+    async def wait_for_play(self) -> None:
+        if self._play_gate is None:
+            return
+        await self._play_gate.wait()
 
 
 # 全局状态实例

@@ -15,6 +15,32 @@ PERSON_MARKERS = ("姐姐", "阿姨", "前任", "朋友", "小孩", "同学", "�
 PLACE_MARKERS = ("便利店", "出租屋", "办公室", "旧房", "门口", "公园", "学校", "公司", "车站", "地铁", "家里", "宿舍", "厨房", "阳台")
 
 
+def normalize_token(token: Any, fallback_text: str = "") -> dict[str, str] | None:
+    """Accept a dict, a bare label, or leftover text from the danmaku body."""
+    if isinstance(token, str):
+        label = token.strip() or str(fallback_text or "").strip()
+        if not label:
+            return None
+        return {
+            "id": label,
+            "label": label,
+            "kind": classify_kind(label),
+            "sourceLineId": "",
+        }
+    if not isinstance(token, dict):
+        return None
+    label = str(token.get("label") or fallback_text or "").strip()
+    token_id = str(token.get("id") or label).strip()
+    if not token_id or not label:
+        return None
+    return {
+        "id": token_id,
+        "label": label,
+        "kind": str(token.get("kind") or classify_kind(label)),
+        "sourceLineId": str(token.get("sourceLineId") or ""),
+    }
+
+
 def classify_kind(label: str) -> str:
     text = (label or "").strip()
     if any(marker in text for marker in TIME_MARKERS) or text.endswith("年") or text.endswith("晚上"):
@@ -109,19 +135,14 @@ class TokenHunt:
     pending: list[dict[str, str]] | None = None
 
     def collect(self, token: dict[str, Any] | None) -> dict[str, Any]:
-        if not token or not token.get("id") or not token.get("label"):
+        cleaned = normalize_token(token)
+        if not cleaned:
             return {"slots": list(self.slots), "pending": self.pending, "crafted": None}
-        token_id = str(token["id"])
+        token_id = cleaned["id"]
         if any(item.get("id") == token_id for item in self.slots):
             return {"slots": list(self.slots), "pending": self.pending, "crafted": None}
         if self.pending and any(item.get("id") == token_id for item in self.pending):
             return {"slots": list(self.slots), "pending": self.pending, "crafted": None}
-        cleaned = {
-            "id": token_id,
-            "label": str(token.get("label") or "").strip(),
-            "kind": str(token.get("kind") or "event"),
-            "sourceLineId": str(token.get("sourceLineId") or ""),
-        }
         self.slots = [*self.slots, cleaned]
         return {"slots": list(self.slots), "pending": self.pending, "crafted": None}
 

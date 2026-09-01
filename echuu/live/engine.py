@@ -1097,8 +1097,8 @@ class EchuuLiveEngine:
         if hunt is None:
             return {"slots": [], "pending": None, "crafted": None}
         result = hunt.collect(token)
-        ready = getattr(self.state, "lines_since_tangent", 99) >= 2
-        crafted = hunt.maybe_craft(ready)
+        # 点满 3 个立刻合成。cooldown 只拦 tangent 之后自动补卡，不要让托盘停在 3/3 却点不了。
+        crafted = hunt.maybe_craft(True)
         if crafted.get("crafted"):
             result = crafted
         else:
@@ -1245,8 +1245,9 @@ class EchuuLiveEngine:
             gags=self.gag_ledger.unrecalled() if getattr(self, "gag_ledger", None) else None,
         )
         if not reply:
-            self.emit_steering(dm, "dropped", note="没接住，先继续讲")
-            return None
+            user = (getattr(dm, "user", "") or "你").strip() or "你"
+            snippet = (dm.text or "").strip()[:10]
+            reply = f"{user}我看见了{'，' + snippet if snippet else ''}，我接着讲。"
         reply = sanitize_audience_text(
             reply,
             source_material=getattr(self, "_source_material", None),

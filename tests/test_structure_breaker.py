@@ -72,6 +72,19 @@ def test_inject_flaw_rupture_works_with_placeholder_flaw(persona):
     assert unit.lines[-1].is_rupture is True
 
 
+class _FakeDigression:
+    def inject_digression(self, script_line, topic, language="zh", force=False):
+        return f"{script_line}…邻居半夜很奇怪", {"chain_type": "location_tangent"}
+
+
+def test_break_structure_does_not_inject_engine_tangent():
+    sb = StructureBreaker(_FakeDigression())
+    lines = [{"text": f"第{i}句正经主线", "language": "zh"} for i in range(5)]
+    out = sb.break_structure(lines, topic="云养猫", language="zh")
+    assert all(not line.get("has_digression") for line in out)
+    assert all("邻居半夜" not in line["text"] for line in out)
+
+
 def test_delete_sublimation_keeps_rupture_lines(persona):
     """spec §6: delete_sublimation 不删 rupture line."""
     sb = StructureBreaker()

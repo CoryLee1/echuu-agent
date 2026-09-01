@@ -198,7 +198,7 @@ class StructureBreaker:
 
         1. 检测并删除升华结尾
         2. 添加非闭合结尾
-        3. 可选：注入跑题
+        3. 不再注入引擎自己的跑题（跑毛交给观众/创作者点线索）
         4. 随机插入思路丢失
         """
         if not script_lines:
@@ -215,17 +215,7 @@ class StructureBreaker:
         last_line["text"] = text
         last_line["ending_type"] = ending_type
 
-        has_digression = any(line.get("is_digression") or line.get("has_digression") for line in script_lines)
-
-        if not has_digression and self.digression_db and len(script_lines) > 3:
-            inject_idx = random.randint(1, len(script_lines) - 2)
-            target_line = script_lines[inject_idx]
-
-            new_text, info = self.digression_db.inject_digression(target_line["text"], topic, language, force=True)
-            target_line["text"] = new_text
-            target_line["has_digression"] = True
-            target_line["digression_info"] = info
-
+        # 跑毛点只由收集线索 + 主播/观众触发，剧本生成不再塞 DigressionDB 支线。
         script_lines = self.insert_thread_loss(script_lines, probability=0.2)
 
         return script_lines

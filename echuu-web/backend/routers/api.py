@@ -167,6 +167,19 @@ class ArchiveRetryRequest(BaseModel):
     owner_token: str
 
 
+@router.post("/begin")
+async def begin_live(request: StopRequest):
+    """房主点「开始直播」后，引擎才按台词时长往下演，弹幕/投喂才能改后面的剧情。"""
+    if not state.room_exists(request.room_id):
+        raise HTTPException(status_code=404, detail="房间不存在")
+    if not state.verify_owner(request.room_id, request.owner_token):
+        raise HTTPException(status_code=403, detail="owner_token 验证失败")
+    if not state.is_running or not state.current_engine:
+        raise HTTPException(status_code=400, detail="直播未运行")
+    state.request_play()
+    return {"message": "已开始表演"}
+
+
 @router.post("/stop")
 async def stop_live(request: StopRequest):
     """房主提前终止直播（广播 success 事件后结束）"""
@@ -178,6 +191,7 @@ async def stop_live(request: StopRequest):
         return {"message": "直播未运行"}
 
     state.stop_requested = True
+    state.request_play()
     return {"message": "停止信号已发送"}
 
 
@@ -195,6 +209,19 @@ async def retry_archive(session_id: str, request: ArchiveRetryRequest):
         raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
+async def _stop_running_live(timeout_s: float = 8.0) -> None:
+    """Stop the in-memory engine so a new start-inline can take over."""
+    if not state.is_running:
+        return
+    state.stop_requested = True
+    state.request_play()
+    deadline = asyncio.get_running_loop().time() + timeout_s
+    while state.is_running and asyncio.get_running_loop().time() < deadline:
+        await asyncio.sleep(0.1)
+    state.is_running = False
+    state.clear_engine()
+
+
 @router.post("/start-inline")
 async def start_live_inline(
     request: InlineStartRequest,
@@ -202,8 +229,7 @@ async def start_live_inline(
     db: Session = Depends(get_db),
 ):
     """启动直播（内联模式）：无需数据库角色，用 owner_token 验证房主身份"""
-    if state.is_running:
-        raise HTTPException(status_code=400, detail="直播已经在运行中")
+    await _stop_running_live()
 
     if not state.room_exists(request.room_id):
         raise HTTPException(status_code=404, detail="房间不存在，请先调用 /api/room")

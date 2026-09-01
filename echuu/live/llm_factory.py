@@ -26,25 +26,28 @@ def create_llm_client(
     创建 LLM 客户端。
 
     Args:
-        provider: LLM 提供商 ("claude", "gemini", "openai")。
-                  如果未指定，根据可用的 API Key 自动选择。
+        provider: LLM 提供商 ("qwen", "claude", "gemini", "openai")。
+                  未指定时读 ECHUU_LLM_PROVIDER / LLM_PROVIDER，再按 API Key 自动选。
         api_key: API 密钥（可选，默认从环境变量读取）。
-        model: 模型名称（可选，默认使用提供商默认模型）。
+        model: 模型名称（可选，默认用对应提供商的环境变量）。
         thinking_level: Gemini 3 思考级别 ("low", "medium", "high", "minimal")。
 
     Returns:
         LLM 客户端实例。
 
-    Provider 优先级（自动选择时）:
-        1. Gemini (如果 GEMINI_API_KEY 存在)
-        2. Claude (如果 ANTHROPIC_API_KEY 存在)
-        3. OpenAI (如果 OPENAI_API_KEY 存在)
+    提供商选择:
+        1. 入参 provider
+        2. ECHUU_LLM_PROVIDER 或 LLM_PROVIDER
+        3. 按 API Key 自动选：DashScope → Gemini → Claude
 
     Gemini 3 Models:
         - gemini-3-pro-preview: Most intelligent, complex reasoning
         - gemini-3-flash-preview: Fast, high-intelligence, cost-effective
         - gemini-3-pro-image-preview: High-quality image generation
     """
+    if not provider:
+        provider = (os.getenv("ECHUU_LLM_PROVIDER") or os.getenv("LLM_PROVIDER") or "").strip() or None
+
     # 如果指定了 provider，直接使用
     if provider:
         provider = provider.lower()

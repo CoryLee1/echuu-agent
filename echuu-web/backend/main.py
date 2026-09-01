@@ -22,12 +22,12 @@ from fastapi.staticfiles import StaticFiles
 
 try:
     # 作为包导入时使用相对导入
-    from .config import SCRIPTS_DIR, DIARY_COVERS_DIR, CORS_ORIGINS, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS, SERVER_HOST, SERVER_PORT
+    from .config import SCRIPTS_DIR, DIARY_COVERS_DIR, CORS_ORIGINS, CORS_ORIGIN_REGEX, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS, SERVER_HOST, SERVER_PORT
     from .routers import api, websocket, auth, characters, evaluation, models, settings, analytics
     from .database.database import init_db
 except ImportError:
     # 直接运行时使用绝对导入
-    from config import SCRIPTS_DIR, DIARY_COVERS_DIR, CORS_ORIGINS, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS, SERVER_HOST, SERVER_PORT
+    from config import SCRIPTS_DIR, DIARY_COVERS_DIR, CORS_ORIGINS, CORS_ORIGIN_REGEX, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS, SERVER_HOST, SERVER_PORT
     from routers import api, websocket, auth, characters, evaluation, models, settings, analytics
     from database.database import init_db
 
@@ -54,6 +54,7 @@ except Exception as e:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
+    allow_origin_regex=CORS_ORIGIN_REGEX,
     allow_credentials=CORS_CREDENTIALS,
     allow_methods=CORS_METHODS,
     allow_headers=CORS_HEADERS,
@@ -65,13 +66,14 @@ app.mount("/diary-covers", StaticFiles(directory=str(DIARY_COVERS_DIR)), name="d
 
 # 注册路由
 app.include_router(websocket.router)
-app.include_router(auth.router, prefix="/api")
-app.include_router(characters.router, prefix="/api")
-app.include_router(models.router, prefix="/api")
-app.include_router(settings.router, prefix="/api")
-app.include_router(evaluation.router, prefix="/api")
-app.include_router(analytics.router, prefix="/api")
-app.include_router(api.router, prefix="/api", tags=["api"])
+for api_prefix in ("/api", "/api/v1"):
+    app.include_router(auth.router, prefix=api_prefix)
+    app.include_router(characters.router, prefix=api_prefix)
+    app.include_router(models.router, prefix=api_prefix)
+    app.include_router(settings.router, prefix=api_prefix)
+    app.include_router(evaluation.router, prefix=api_prefix)
+    app.include_router(analytics.router, prefix=api_prefix)
+    app.include_router(api.router, prefix=api_prefix, tags=["api"])
 
 
 if __name__ == "__main__":

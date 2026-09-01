@@ -93,6 +93,12 @@ def _engine_with(show, danmaku, reply="阿强我跟你讲，等我先讲完这�
     st.memory = Mem()
     st.memory.script_progress = {}
     e.state = st
+    e.story_steerer = type("Steerer", (), {"rewrite_line": staticmethod(lambda **_kwargs: "")})()
+    e.persona_card = None
+    e.gag_ledger = None
+    e.on_steering = None
+    e._source_material = None
+    e.tuning_guidance = None
     return e
 
 
@@ -117,9 +123,12 @@ def test_maybe_interleave_builds_response_event():
     assert ev["speech"]
 
 
-def test_maybe_interleave_none_when_reply_empty():
-    e = _engine_with(_make_show(), [Danmaku.from_text("hi", user="a")], reply="")
-    assert e._maybe_interleave_danmaku(0, "x") is None
+def test_maybe_interleave_falls_back_when_reply_empty():
+    e = _engine_with(_make_show(), [Danmaku.from_text("hi", user="阿强")], reply="")
+    ev = e._maybe_interleave_danmaku(0, "x")
+    assert ev is not None
+    assert "阿强" in ev["speech"]
+    assert "hi" in ev["speech"]
 
 
 def test_run_interleaves_at_most_one_per_unit():

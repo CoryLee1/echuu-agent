@@ -103,6 +103,23 @@ def _parse_meta_time(value: Any):
         return None
 
 
+def _preview_speech_lines(opening_events, engine) -> list[str]:
+    """剧本预览：开场已生成的台词 + 还没开演的主体行。"""
+    lines: list[str] = []
+    for event in opening_events or []:
+        speech = str((event or {}).get("speech") or "").strip()
+        if speech:
+            lines.append(speech)
+    show = getattr(getattr(engine, "state", None), "show", None)
+    units = getattr(show, "units", None) or []
+    for unit in units:
+        for line in getattr(unit, "lines", None) or []:
+            text = str(getattr(line, "text", "") or "").strip()
+            if text:
+                lines.append(text)
+    return lines[:24]
+
+
 def ensure_live_session_record(session_id: str, session_dir: Path, room_id: str | None = None) -> None:
     """对照服场次没有 LiveSession 时补一行，否则归档完写不出公开日记。"""
     try:
@@ -297,6 +314,8 @@ class LiveService:
         persona_card: 结构化人设卡（Phase 2-①，可选），贯穿剧本/开场收尾/弹幕回应。
         """
         state.is_running = True
+        state.stop_requested = False
+        state.reset_play_gate()
         session_dir = SCRIPTS_DIR / session_id
         session_dir.mkdir(parents=True, exist_ok=True)
 
@@ -310,8 +329,8 @@ class LiveService:
         async def bcast(data: dict):
             await state.broadcast(data, room_id=room_id)
 
-        async def emit_step(result: dict, step_idx: int):
-            """统一出口：音频落盘 → timeline 记录 → WS 广播。"""
+        async def emit_step(result: dict, step_idx: int) -> float:
+            """统一出口：音频落盘 → timeline 记录 → WS 广播。返回本句时长。"""
             audio_data = result.pop("audio", None)
             duration = result.pop("duration", None)
             if audio_data:
@@ -329,6 +348,7 @@ class LiveService:
                 t=result.pop("timeline_t", None),
             )
             await bcast({"type": "step", **ev})
+            return float(duration or 0.0)
 
         try:
             # 覆盖声音设置
@@ -470,7 +490,18 @@ class LiveService:
                 "content": f"剧本已生成，Session: {session_id}",
                 "session_id": session_id,
                 "mode": mode,
+                "preview": _preview_speech_lines(opening_events, engine),
             })
+
+            # 等房主点「开始直播」再往下演，否则整场会在预览期间提前生成完。
+            await state.wait_for_play()
+            if state.stop_requested:
+                await bcast({
+                    "type": "success",
+                    "session_id": session_id,
+                    "content": "表演已取消",
+                })
+                return
 
             # ============ 表演阶段：统一事件循环 ============
             step_idx = 0
@@ -478,7 +509,7 @@ class LiveService:
                 if state.stop_requested:
                     break
 
-                await emit_step(result, step_idx)
+                spoken_for = await emit_step(result, step_idx)
 
                 # 广播 memory 事件（storytelling 专属）
                 if mode == "storytelling" and engine.state:
@@ -493,7 +524,8 @@ class LiveService:
                     })
 
                 step_idx += 1
-                await asyncio.sleep(0.1)
+                # 跟着台词时长走，留一点余量给前端排队，但不要整场提前演完。
+                await asyncio.sleep(max(0.2, (spoken_for or 1.2) * 0.92))
 
             # ============ 收尾段：自然结束才播，用户主动 stop 跳过 ============
             if not state.stop_requested:
@@ -808,12 +840,13 @@ class LiveService:
             entities=entities,
         )
         if dm.kind == "collect":
-            token = (dm.entities[0] if dm.entities else None) or {
-                "id": dm.text,
-                "label": dm.text,
-                "kind": "event",
-            }
-            engine.collect_story_token(token)
+            from echuu.live.story_tokens import normalize_token
+            token = normalize_token(
+                dm.entities[0] if dm.entities else None,
+                dm.text,
+            )
+            if token:
+                engine.collect_story_token(token)
             dm.status = "applied"
             return dm
         if dm.kind == "tangent":
@@ -823,11 +856,6 @@ class LiveService:
                 raise ValueError("还没有跑毛点")
             dm.entities = card
             dm.text = compose_tangent_text(card)
-        show = getattr(engine.state, "show", None)
-        if show is None:
-            engine.emit_steering(dm, "applied", note="已记下，下个互动点会接住")
-            return dm
-
         engine.state.danmaku_queue.append(dm)
         engine.emit_steering(dm, "queued")
         return dm

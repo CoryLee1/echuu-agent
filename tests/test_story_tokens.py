@@ -59,6 +59,17 @@ def test_collect_holds_until_cooldown():
     assert released["crafted"] is not None
 
 
+def test_collect_accepts_label_only_and_crafts_on_third():
+    hunt = TokenHunt()
+    hunt.collect({"label": "伞"})
+    hunt.collect("那天晚上")
+    result = hunt.collect({"id": "", "label": "前任"})
+    crafted = hunt.maybe_craft(True)
+    assert len(result["slots"]) + (3 if crafted["crafted"] else 0) >= 3
+    assert crafted["crafted"] is not None
+    assert [item["label"] for item in crafted["crafted"]] == ["伞", "那天晚上", "前任"]
+
+
 def test_compose_tangent_text_joins_labels():
     text = compose_tangent_text([
         {"label": "伞"},
@@ -104,6 +115,7 @@ if __name__ == "__main__":
     test_extract_tokens_classifies_place()
     test_collect_three_crafts_when_ready()
     test_collect_holds_until_cooldown()
+    test_collect_accepts_label_only_and_crafts_on_third()
     test_compose_tangent_text_joins_labels()
     test_pick_danmaku_prefers_tangent()
     print("ok")

@@ -9,8 +9,26 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_DIR = PROJECT_ROOT / "output" / "scripts"
 SCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# CORS 配置
-CORS_ORIGINS = ["*"]
+# CORS 配置。allow_origins=["*"] 配 allow_credentials=True 时，
+# 预检不会回 Access-Control-Allow-Origin，浏览器会直接拦。
+_DEFAULT_CORS_ORIGINS = [
+    "https://echuu.live",
+    "https://www.echuu.live",
+    "https://echuu.xyz",
+    "https://echuu-corylee1s-projects.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "http://127.0.0.1:5175",
+]
+_extra_cors = [item.strip() for item in os.getenv("BACKEND_CORS_ORIGINS", "").split(",") if item.strip()]
+CORS_ORIGINS = list(dict.fromkeys([*_DEFAULT_CORS_ORIGINS, *_extra_cors]))
+CORS_ORIGIN_REGEX = os.getenv(
+    "BACKEND_CORS_ORIGIN_REGEX",
+    r"https://([a-z0-9-]+\.)*(echuu\.live|echuu\.xyz|vercel\.app)",
+)
 CORS_CREDENTIALS = True
 CORS_METHODS = ["*"]
 CORS_HEADERS = ["*"]
