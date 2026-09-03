@@ -2,6 +2,7 @@ import sys
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 BACKEND = Path(__file__).resolve().parents[1] / "echuu-web" / "backend"
 if str(BACKEND) not in sys.path:
@@ -16,6 +17,7 @@ from services.diary import (
     tags_from_topic,
 )
 from services.diary_cover import build_diary_cover_prompt, cover_visual_beat
+import services.diary as diary_service
 
 
 class DiaryRules(unittest.TestCase):
@@ -48,6 +50,32 @@ class DiaryRules(unittest.TestCase):
 
 
 class DiaryCompose(unittest.TestCase):
+    def test_persist_does_not_generate_cover(self):
+        session = SimpleNamespace(
+            session_id="no-cover",
+            topic="一台会移动的电饭煲",
+            character=SimpleNamespace(name="Echuu"),
+            voice_config=SimpleNamespace(voice_name="Cherry"),
+            started_at=None,
+            ended_at=None,
+            status=SimpleNamespace(value="completed"),
+            archive_status="completed",
+            script_path="",
+            session_metadata={"diary": {"visibility": "public"}},
+        )
+        db = SimpleNamespace(commit=Mock())
+
+        with (
+            patch.object(diary_service, "write_diary_with_llm", return_value={}),
+            patch.object(diary_service, "_write_diary_file"),
+            patch("services.diary_cover.ensure_diary_cover") as ensure_cover,
+        ):
+            diary = diary_service.persist_diary(session, db)
+
+        ensure_cover.assert_not_called()
+        self.assertIsNone(diary["cover_url"])
+        db.commit.assert_called_once_with()
+
     def test_compose_uses_script_lede_not_topic(self):
         topic = "下雨天把伞借给陌生人，第二天在门口收到一张手写纸条"
         session = SimpleNamespace(

@@ -137,17 +137,9 @@ def persist_diary(record: Any, db: Any, rewrite: bool = False) -> dict[str, Any]
         except Exception as exc:  # noqa: BLE001 — 创作失败仍保存模板日记
             print(f"[diary] llm write skipped: {exc}")
             diary["source"] = diary.get("source") or "template"
-    if not diary.get("cover_url"):
-        try:
-            from .diary_cover import ensure_diary_cover
-        except ImportError:
-            from services.diary_cover import ensure_diary_cover
-        try:
-            cover_url = ensure_diary_cover(diary)
-            if cover_url:
-                diary["cover_url"] = cover_url
-        except Exception as exc:  # noqa: BLE001 — 封面失败不影响日记正文
-            print(f"[diary] cover skipped: {exc}")
+    # Diary cover generation is intentionally disabled for the MVP. Keep any
+    # previously persisted cover URL in the data model, but do not spend an
+    # image-generation request while finalizing a live session.
     meta = dict(record.session_metadata or {})
     meta["diary"] = diary
     if diary.get("cover_url"):
