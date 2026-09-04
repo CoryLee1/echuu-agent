@@ -1,0 +1,851 @@
+{
+  "version": 1,
+  "pipeline": "refactor",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温",
+        "language": "zh",
+        "enable_dossier": true,
+        "story_pipeline": "refactor",
+        "generation_seed": 2026082701,
+        "persona_card": null,
+        "retrieval_allowed_ids": [
+          "moving_rice_cooker",
+          "wrong_takeout",
+          "rainy_day_umbrella"
+        ],
+        "retrieval_exclude_ids": [
+          "moving_rice_cooker"
+        ],
+        "retrieval_seed": 2527184555,
+        "tuning_guidance_ids": [],
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": ""
+      }
+    },
+    {
+      "id": "tuning_guidance",
+      "label": "人类批注规则",
+      "status": "skipped",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "source": "TRAIN tuning notes",
+        "note_ids": []
+      },
+      "metrics": {
+        "rule_count": 0,
+        "categories": [],
+        "fingerprint": ""
+      },
+      "output": {
+        "rules": [],
+        "prompt_text": ""
+      }
+    },
+    {
+      "id": "dossier",
+      "label": "人物扩充",
+      "status": "completed",
+      "duration_ms": 9381.1,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 9380.9,
+        "prompt_chars": 1047,
+        "avg_prompt_chars": 1047.0,
+        "max_prompt_chars": 1047,
+        "response_chars": 572,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 1047,
+            "prompt_sha256": "fc1fcc80b01e7fb3",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 572,
+            "duration_ms": 9380.9
+          }
+        ]
+      },
+      "input": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "persona_card": null
+      },
+      "metrics": {
+        "enabled": true,
+        "cache_hit": false,
+        "has_conflict": true,
+        "prompt_version": "persona-expander-v3-grounded-hypothesis",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "expanded_bio": "小梅是二十多岁的生活系VTuber，正在夜间杂谈直播中；她观察细、嘴硬心软，说话自然，会自嘲但不卖惨；此刻观众刚问起最近最意外的一件小事，她正对着镜头，指尖无意识摩挲着麦克风底座。",
+        "conflict": {
+          "angle": "反面",
+          "premise": "观察细，嘴硬心软，说话自然，会自嘲但不卖惨",
+          "statement": "她总能精准捕捉他人情绪的微小褶皱，却因此不敢接住自己突然涌上来的脆弱——一开口自嘲，就自动把真实反应压回喉咙里，连停顿都不敢超过两秒。"
+        },
+        "behavior_rules": {
+          "avoid_topics": [
+            "需要被安慰",
+            "此刻不想笑"
+          ],
+          "trigger": "被问‘你当时是不是很难受’ → 先轻笑一声改口说‘哎呀这事儿其实挺搞笑的’，然后立刻切进另一个生活细节描述",
+          "contradiction": "嘴上说‘我这人特别扛得住’，手指却在说完后下意识蜷紧，指节泛白却不松开",
+          "breaking_point": "当同一句‘你还好吗’被三位不同观众接连弹幕刷出时，她忽然静默三秒，嘴唇微张没出声，随即猛地低头去调耳机线——动作太大，把麦碰得嗡了一声"
+        }
+      }
+    },
+    {
+      "id": "persona_analysis",
+      "label": "人设、话语类型与内容内核",
+      "status": "completed",
+      "duration_ms": 19270.3,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 19269.9,
+        "prompt_chars": 4095,
+        "avg_prompt_chars": 4095.0,
+        "max_prompt_chars": 4095,
+        "response_chars": 1512,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 4095,
+            "prompt_sha256": "b80de207fcfee757",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1512,
+            "duration_ms": 19269.9
+          }
+        ]
+      },
+      "input": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温",
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": "",
+        "dossier": {
+          "expanded_bio": "小梅是二十多岁的生活系VTuber，正在夜间杂谈直播中；她观察细、嘴硬心软，说话自然，会自嘲但不卖惨；此刻观众刚问起最近最意外的一件小事，她正对着镜头，指尖无意识摩挲着麦克风底座。",
+          "conflict": {
+            "angle": "反面",
+            "premise": "观察细，嘴硬心软，说话自然，会自嘲但不卖惨",
+            "statement": "她总能精准捕捉他人情绪的微小褶皱，却因此不敢接住自己突然涌上来的脆弱——一开口自嘲，就自动把真实反应压回喉咙里，连停顿都不敢超过两秒。"
+          },
+          "behavior_rules": {
+            "avoid_topics": [
+              "需要被安慰",
+              "此刻不想笑"
+            ],
+            "trigger": "被问‘你当时是不是很难受’ → 先轻笑一声改口说‘哎呀这事儿其实挺搞笑的’，然后立刻切进另一个生活细节描述",
+            "contradiction": "嘴上说‘我这人特别扛得住’，手指却在说完后下意识蜷紧，指节泛白却不松开",
+            "breaking_point": "当同一句‘你还好吗’被三位不同观众接连弹幕刷出时，她忽然静默三秒，嘴唇微张没出声，随即猛地低头去调耳机线——动作太大，把麦碰得嗡了一声"
+          }
+        }
+      },
+      "output": {
+        "rich_persona": {
+          "identity": "嘴上说‘小事一桩’、其实连电饭锅保温灯亮着都看得出心跳的租房族",
+          "belief": "只要我不停嘴，尴尬就追不上我",
+          "flaw": "一遇到‘被看穿情绪’的瞬间就下意识调耳机线，哪怕耳机根本没松",
+          "verbal_tics": [
+            "哎哟喂——",
+            "你猜怎么着？",
+            "（轻笑）其实吧…",
+            "嗐，它就…还在那儿"
+          ],
+          "situational_weaknesses": [
+            "一遇到静默三秒以上就立刻补一句‘这事儿真不值一提’",
+            "一被问‘当时难不难受’就切进电饭锅内胆有多难洗的细节"
+          ],
+          "contrast_hook": "她讲一个电饭锅的故事，语气像在讲别人家的快递放错楼，可说到‘保温灯还亮着’时，手指突然停在麦克风底座上不动了",
+          "life_anchors": [
+            "指尖摩挲麦克风底座",
+            "半夜回旧房取电饭锅"
+          ],
+          "title_hook": "电饭锅还在保温，而我忘了关它——但更怪的是，我居然松了口气",
+          "visual_anchor": "右手食指无意识绕着麦克风底座金属环打圈"
+        },
+        "story_core": {
+          "spine": "人最意外的不是东西被落下，而是发现它还在原地‘等你’——那点微弱的、不合时宜的坚持，反而让落荒而逃的自己有点不好意思",
+          "discourse_mode": "narrative",
+          "mode_rationale": "话题明确指向‘最近最意外的一件小事’，且有完整时间线（搬家→发现遗漏→深夜折返→看见亮着的灯），天然适配具身化场景叙事",
+          "tone_mode": "conversational",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作轻松下的微小停顿反差",
+          "core_struggle": "要不要承认：那个被我仓皇丢下的旧生活，其实比我想象中更耐心",
+          "supporting_points": [
+            "保温灯亮着，不是因为机器多智能，而是我走前下意识按了‘保温’——像给告别留了个缓冲键",
+            "它没断电，是因为房东还没来抄表；我没回头，是因为怕看见空房间比想象中更空"
+          ],
+          "twist": "真正让我站门口愣住的，不是灯还亮着，是发现它保温的温度，刚好是我昨晚煮粥时设的70℃——连这个，我都记得",
+          "central_contrast": "人总以为搬家是清空，结果最舍不得的，是那个连自己都没意识到还在运行的默认设置",
+          "emotional_undercurrent": "从‘快点拿完走人’的慌乱，滑向‘它居然还记得我习惯’的怔忡",
+          "story_beats": [
+            "凌晨一点，钥匙插进旧门锁，手心全是汗——不是怕黑，是怕推开门看见太干净",
+            "电饭锅蹲在灶台正中，红灯像一颗没熄的小火苗；我伸手摸内胆，余温还在",
+            "没关它，也没带走，只是轻轻带上门，转身下楼时听见自己说：‘下次煮粥，别设那么高’"
+          ],
+          "punchline_seeds": [
+            "我们删掉的从来不是东西，是那个还愿意为你保持温度的‘默认状态’"
+          ],
+          "hook_angle": "你们有没有试过，半夜跑回去拿落下的东西，结果发现它比你还守约？"
+        }
+      },
+      "metrics": {
+        "discourse_mode": "narrative",
+        "prompt_version": "persona-analyst-v5-tone-depth",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      }
+    },
+    {
+      "id": "unit_plan",
+      "label": "节目分段",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "requested_unit_count": 3,
+        "story_beats": [
+          "凌晨一点，钥匙插进旧门锁，手心全是汗——不是怕黑，是怕推开门看见太干净",
+          "电饭锅蹲在灶台正中，红灯像一颗没熄的小火苗；我伸手摸内胆，余温还在",
+          "没关它，也没带走，只是轻轻带上门，转身下楼时听见自己说：‘下次煮粥，别设那么高’"
+        ],
+        "spine": "人最意外的不是东西被落下，而是发现它还在原地‘等你’——那点微弱的、不合时宜的坚持，反而让落荒而逃的自己有点不好意思",
+        "supporting_points": [
+          "保温灯亮着，不是因为机器多智能，而是我走前下意识按了‘保温’——像给告别留了个缓冲键",
+          "它没断电，是因为房东还没来抄表；我没回头，是因为怕看见空房间比想象中更空"
+        ],
+        "emotional_undercurrent": "从‘快点拿完走人’的慌乱，滑向‘它居然还记得我习惯’的怔忡"
+      },
+      "metrics": {
+        "unit_count": 3
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        }
+      ]
+    },
+    {
+      "id": "script_writer",
+      "label": "剧本生成",
+      "status": "completed",
+      "duration_ms": 16337.7,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 16337.4,
+        "prompt_chars": 3262,
+        "avg_prompt_chars": 3262.0,
+        "max_prompt_chars": 3262,
+        "response_chars": 1341,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 3262,
+            "prompt_sha256": "8341bd051523dd7e",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1341,
+            "duration_ms": 16337.4
+          }
+        ]
+      },
+      "input": {
+        "rich_persona": {
+          "identity": "嘴上说‘小事一桩’、其实连电饭锅保温灯亮着都看得出心跳的租房族",
+          "belief": "只要我不停嘴，尴尬就追不上我",
+          "flaw": "一遇到‘被看穿情绪’的瞬间就下意识调耳机线，哪怕耳机根本没松",
+          "verbal_tics": [
+            "哎哟喂——",
+            "你猜怎么着？",
+            "（轻笑）其实吧…",
+            "嗐，它就…还在那儿"
+          ],
+          "situational_weaknesses": [
+            "一遇到静默三秒以上就立刻补一句‘这事儿真不值一提’",
+            "一被问‘当时难不难受’就切进电饭锅内胆有多难洗的细节"
+          ],
+          "contrast_hook": "她讲一个电饭锅的故事，语气像在讲别人家的快递放错楼，可说到‘保温灯还亮着’时，手指突然停在麦克风底座上不动了",
+          "life_anchors": [
+            "指尖摩挲麦克风底座",
+            "半夜回旧房取电饭锅"
+          ],
+          "title_hook": "电饭锅还在保温，而我忘了关它——但更怪的是，我居然松了口气",
+          "visual_anchor": "右手食指无意识绕着麦克风底座金属环打圈"
+        },
+        "story_core": {
+          "spine": "人最意外的不是东西被落下，而是发现它还在原地‘等你’——那点微弱的、不合时宜的坚持，反而让落荒而逃的自己有点不好意思",
+          "discourse_mode": "narrative",
+          "mode_rationale": "话题明确指向‘最近最意外的一件小事’，且有完整时间线（搬家→发现遗漏→深夜折返→看见亮着的灯），天然适配具身化场景叙事",
+          "tone_mode": "conversational",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作轻松下的微小停顿反差",
+          "core_struggle": "要不要承认：那个被我仓皇丢下的旧生活，其实比我想象中更耐心",
+          "supporting_points": [
+            "保温灯亮着，不是因为机器多智能，而是我走前下意识按了‘保温’——像给告别留了个缓冲键",
+            "它没断电，是因为房东还没来抄表；我没回头，是因为怕看见空房间比想象中更空"
+          ],
+          "twist": "真正让我站门口愣住的，不是灯还亮着，是发现它保温的温度，刚好是我昨晚煮粥时设的70℃——连这个，我都记得",
+          "central_contrast": "人总以为搬家是清空，结果最舍不得的，是那个连自己都没意识到还在运行的默认设置",
+          "emotional_undercurrent": "从‘快点拿完走人’的慌乱，滑向‘它居然还记得我习惯’的怔忡",
+          "story_beats": [
+            "凌晨一点，钥匙插进旧门锁，手心全是汗——不是怕黑，是怕推开门看见太干净",
+            "电饭锅蹲在灶台正中，红灯像一颗没熄的小火苗；我伸手摸内胆，余温还在",
+            "没关它，也没带走，只是轻轻带上门，转身下楼时听见自己说：‘下次煮粥，别设那么高’"
+          ],
+          "punchline_seeds": [
+            "我们删掉的从来不是东西，是那个还愿意为你保持温度的‘默认状态’"
+          ],
+          "hook_angle": "你们有没有试过，半夜跑回去拿落下的东西，结果发现它比你还守约？"
+        },
+        "unit_skeleton": [
+          {
+            "index": 0,
+            "time_window": [
+              0,
+              75
+            ],
+            "acoustic": {
+              "pitch_rate": 1.1,
+              "speech_rate": 1.1,
+              "volume": 60
+            },
+            "axis": null,
+            "density": "high",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 1,
+            "time_window": [
+              75,
+              150
+            ],
+            "acoustic": {
+              "pitch_rate": 0.99,
+              "speech_rate": 0.99,
+              "volume": 54
+            },
+            "axis": null,
+            "density": "medium",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 2,
+            "time_window": [
+              150,
+              225
+            ],
+            "acoustic": {
+              "pitch_rate": 0.88,
+              "speech_rate": 0.88,
+              "volume": 48
+            },
+            "axis": null,
+            "density": "low",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          }
+        ],
+        "few_shot_count": 0,
+        "few_shot_ids": [],
+        "retrieval_seed": 2527184555,
+        "dossier": {
+          "expanded_bio": "小梅是二十多岁的生活系VTuber，正在夜间杂谈直播中；她观察细、嘴硬心软，说话自然，会自嘲但不卖惨；此刻观众刚问起最近最意外的一件小事，她正对着镜头，指尖无意识摩挲着麦克风底座。",
+          "conflict": {
+            "angle": "反面",
+            "premise": "观察细，嘴硬心软，说话自然，会自嘲但不卖惨",
+            "statement": "她总能精准捕捉他人情绪的微小褶皱，却因此不敢接住自己突然涌上来的脆弱——一开口自嘲，就自动把真实反应压回喉咙里，连停顿都不敢超过两秒。"
+          },
+          "behavior_rules": {
+            "avoid_topics": [
+              "需要被安慰",
+              "此刻不想笑"
+            ],
+            "trigger": "被问‘你当时是不是很难受’ → 先轻笑一声改口说‘哎呀这事儿其实挺搞笑的’，然后立刻切进另一个生活细节描述",
+            "contradiction": "嘴上说‘我这人特别扛得住’，手指却在说完后下意识蜷紧，指节泛白却不松开",
+            "breaking_point": "当同一句‘你还好吗’被三位不同观众接连弹幕刷出时，她忽然静默三秒，嘴唇微张没出声，随即猛地低头去调耳机线——动作太大，把麦碰得嗡了一声"
+          }
+        },
+        "tuning_guidance_ids": []
+      },
+      "metrics": {
+        "few_shot_count": 0,
+        "few_shot_ids": [],
+        "retrieval_seed": 2527184555,
+        "unit_count": 3,
+        "line_count": 9,
+        "spine": "人最意外的不是东西被落下，而是发现它还在原地‘等你’——那点微弱的、不合时宜的坚持，反而让落荒而逃的自己有点不好意思",
+        "supporting_point_count": 2,
+        "quality_gate_retried": false,
+        "quality_gate_sanitized": false,
+        "quality_gate_passed": true,
+        "quality_gate_first_issues": [],
+        "quality_gate_retry_issues": [],
+        "quality_gate_first_issue_details": [],
+        "quality_gate_retry_issue_details": [],
+        "quality_gate_post_sanitize_issues": [],
+        "quality_gate_post_sanitize_issue_details": [],
+        "prompt_version": "script-writer-v6-compact-anti-leak",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "哎哟喂——你们有没有试过，半夜跑回去拿落下的东西，结果发现它比你还守约？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "就前两天，我搬完家才到新屋，泡面刚撕开，一摸口袋——电饭锅钥匙还在。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "凌晨一点，钥匙插进旧门锁，手心全是汗……不是怕黑，是怕推开门，看见太干净。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "用具体场景锚定主轴：意外不在‘落下’，而在‘它还在等’；开场即接住观众提问，自然设问，不铺垫身份",
+          "spine_link": "以‘钥匙插进旧门锁’的触感切入，把‘慌乱’具身化为手心汗，而非情绪词；暗示‘怕看见太干净’才是真正落差源"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "门一开，它就蹲在灶台正中，红灯还亮着，小小一颗，像没熄的小火苗。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "我伸手摸了下内胆——嚯，还有温。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "……",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.0,
+              "cue": null
+            }
+          ],
+          "purpose": "呈现关键发现，不渲染，只描述光、温、动作；让‘保温灯还亮着’成为静默支点，触发临界反应",
+          "spine_link": "红灯像小火苗→摸内胆有余温→停顿三秒→调耳机线碰麦；所有细节均有来源支撑，停顿本身即高光，不靠台词补救"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "没关它，也没带走。就轻轻带上门。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "转身下楼的时候，听见自己说：‘下次煮粥，别设那么高。’",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "嗐，它就……还在那儿。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.2,
+              "cue": null
+            }
+          ],
+          "purpose": "收束主轴：不解释、不升华，用一句习惯性自嘲收口，但悄悄把‘默认设置’落进动作里；自然回收开场设问",
+          "spine_link": "‘下次煮粥，别设那么高’表面是生活吐槽，实则承认那个被自己设下的温度，才是最没删掉的‘默认’；轻声说，不看镜头，手指松开麦克风底座"
+        }
+      ]
+    },
+    {
+      "id": "postprocess",
+      "label": "后处理",
+      "status": "completed",
+      "duration_ms": 0.1,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "line_count": 9
+      },
+      "metrics": {
+        "line_count": 9,
+        "planted_gags": [
+          "下次煮粥，别设那么高"
+        ],
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "哎哟喂——你们有没有试过，半夜跑回去拿落下的东西，结果发现它比你还守约？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "就前两天，我搬完家才到新屋，泡面刚撕开，一摸口袋——电饭锅钥匙还在。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "凌晨一点，钥匙插进旧门锁，手心全是汗……不是怕黑，是怕推开门，看见太干净。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "用具体场景锚定主轴：意外不在‘落下’，而在‘它还在等’；开场即接住观众提问，自然设问，不铺垫身份",
+          "spine_link": "以‘钥匙插进旧门锁’的触感切入，把‘慌乱’具身化为手心汗，而非情绪词；暗示‘怕看见太干净’才是真正落差源"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "门一开，它就蹲在灶台正中，红灯还亮着，小小一颗，像没熄的小火苗。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "我伸手摸了下内胆——嚯，还有温。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "……",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.0,
+              "cue": null
+            }
+          ],
+          "purpose": "呈现关键发现，不渲染，只描述光、温、动作；让‘保温灯还亮着’成为静默支点，触发临界反应",
+          "spine_link": "红灯像小火苗→摸内胆有余温→停顿三秒→调耳机线碰麦；所有细节均有来源支撑，停顿本身即高光，不靠台词补救"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "没关它，也没带走。就轻轻带上门。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "转身下楼的时候，听见自己说：‘下次煮粥，别设那么高。’",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "嗐，它就……还在那儿。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.2,
+              "cue": null
+            }
+          ],
+          "purpose": "收束主轴：不解释、不升华，用一句习惯性自嘲收口，但悄悄把‘默认设置’落进动作里；自然回收开场设问",
+          "spine_link": "‘下次煮粥，别设那么高’表面是生活吐槽，实则承认那个被自己设下的温度，才是最没删掉的‘默认’；轻声说，不看镜头，手指松开麦克风底座"
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "script_line_count": 9,
+        "mode": "planned_script_only",
+        "max_steps": 0
+      },
+      "metrics": {
+        "text_chars": 219,
+        "line_count": 9,
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "text": "哎哟喂——你们有没有试过，半夜跑回去拿落下的东西，结果发现它比你还守约？\n就前两天，我搬完家才到新屋，泡面刚撕开，一摸口袋——电饭锅钥匙还在。\n凌晨一点，钥匙插进旧门锁，手心全是汗……不是怕黑，是怕推开门，看见太干净。\n门一开，它就蹲在灶台正中，红灯还亮着，小小一颗，像没熄的小火苗。\n我伸手摸了下内胆——嚯，还有温。\n……\n没关它，也没带走。就轻轻带上门。\n转身下楼的时候，听见自己说：‘下次煮粥，别设那么高。’\n嗐，它就……还在那儿。"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "completed",
+      "duration_ms": 42417.1,
+      "audio_bytes": 2716844,
+      "text_chars": 219,
+      "input": {
+        "text_chars": 219
+      },
+      "metrics": {
+        "duration_ms": 42417.1,
+        "audio_bytes": 2716844,
+        "text_chars": 219
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 1,
+        "duration_ms": 42417.1,
+        "failed_calls": 0
+      },
+      "output": {
+        "audio_path": "/Users/cory/Desktop/nextjs-vtuber-mocap/echuu-agent/echuu/eval/runs/moving_rice_cooker__r01/refactor_full/audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "moving_rice_cooker",
+    "split": "unspecified",
+    "retrieval_seed": 2527184555,
+    "generation_seed": 2026082701,
+    "story_pipeline": "refactor",
+    "enable_dossier": true,
+    "retrieval_allowed_pool_size": 3,
+    "retrieval_exclude_ids": [
+      "moving_rice_cooker"
+    ],
+    "tuning_guidance_ids": []
+  }
+}

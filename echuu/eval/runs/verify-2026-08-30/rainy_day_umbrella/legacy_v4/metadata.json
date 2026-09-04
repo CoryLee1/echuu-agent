@@ -1,0 +1,13 @@
+{
+  "fixture_id": "rainy_day_umbrella",
+  "source_fixture_id": "rainy_day_umbrella",
+  "variant": "legacy_v4",
+  "repeat": 1,
+  "evaluation_split": "unspecified",
+  "retrieval_seed": 4240565859,
+  "generation_seed": 2026082703,
+  "retrieval_allowed_pool_size": null,
+  "generated_at_utc": "2026-08-29T17:12:22.722147+00:00",
+  "purpose": "verify-2026-08-30",
+  "text_only": true
+}

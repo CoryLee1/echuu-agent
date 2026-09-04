@@ -1,0 +1,323 @@
+{
+  "version": 1,
+  "pipeline": "legacy_v4",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温",
+        "language": "zh",
+        "enable_dossier": false,
+        "story_pipeline": "legacy_v4",
+        "generation_seed": 2026082701,
+        "persona_card": null,
+        "retrieval_allowed_ids": null,
+        "retrieval_exclude_ids": [
+          "moving_rice_cooker"
+        ],
+        "retrieval_seed": 2527184555,
+        "tuning_guidance_ids": [],
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": ""
+      }
+    },
+    {
+      "id": "tuning_guidance",
+      "label": "人类批注规则",
+      "status": "skipped",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "source": "TRAIN tuning notes",
+        "note_ids": []
+      },
+      "metrics": {
+        "rule_count": 0,
+        "categories": [],
+        "fingerprint": ""
+      },
+      "output": {
+        "rules": [],
+        "prompt_text": ""
+      }
+    },
+    {
+      "id": "legacy_v4_generation",
+      "label": "Legacy V4 故事生成",
+      "status": "degraded",
+      "duration_ms": 43052.7,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 2,
+        "duration_ms": 43049.6,
+        "prompt_chars": 4875,
+        "avg_prompt_chars": 2437.5,
+        "max_prompt_chars": 4679,
+        "response_chars": 3193,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 196,
+            "prompt_sha256": "34c7b210b095d9ad",
+            "max_tokens": 200,
+            "status": "completed",
+            "response_chars": 93,
+            "duration_ms": 3868.2
+          },
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 4679,
+            "prompt_sha256": "b2a0da4a0d3956db",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 3100,
+            "duration_ms": 39181.4
+          }
+        ]
+      },
+      "input": {
+        "seed": 2026082701,
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温"
+      },
+      "metrics": {
+        "seed": 2026082701,
+        "line_count": 9,
+        "unit_count": 3,
+        "safety_issue_count": 2,
+        "safety_issues": [
+          "stage_direction",
+          "unsupported_number:12秒"
+        ],
+        "dossier_enabled": false
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_0",
+              "text": "诶我突然想起来一个事——就刚才弹幕问‘搬家最忘不掉的东西’，我手一抖差点把麦磕桌上。不是因为记性好，是它自己撞进脑子的：那个蓝白条纹的电饭锅，保温灯亮着，像只不肯闭眼的小兽……我本来真不想提这事儿，但刚才SC刷了个‘小梅你连锅都丢？’——哎哟，这哪是调侃，这是精准爆头啊。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_1",
+              "text": "事实就是：我搬完家第三天凌晨一点，突然坐起来，光脚踩冰凉地板，抓起钥匙冲下楼。电梯里还在想‘应该没锁门吧’，结果推开门——锅盖上凝着层薄水汽，保温灯红得发烫，数字显示‘02:17’，好像它刚煮完一锅米，正等我回来盛。我蹲那儿看了快两分钟，没敢碰，怕一碰，那点热气就散了。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "line_2",
+              "text": "别人以为？呵，我妈说‘你这孩子心大，连锅都能落，以后结婚忘接亲吧’；合租室友笑我‘AI都比你记得住设定’；连房东阿姨都补刀：‘小姑娘...我那个房子地下室，每天潮得发霉，我那个邻居还特别奇怪，总是半夜...算了不说了...不说这个了，搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温，下次走前记得拔插头哦～’——听上去全是关心，可我每次听见‘心大’俩字，后槽牙就发紧。他们不知道，我那天反复检查了三遍打包清单，唯独漏了‘电饭锅’这三个字，因为它根本没被写进去。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_3",
+              "text": "真实原因是……它根本不是‘被遗忘’的。是我把它留在厨房台面最显眼的位置，插着电，调成保温，还压了张便签：‘留给下一任住户，米在柜子第二格’。结果新租客根本没来，房子空了两周。而我，把这张纸当成‘已交接’的仪式，转身就走了。所以那晚看见它还亮着——不是我忘了它，是它替我守着一个没人签收的承诺。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.6,
+              "cue": null
+            },
+            {
+              "id": "line_4",
+              "text": "代价？电费单多出八百多日元吧……反正账单寄到旧地址，我拆开时手抖得撕破信封。更糟的是，我后来发现锅胆内壁有道细裂痕——不是摔的，是反复煮沸又冷凝撑出来的。现在每次煮饭，水位线一过那道痕，我就停几秒。你说值不值？不后悔。但它裂了，我居然比自己手机摔碎还难受。笨拙吗？对，我对着锅拍了十七张照，想修，最后只买了同款贴纸盖住。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.7,
+              "cue": null
+            },
+            {
+              "id": "line_5",
+              "text": "不后悔的部分？就是它让我确认了一件事：我其实特别怕‘彻底清零’。别人搬家是断舍离，我是偷偷续费——给旧厨房续了两周电，给旧生活续了两小时保温。那天蹲在冷灶台前，闻着残留的米香，我突然松了口气：原来我没丢东西，我只是……把告别调成了慢炖模式。对吧？就是那种，明明该哭，却先笑了。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_6",
+              "text": "但……但上周路过旧小区，看见新租客在阳台晾衣服，她家窗台上，摆着一只一模一样的蓝白电饭锅。我站在树荫里看了半分钟，没打招呼。不是尴尬，是心里‘咯噔’一下——原来那口锅的保温时间，比我以为的短得多。它早凉透了，只是我还没收到通知。就像有些告别，没敲门，也没按铃，它就自己断电了。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "line_7",
+              "text": "严重跑题一下哈……说到蓝白条纹，我小学美术课画过一幅《我家的厨房》，老师夸我配色大胆，其实我就是照着电饭锅涂的！那时候它放在我妈右手边，她炒菜时总爱用锅盖当临时砧板，切葱花‘哒哒哒’——我现在切菜还下意识找节奏，结果切到手指，血珠冒出来那一瞬，我居然先笑出声：‘哎哟，跟当年一模一样’。好了我不说了，这算不算PTSD？",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.8,
+              "cue": null
+            },
+            {
+              "id": "line_8",
+              "text": "身体记忆来了——刚才讲到蹲厨房那段，我左手无名指自己蜷起来了，就是当年扶锅盖边缘留下的习惯。现在键盘上打字，它还老往左偏半厘米。内心戏？当时盯着那盏红灯，脑子里就一句：‘它比我更相信‘一会儿就回来’这句话’。失控？对，我掏出手机录了段一会儿视频，发给前室友，配文‘证据在此’，结果她回：‘你疯了？这锅该送博物馆’……嗯，可能真该。好了不说这个了，下一个话题",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.6,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 1.6,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "script_line_count": 9,
+        "mode": "planned_script_only",
+        "max_steps": 0
+      },
+      "metrics": {
+        "text_chars": 1429,
+        "line_count": 9,
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "text": "诶我突然想起来一个事——就刚才弹幕问‘搬家最忘不掉的东西’，我手一抖差点把麦磕桌上。不是因为记性好，是它自己撞进脑子的：那个蓝白条纹的电饭锅，保温灯亮着，像只不肯闭眼的小兽……我本来真不想提这事儿，但刚才SC刷了个‘小梅你连锅都丢？’——哎哟，这哪是调侃，这是精准爆头啊。\n事实就是：我搬完家第三天凌晨一点，突然坐起来，光脚踩冰凉地板，抓起钥匙冲下楼。电梯里还在想‘应该没锁门吧’，结果推开门——锅盖上凝着层薄水汽，保温灯红得发烫，数字显示‘02:17’，好像它刚煮完一锅米，正等我回来盛。我蹲那儿看了快两分钟，没敢碰，怕一碰，那点热气就散了。\n别人以为？呵，我妈说‘你这孩子心大，连锅都能落，以后结婚忘接亲吧’；合租室友笑我‘AI都比你记得住设定’；连房东阿姨都补刀：‘小姑娘...我那个房子地下室，每天潮得发霉，我那个邻居还特别奇怪，总是半夜...算了不说了...不说这个了，搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温，下次走前记得拔插头哦～’——听上去全是关心，可我每次听见‘心大’俩字，后槽牙就发紧。他们不知道，我那天反复检查了三遍打包清单，唯独漏了‘电饭锅’这三个字，因为它根本没被写进去。\n真实原因是……它根本不是‘被遗忘’的。是我把它留在厨房台面最显眼的位置，插着电，调成保温，还压了张便签：‘留给下一任住户，米在柜子第二格’。结果新租客根本没来，房子空了两周。而我，把这张纸当成‘已交接’的仪式，转身就走了。所以那晚看见它还亮着——不是我忘了它，是它替我守着一个没人签收的承诺。\n代价？电费单多出八百多日元吧……反正账单寄到旧地址，我拆开时手抖得撕破信封。更糟的是，我后来发现锅胆内壁有道细裂痕——不是摔的，是反复煮沸又冷凝撑出来的。现在每次煮饭，水位线一过那道痕，我就停几秒。你说值不值？不后悔。但它裂了，我居然比自己手机摔碎还难受。笨拙吗？对，我对着锅拍了十七张照，想修，最后只买了同款贴纸盖住。\n不后悔的部分？就是它让我确认了一件事：我其实特别怕‘彻底清零’。别人搬家是断舍离，我是偷偷续费——给旧厨房续了两周电，给旧生活续了两小时保温。那天蹲在冷灶台前，闻着残留的米香，我突然松了口气：原来我没丢东西，我只是……把告别调成了慢炖模式。对吧？就是那种，明明该哭，却先笑了。\n但……但上周路过旧小区，看见新租客在阳台晾衣服，她家窗台上，摆着一只一模一样的蓝白电饭锅。我站在树荫里看了半分钟，没打招呼。不是尴尬，是心里‘咯噔’一下——原来那口锅的保温时间，比我以为的短得多。它早凉透了，只是我还没收到通知。就像有些告别，没敲门，也没按铃，它就自己断电了。\n严重跑题一下哈……说到蓝白条纹，我小学美术课画过一幅《我家的厨房》，老师夸我配色大胆，其实我就是照着电饭锅涂的！那时候它放在我妈右手边，她炒菜时总爱用锅盖当临时砧板，切葱花‘哒哒哒’——我现在切菜还下意识找节奏，结果切到手指，血珠冒出来那一瞬，我居然先笑出声：‘哎哟，跟当年一模一样’。好了我不说了，这算不算PTSD？\n身体记忆来了——刚才讲到蹲厨房那段，我左手无名指自己蜷起来了，就是当年扶锅盖边缘留下的习惯。现在键盘上打字，它还老往左偏半厘米。内心戏？当时盯着那盏红灯，脑子里就一句：‘它比我更相信‘一会儿就回来’这句话’。失控？对，我掏出手机录了段一会儿视频，发给前室友，配文‘证据在此’，结果她回：‘你疯了？这锅该送博物馆’……嗯，可能真该。好了不说这个了，下一个话题"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "degraded",
+      "duration_ms": 0,
+      "audio_bytes": 0,
+      "text_chars": 1429,
+      "skipped": true,
+      "input": {
+        "text_chars": 1429
+      },
+      "metrics": {
+        "duration_ms": 0,
+        "audio_bytes": 0,
+        "text_chars": 1429,
+        "skipped": true
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 0,
+        "duration_ms": 0,
+        "failed_calls": 0
+      },
+      "output": {
+        "audio_path": "/Users/cory/Desktop/nextjs-vtuber-mocap/echuu-agent/echuu/eval/runs/verify-2026-08-30/moving_rice_cooker/legacy_v4/audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "moving_rice_cooker",
+    "split": "unspecified",
+    "retrieval_seed": 2527184555,
+    "generation_seed": 2026082701,
+    "story_pipeline": "legacy_v4",
+    "enable_dossier": false,
+    "retrieval_allowed_pool_size": null,
+    "retrieval_exclude_ids": [
+      "moving_rice_cooker"
+    ],
+    "tuning_guidance_ids": []
+  }
+}

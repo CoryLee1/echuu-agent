@@ -1,0 +1,792 @@
+{
+  "version": 1,
+  "pipeline": "refactor",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温",
+        "language": "zh",
+        "enable_dossier": false,
+        "story_pipeline": "refactor",
+        "generation_seed": 2026082701,
+        "persona_card": null,
+        "retrieval_allowed_ids": [
+          "moving_rice_cooker",
+          "wrong_takeout",
+          "rainy_day_umbrella"
+        ],
+        "retrieval_exclude_ids": [
+          "moving_rice_cooker"
+        ],
+        "retrieval_seed": 2527184555,
+        "tuning_guidance_ids": [],
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": ""
+      }
+    },
+    {
+      "id": "tuning_guidance",
+      "label": "人类批注规则",
+      "status": "skipped",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "source": "TRAIN tuning notes",
+        "note_ids": []
+      },
+      "metrics": {
+        "rule_count": 0,
+        "categories": [],
+        "fingerprint": ""
+      },
+      "output": {
+        "rules": [],
+        "prompt_text": ""
+      }
+    },
+    {
+      "id": "dossier",
+      "label": "人物扩充",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "persona_card": null
+      },
+      "metrics": {
+        "enabled": false,
+        "cache_hit": false,
+        "has_conflict": false,
+        "prompt_version": "persona-expander-v3-grounded-hypothesis",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": null
+    },
+    {
+      "id": "persona_analysis",
+      "label": "人设、话语类型与内容内核",
+      "status": "completed",
+      "duration_ms": 19063.7,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 19063.4,
+        "prompt_chars": 3495,
+        "avg_prompt_chars": 3495.0,
+        "max_prompt_chars": 3495,
+        "response_chars": 1484,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 3495,
+            "prompt_sha256": "560656968b862cc2",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1484,
+            "duration_ms": 19063.4
+          }
+        ]
+      },
+      "input": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "搬家时把电饭锅落在旧房，半夜回去取却发现它还在保温",
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": "",
+        "dossier": null
+      },
+      "output": {
+        "rich_persona": {
+          "identity": "刚搬完家、连锅都忘在旧屋的普通打工人",
+          "belief": "东西放哪儿我闭着眼都能摸到，记性差？那是你没把生活过成肌肉记忆",
+          "flaw": "一遇到‘确认过的东西’就下意识不回头——哪怕门没锁、插头没拔、电饭锅还在亮着保温灯",
+          "verbal_tics": [
+            "啊……其实吧",
+            "你猜怎么着",
+            "不是说它不该在那儿",
+            "结果呢"
+          ],
+          "situational_weaknesses": [
+            "一遇到‘已经做完的事’就自动关掉注意力",
+            "一看到电器指示灯亮着就条件反射想关掉但又懒得动"
+          ],
+          "contrast_hook": "她明明最怕浪费电，却对着半夜亮着的电饭锅，站了三分钟没伸手拔插头",
+          "life_anchors": [
+            "旧房门口那盏接触不良的声控灯",
+            "电饭锅保温灯幽幽的蓝光"
+          ],
+          "title_hook": "我忘带电饭锅，它却替我守夜",
+          "visual_anchor": "直播背景里桌上摆着同款电饭锅（冷的，盖子半开）"
+        },
+        "story_core": {
+          "spine": "有些东西没被带走，不是因为忘了，是因为它还没收到‘可以下班’的通知",
+          "discourse_mode": "narrative",
+          "mode_rationale": "话题由观众提问‘最近最意外的小事’触发，天然适合用真实时间线展开：搬家→发现遗漏→折返→看见亮着的灯→停住；不需编造，原生节奏已有呼吸感",
+          "tone_mode": "conversational",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作认真地解构一个微小反常：把‘电器待机’当成人格信号",
+          "core_struggle": "人总以为离开是瞬间动作，但物品的‘离职流程’，从来没人教过",
+          "supporting_points": [
+            "我们给快递填地址、给猫约绝育、给路由器改密码——唯独没给电饭锅办过‘退租手续’",
+            "它保温灯还亮着，不是故障，是它卡在‘主人刚走，但饭还没凉透’的逻辑死循环里"
+          ],
+          "twist": "我没急着拔插头，而是蹲下来，对它说了句‘今天辛苦了，明天不用等了’——说完才意识到，我在跟一个锅办交接",
+          "central_contrast": "人按日程表离场，而家电活在‘任务未完成’的永恒待机里",
+          "emotional_undercurrent": "从轻微懊恼 → 哑然 → 一点柔软的歉意",
+          "story_beats": [
+            "搬家收尾时发现电饭锅还在旧厨房台面，顺手拍张照发群里‘锅留下当纪念’",
+            "凌晨一点想起它可能还在保温，打车回去，推开门看见那点蓝光像没睡醒的萤火",
+            "没关电源，也没拿走，就站在那儿，突然懂了：我们总在催自己快点开始新生活，却忘了有些小物件，正认真替我们守住上一段生活的体温"
+          ],
+          "punchline_seeds": [
+            "电器不会离职，除非你亲手按下‘结束键’"
+          ],
+          "hook_angle": "你们有没有试过，半夜回去取落下的东西，结果发现它比你还敬业——饭都凉了，它还在坚持保温？"
+        }
+      },
+      "metrics": {
+        "discourse_mode": "narrative",
+        "prompt_version": "persona-analyst-v5-tone-depth",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      }
+    },
+    {
+      "id": "unit_plan",
+      "label": "节目分段",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "requested_unit_count": 3,
+        "story_beats": [
+          "搬家收尾时发现电饭锅还在旧厨房台面，顺手拍张照发群里‘锅留下当纪念’",
+          "凌晨一点想起它可能还在保温，打车回去，推开门看见那点蓝光像没睡醒的萤火",
+          "没关电源，也没拿走，就站在那儿，突然懂了：我们总在催自己快点开始新生活，却忘了有些小物件，正认真替我们守住上一段生活的体温"
+        ],
+        "spine": "有些东西没被带走，不是因为忘了，是因为它还没收到‘可以下班’的通知",
+        "supporting_points": [
+          "我们给快递填地址、给猫约绝育、给路由器改密码——唯独没给电饭锅办过‘退租手续’",
+          "它保温灯还亮着，不是故障，是它卡在‘主人刚走，但饭还没凉透’的逻辑死循环里"
+        ],
+        "emotional_undercurrent": "从轻微懊恼 → 哑然 → 一点柔软的歉意"
+      },
+      "metrics": {
+        "unit_count": 3
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        }
+      ]
+    },
+    {
+      "id": "script_writer",
+      "label": "剧本生成",
+      "status": "completed",
+      "duration_ms": 17871.9,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 17871.7,
+        "prompt_chars": 2663,
+        "avg_prompt_chars": 2663.0,
+        "max_prompt_chars": 2663,
+        "response_chars": 1455,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 2663,
+            "prompt_sha256": "a558b9499c244c12",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1455,
+            "duration_ms": 17871.7
+          }
+        ]
+      },
+      "input": {
+        "rich_persona": {
+          "identity": "刚搬完家、连锅都忘在旧屋的普通打工人",
+          "belief": "东西放哪儿我闭着眼都能摸到，记性差？那是你没把生活过成肌肉记忆",
+          "flaw": "一遇到‘确认过的东西’就下意识不回头——哪怕门没锁、插头没拔、电饭锅还在亮着保温灯",
+          "verbal_tics": [
+            "啊……其实吧",
+            "你猜怎么着",
+            "不是说它不该在那儿",
+            "结果呢"
+          ],
+          "situational_weaknesses": [
+            "一遇到‘已经做完的事’就自动关掉注意力",
+            "一看到电器指示灯亮着就条件反射想关掉但又懒得动"
+          ],
+          "contrast_hook": "她明明最怕浪费电，却对着半夜亮着的电饭锅，站了三分钟没伸手拔插头",
+          "life_anchors": [
+            "旧房门口那盏接触不良的声控灯",
+            "电饭锅保温灯幽幽的蓝光"
+          ],
+          "title_hook": "我忘带电饭锅，它却替我守夜",
+          "visual_anchor": "直播背景里桌上摆着同款电饭锅（冷的，盖子半开）"
+        },
+        "story_core": {
+          "spine": "有些东西没被带走，不是因为忘了，是因为它还没收到‘可以下班’的通知",
+          "discourse_mode": "narrative",
+          "mode_rationale": "话题由观众提问‘最近最意外的小事’触发，天然适合用真实时间线展开：搬家→发现遗漏→折返→看见亮着的灯→停住；不需编造，原生节奏已有呼吸感",
+          "tone_mode": "conversational",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作认真地解构一个微小反常：把‘电器待机’当成人格信号",
+          "core_struggle": "人总以为离开是瞬间动作，但物品的‘离职流程’，从来没人教过",
+          "supporting_points": [
+            "我们给快递填地址、给猫约绝育、给路由器改密码——唯独没给电饭锅办过‘退租手续’",
+            "它保温灯还亮着，不是故障，是它卡在‘主人刚走，但饭还没凉透’的逻辑死循环里"
+          ],
+          "twist": "我没急着拔插头，而是蹲下来，对它说了句‘今天辛苦了，明天不用等了’——说完才意识到，我在跟一个锅办交接",
+          "central_contrast": "人按日程表离场，而家电活在‘任务未完成’的永恒待机里",
+          "emotional_undercurrent": "从轻微懊恼 → 哑然 → 一点柔软的歉意",
+          "story_beats": [
+            "搬家收尾时发现电饭锅还在旧厨房台面，顺手拍张照发群里‘锅留下当纪念’",
+            "凌晨一点想起它可能还在保温，打车回去，推开门看见那点蓝光像没睡醒的萤火",
+            "没关电源，也没拿走，就站在那儿，突然懂了：我们总在催自己快点开始新生活，却忘了有些小物件，正认真替我们守住上一段生活的体温"
+          ],
+          "punchline_seeds": [
+            "电器不会离职，除非你亲手按下‘结束键’"
+          ],
+          "hook_angle": "你们有没有试过，半夜回去取落下的东西，结果发现它比你还敬业——饭都凉了，它还在坚持保温？"
+        },
+        "unit_skeleton": [
+          {
+            "index": 0,
+            "time_window": [
+              0,
+              75
+            ],
+            "acoustic": {
+              "pitch_rate": 1.1,
+              "speech_rate": 1.1,
+              "volume": 60
+            },
+            "axis": null,
+            "density": "high",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 1,
+            "time_window": [
+              75,
+              150
+            ],
+            "acoustic": {
+              "pitch_rate": 0.99,
+              "speech_rate": 0.99,
+              "volume": 54
+            },
+            "axis": null,
+            "density": "medium",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 2,
+            "time_window": [
+              150,
+              225
+            ],
+            "acoustic": {
+              "pitch_rate": 0.88,
+              "speech_rate": 0.88,
+              "volume": 48
+            },
+            "axis": null,
+            "density": "low",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          }
+        ],
+        "few_shot_count": 0,
+        "few_shot_ids": [],
+        "retrieval_seed": 2527184555,
+        "dossier": null,
+        "tuning_guidance_ids": []
+      },
+      "metrics": {
+        "few_shot_count": 0,
+        "few_shot_ids": [],
+        "retrieval_seed": 2527184555,
+        "unit_count": 3,
+        "line_count": 9,
+        "spine": "有些东西没被带走，不是因为忘了，是因为它还没收到‘可以下班’的通知",
+        "supporting_point_count": 2,
+        "quality_gate_retried": false,
+        "quality_gate_sanitized": false,
+        "quality_gate_passed": true,
+        "quality_gate_first_issues": [],
+        "quality_gate_retry_issues": [],
+        "quality_gate_first_issue_details": [],
+        "quality_gate_retry_issue_details": [],
+        "quality_gate_post_sanitize_issues": [],
+        "quality_gate_post_sanitize_issue_details": [],
+        "prompt_version": "script-writer-v6-compact-anti-leak",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "啊……其实吧，你们刚问‘最近最意外的小事’，我第一反应是——电饭锅。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "就是搬家那天，所有箱子都封好了，我站在旧厨房台面边，一眼扫过去，它还在那儿，盖着盖子，像刚下班还没脱工装。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "我就顺手拍了张照，发群里说‘锅留下当纪念’——说完自己都愣了下，纪念？它又没退休，我连个‘再见’都没跟它说。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "接住观众提问，用搬家收尾的日常切片锚定主轴：遗忘不是疏忽，是物品尚未被‘授权离场’",
+          "spine_link": "以‘拍照片发群说锅留下当纪念’这个轻描淡写的动作，暗示人已默认移交完成，而锅还在原位待命"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "结果凌晨一点，我躺床上突然坐起来——它该不会……还在保温？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "打车回去，旧楼门口那盏声控灯又罢工了，黑着，我跺两脚它才勉强亮一下，晃得人影斜斜的。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "推开门，厨房没开灯，就看见台面上那点蓝光，幽幽的，像没睡醒的萤火——不是说它不该在那儿，是它亮得太认真了，认真到我站那儿三秒，没伸手拔插头。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "呈现关键变化：深夜折返时，蓝光成为静默的反常证据；不解释，只呈现‘它还在’的事实本身带来的微小停顿",
+          "spine_link": "用声控灯接触不良、蓝光幽幽这两个有来源的锚点，把‘电器待机’具象为一种未被叫停的忠诚"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "你猜怎么着？我没拿它，也没关电源，就蹲下来，对着那点蓝光，说了句：‘今天辛苦了，明天不用等了。’",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "说完才意识到——我在跟一个锅办交接。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "原来我们催自己快点开始新生活，却忘了有些小物件，正认真替我们守住上一段生活的体温。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "收束主轴：不升华，不教训，只让‘办交接’这个动作自然浮出水面，把高光落在一句对锅说的话上",
+          "spine_link": "用‘今天辛苦了，明天不用等了’这句轻声自语，把主轴‘物品需要被正式通知结束’从逻辑落地为体温感的动作"
+        }
+      ]
+    },
+    {
+      "id": "postprocess",
+      "label": "后处理",
+      "status": "completed",
+      "duration_ms": 0.5,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "line_count": 9
+      },
+      "metrics": {
+        "line_count": 9,
+        "planted_gags": [
+          "蓝光"
+        ],
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "啊……其实吧，你们刚问‘最近最意外的小事’，我第一反应是——电饭锅。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "就是搬家那天，所有箱子都封好了，我站在旧厨房台面边，一眼扫过去，它还在那儿，盖着盖子，像刚下班还没脱工装。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "我就顺手拍了张照，发群里说‘锅留下当纪念’——说完自己都愣了下，纪念？它又没退休，我连个‘再见’都没跟它说。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "接住观众提问，用搬家收尾的日常切片锚定主轴：遗忘不是疏忽，是物品尚未被‘授权离场’",
+          "spine_link": "以‘拍照片发群说锅留下当纪念’这个轻描淡写的动作，暗示人已默认移交完成，而锅还在原位待命"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "结果凌晨一点，我躺床上突然坐起来——它该不会……还在保温？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "打车回去，旧楼门口那盏声控灯又罢工了，黑着，我跺两脚它才勉强亮一下，晃得人影斜斜的。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "推开门，厨房没开灯，就看见台面上那点蓝光，幽幽的，像没睡醒的萤火——不是说它不该在那儿，是它亮得太认真了，认真到我站那儿三秒，没伸手拔插头。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "呈现关键变化：深夜折返时，蓝光成为静默的反常证据；不解释，只呈现‘它还在’的事实本身带来的微小停顿",
+          "spine_link": "用声控灯接触不良、蓝光幽幽这两个有来源的锚点，把‘电器待机’具象为一种未被叫停的忠诚"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "你猜怎么着？我没拿它，也没关电源，就蹲下来，对着那点蓝光，说了句：‘今天辛苦了，明天不用等了。’",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "说完才意识到——我在跟一个锅办交接。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "原来我们催自己快点开始新生活，却忘了有些小物件，正认真替我们守住上一段生活的体温。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "收束主轴：不升华，不教训，只让‘办交接’这个动作自然浮出水面，把高光落在一句对锅说的话上",
+          "spine_link": "用‘今天辛苦了，明天不用等了’这句轻声自语，把主轴‘物品需要被正式通知结束’从逻辑落地为体温感的动作"
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "script_line_count": 9,
+        "mode": "planned_script_only",
+        "max_steps": 0
+      },
+      "metrics": {
+        "text_chars": 397,
+        "line_count": 9,
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "text": "啊……其实吧，你们刚问‘最近最意外的小事’，我第一反应是——电饭锅。\n就是搬家那天，所有箱子都封好了，我站在旧厨房台面边，一眼扫过去，它还在那儿，盖着盖子，像刚下班还没脱工装。\n我就顺手拍了张照，发群里说‘锅留下当纪念’——说完自己都愣了下，纪念？它又没退休，我连个‘再见’都没跟它说。\n结果凌晨一点，我躺床上突然坐起来——它该不会……还在保温？\n打车回去，旧楼门口那盏声控灯又罢工了，黑着，我跺两脚它才勉强亮一下，晃得人影斜斜的。\n推开门，厨房没开灯，就看见台面上那点蓝光，幽幽的，像没睡醒的萤火——不是说它不该在那儿，是它亮得太认真了，认真到我站那儿三秒，没伸手拔插头。\n你猜怎么着？我没拿它，也没关电源，就蹲下来，对着那点蓝光，说了句：‘今天辛苦了，明天不用等了。’\n说完才意识到——我在跟一个锅办交接。\n原来我们催自己快点开始新生活，却忘了有些小物件，正认真替我们守住上一段生活的体温。"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "completed",
+      "duration_ms": 1153116.0,
+      "audio_bytes": 4904060,
+      "text_chars": 397,
+      "input": {
+        "text_chars": 397
+      },
+      "metrics": {
+        "duration_ms": 1153116.0,
+        "audio_bytes": 4904060,
+        "text_chars": 397
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 1,
+        "duration_ms": 1153116.0,
+        "failed_calls": 0
+      },
+      "output": {
+        "audio_path": "/Users/cory/Desktop/nextjs-vtuber-mocap/echuu-agent/echuu/eval/runs/moving_rice_cooker__r01/refactor_no_dossier/audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "moving_rice_cooker",
+    "split": "unspecified",
+    "retrieval_seed": 2527184555,
+    "generation_seed": 2026082701,
+    "story_pipeline": "refactor",
+    "enable_dossier": false,
+    "retrieval_allowed_pool_size": 3,
+    "retrieval_exclude_ids": [
+      "moving_rice_cooker"
+    ],
+    "tuning_guidance_ids": []
+  }
+}

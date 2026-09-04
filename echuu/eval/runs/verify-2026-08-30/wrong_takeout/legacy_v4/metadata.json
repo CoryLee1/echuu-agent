@@ -1,0 +1,13 @@
+{
+  "fixture_id": "wrong_takeout",
+  "source_fixture_id": "wrong_takeout",
+  "variant": "legacy_v4",
+  "repeat": 1,
+  "evaluation_split": "unspecified",
+  "retrieval_seed": 1095816437,
+  "generation_seed": 2026082702,
+  "retrieval_allowed_pool_size": null,
+  "generated_at_utc": "2026-08-29T17:11:42.653772+00:00",
+  "purpose": "verify-2026-08-30",
+  "text_only": true
+}

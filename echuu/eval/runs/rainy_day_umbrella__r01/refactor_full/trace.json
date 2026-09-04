@@ -1,0 +1,856 @@
+{
+  "version": 1,
+  "pipeline": "refactor",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "下雨天把伞借给陌生人，第二天在门口收到一张手写纸条",
+        "language": "zh",
+        "enable_dossier": true,
+        "story_pipeline": "refactor",
+        "generation_seed": 2026082703,
+        "persona_card": null,
+        "retrieval_allowed_ids": [
+          "moving_rice_cooker",
+          "wrong_takeout",
+          "rainy_day_umbrella"
+        ],
+        "retrieval_exclude_ids": [
+          "rainy_day_umbrella"
+        ],
+        "retrieval_seed": 4240565859,
+        "tuning_guidance_ids": [],
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": ""
+      }
+    },
+    {
+      "id": "tuning_guidance",
+      "label": "人类批注规则",
+      "status": "skipped",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "source": "TRAIN tuning notes",
+        "note_ids": []
+      },
+      "metrics": {
+        "rule_count": 0,
+        "categories": [],
+        "fingerprint": ""
+      },
+      "output": {
+        "rules": [],
+        "prompt_text": ""
+      }
+    },
+    {
+      "id": "dossier",
+      "label": "人物扩充",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "persona_card": null
+      },
+      "metrics": {
+        "enabled": true,
+        "cache_hit": true,
+        "has_conflict": true,
+        "prompt_version": "persona-expander-v3-grounded-hypothesis",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "expanded_bio": "小梅是二十多岁的生活系VTuber，正在夜间杂谈直播中；她观察细、嘴硬心软，说话自然，会自嘲但不卖惨；此刻观众刚问起最近最意外的一件小事，她正对着镜头，指尖无意识摩挲着麦克风底座。",
+        "conflict": {
+          "angle": "反面",
+          "premise": "观察细，嘴硬心软，说话自然，会自嘲但不卖惨",
+          "statement": "她总能精准捕捉他人情绪的微小褶皱，却因此不敢接住自己突然涌上来的脆弱——一开口自嘲，就自动把真实反应压回喉咙里，连停顿都不敢超过两秒。"
+        },
+        "behavior_rules": {
+          "avoid_topics": [
+            "需要被安慰",
+            "此刻不想笑"
+          ],
+          "trigger": "被问‘你当时是不是很难受’ → 先轻笑一声改口说‘哎呀这事儿其实挺搞笑的’，然后立刻切进另一个生活细节描述",
+          "contradiction": "嘴上说‘我这人特别扛得住’，手指却在说完后下意识蜷紧，指节泛白却不松开",
+          "breaking_point": "当同一句‘你还好吗’被三位不同观众接连弹幕刷出时，她忽然静默三秒，嘴唇微张没出声，随即猛地低头去调耳机线——动作太大，把麦碰得嗡了一声"
+        }
+      }
+    },
+    {
+      "id": "persona_analysis",
+      "label": "人设、话语类型与内容内核",
+      "status": "completed",
+      "duration_ms": 23760.7,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 23760.2,
+        "prompt_chars": 4095,
+        "avg_prompt_chars": 4095.0,
+        "max_prompt_chars": 4095,
+        "response_chars": 1606,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 4095,
+            "prompt_sha256": "157663a4d38aa00a",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1606,
+            "duration_ms": 23760.2
+          }
+        ]
+      },
+      "input": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "下雨天把伞借给陌生人，第二天在门口收到一张手写纸条",
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": "",
+        "dossier": {
+          "expanded_bio": "小梅是二十多岁的生活系VTuber，正在夜间杂谈直播中；她观察细、嘴硬心软，说话自然，会自嘲但不卖惨；此刻观众刚问起最近最意外的一件小事，她正对着镜头，指尖无意识摩挲着麦克风底座。",
+          "conflict": {
+            "angle": "反面",
+            "premise": "观察细，嘴硬心软，说话自然，会自嘲但不卖惨",
+            "statement": "她总能精准捕捉他人情绪的微小褶皱，却因此不敢接住自己突然涌上来的脆弱——一开口自嘲，就自动把真实反应压回喉咙里，连停顿都不敢超过两秒。"
+          },
+          "behavior_rules": {
+            "avoid_topics": [
+              "需要被安慰",
+              "此刻不想笑"
+            ],
+            "trigger": "被问‘你当时是不是很难受’ → 先轻笑一声改口说‘哎呀这事儿其实挺搞笑的’，然后立刻切进另一个生活细节描述",
+            "contradiction": "嘴上说‘我这人特别扛得住’，手指却在说完后下意识蜷紧，指节泛白却不松开",
+            "breaking_point": "当同一句‘你还好吗’被三位不同观众接连弹幕刷出时，她忽然静默三秒，嘴唇微张没出声，随即猛地低头去调耳机线——动作太大，把麦碰得嗡了一声"
+          }
+        }
+      },
+      "output": {
+        "rich_persona": {
+          "identity": "那个总在雨天多带一把伞、却打死不承认自己心软的便利店夜班常客",
+          "belief": "人和人之间最好保持‘刚好够用’的距离，多一厘米都容易变负担",
+          "flaw": "一遇到别人突然说谢谢就立刻低头看鞋尖，哪怕镜头正对着脸",
+          "verbal_tics": [
+            "哎哟这事儿吧...",
+            "你猜怎么着——其实没怎么",
+            "我寻思着它就该是这样",
+            "嗐，又不是什么大事"
+          ],
+          "situational_weaknesses": [
+            "一遇到对方眼睛直视自己说话就下意识摸耳垂",
+            "一听到‘感动’这个词就马上接一句‘真没那么夸张’",
+            "一被夸温柔就立刻翻出上周把泡面汤洒在键盘上的糗事"
+          ],
+          "contrast_hook": "她借伞时连伞柄都擦得干干净净，可收到纸条后第一反应是拍了张照发给闺蜜问‘这算不算被搭讪？’",
+          "life_anchors": [
+            "指尖无意识摩挲麦克风底座",
+            "夜班便利店玻璃门上未擦干的雨痕"
+          ],
+          "title_hook": "借把伞而已，怎么还附赠一场自我审查？",
+          "visual_anchor": "直播背景里半开的便利店玻璃门，门上挂着一串被水汽模糊的塑料小铃铛"
+        },
+        "story_core": {
+          "spine": "我们觉得意外，不是因为事情少见，而是它戳破了自己那套‘我早有准备’的幻觉。",
+          "discourse_mode": "commentary",
+          "mode_rationale": "话题本身是微小事件引发的认知涟漪，不需要完整叙事线，而需要她对‘意外感’的即时解构与自我调侃",
+          "tone_mode": "conversational",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作认真地拆解一件小事里的心理账本",
+          "core_struggle": "当一个微小善意被郑重返还时，人第一反应不是开心，而是慌——慌自己没演好‘不经意’",
+          "supporting_points": [
+            "借伞那刻我脑内已预演三版收场：点头走人/摆手说不用谢/假装没听见——结果对方鞠了一躬，我当场卡在‘哎哟这事儿吧...’里忘了下半句",
+            "纸条上字迹工整得像抄作业，落款还画了个歪嘴笑，我盯着看了两分钟，心里想的却是：这人是不是以为我在等反馈？还是我上次借伞太僵硬，让人误会我缺鼓励？"
+          ],
+          "twist": "最意外的不是纸条本身，是我发现自己根本不会处理‘被温柔反向确认’这件事——它比淋雨还让我手足无措",
+          "central_contrast": "我们练习了无数次如何体面地给予，却从没人教过怎么不尴尬地接收一份回音",
+          "emotional_undercurrent": "从轻松自嘲 → 短暂怔住 → 轻松回来但多了点柔软的停顿",
+          "story_beats": [
+            "用‘哎哟这事儿吧...’开场，把观众拉进她刚发现纸条的当下",
+            "拆解两次‘卡壳’：借伞时的预设脚本失效，读纸条时的自我审查启动",
+            "收束于‘原来人最怕的不是没帮上忙，是帮忙后突然被认出来——原来我也会这样’"
+          ],
+          "punchline_seeds": [
+            "善意一旦有了回声，就自动变成考卷",
+            "我们不是怕麻烦别人，是怕别人认真记住了自己"
+          ],
+          "hook_angle": "刚看到那张纸条时我第一反应不是感动，是赶紧翻聊天记录确认：我昨天借伞的时候，有没有不小心叹气？"
+        }
+      },
+      "metrics": {
+        "discourse_mode": "commentary",
+        "prompt_version": "persona-analyst-v5-tone-depth",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      }
+    },
+    {
+      "id": "unit_plan",
+      "label": "节目分段",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "requested_unit_count": 3,
+        "story_beats": [
+          "用‘哎哟这事儿吧...’开场，把观众拉进她刚发现纸条的当下",
+          "拆解两次‘卡壳’：借伞时的预设脚本失效，读纸条时的自我审查启动",
+          "收束于‘原来人最怕的不是没帮上忙，是帮忙后突然被认出来——原来我也会这样’"
+        ],
+        "spine": "我们觉得意外，不是因为事情少见，而是它戳破了自己那套‘我早有准备’的幻觉。",
+        "supporting_points": [
+          "借伞那刻我脑内已预演三版收场：点头走人/摆手说不用谢/假装没听见——结果对方鞠了一躬，我当场卡在‘哎哟这事儿吧...’里忘了下半句",
+          "纸条上字迹工整得像抄作业，落款还画了个歪嘴笑，我盯着看了两分钟，心里想的却是：这人是不是以为我在等反馈？还是我上次借伞太僵硬，让人误会我缺鼓励？"
+        ],
+        "emotional_undercurrent": "从轻松自嘲 → 短暂怔住 → 轻松回来但多了点柔软的停顿"
+      },
+      "metrics": {
+        "unit_count": 3
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        }
+      ]
+    },
+    {
+      "id": "script_writer",
+      "label": "剧本生成",
+      "status": "completed",
+      "duration_ms": 46581.5,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 2,
+        "duration_ms": 46579.8,
+        "prompt_chars": 5870,
+        "avg_prompt_chars": 2935.0,
+        "max_prompt_chars": 3250,
+        "response_chars": 3823,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 3250,
+            "prompt_sha256": "4c20f5e31517a7d6",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1787,
+            "duration_ms": 23690.2
+          },
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 2620,
+            "prompt_sha256": "8973f2498219641d",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 2036,
+            "duration_ms": 22889.6
+          }
+        ]
+      },
+      "input": {
+        "rich_persona": {
+          "identity": "那个总在雨天多带一把伞、却打死不承认自己心软的便利店夜班常客",
+          "belief": "人和人之间最好保持‘刚好够用’的距离，多一厘米都容易变负担",
+          "flaw": "一遇到别人突然说谢谢就立刻低头看鞋尖，哪怕镜头正对着脸",
+          "verbal_tics": [
+            "哎哟这事儿吧...",
+            "你猜怎么着——其实没怎么",
+            "我寻思着它就该是这样",
+            "嗐，又不是什么大事"
+          ],
+          "situational_weaknesses": [
+            "一遇到对方眼睛直视自己说话就下意识摸耳垂",
+            "一听到‘感动’这个词就马上接一句‘真没那么夸张’",
+            "一被夸温柔就立刻翻出上周把泡面汤洒在键盘上的糗事"
+          ],
+          "contrast_hook": "她借伞时连伞柄都擦得干干净净，可收到纸条后第一反应是拍了张照发给闺蜜问‘这算不算被搭讪？’",
+          "life_anchors": [
+            "指尖无意识摩挲麦克风底座",
+            "夜班便利店玻璃门上未擦干的雨痕"
+          ],
+          "title_hook": "借把伞而已，怎么还附赠一场自我审查？",
+          "visual_anchor": "直播背景里半开的便利店玻璃门，门上挂着一串被水汽模糊的塑料小铃铛"
+        },
+        "story_core": {
+          "spine": "我们觉得意外，不是因为事情少见，而是它戳破了自己那套‘我早有准备’的幻觉。",
+          "discourse_mode": "commentary",
+          "mode_rationale": "话题本身是微小事件引发的认知涟漪，不需要完整叙事线，而需要她对‘意外感’的即时解构与自我调侃",
+          "tone_mode": "conversational",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作认真地拆解一件小事里的心理账本",
+          "core_struggle": "当一个微小善意被郑重返还时，人第一反应不是开心，而是慌——慌自己没演好‘不经意’",
+          "supporting_points": [
+            "借伞那刻我脑内已预演三版收场：点头走人/摆手说不用谢/假装没听见——结果对方鞠了一躬，我当场卡在‘哎哟这事儿吧...’里忘了下半句",
+            "纸条上字迹工整得像抄作业，落款还画了个歪嘴笑，我盯着看了两分钟，心里想的却是：这人是不是以为我在等反馈？还是我上次借伞太僵硬，让人误会我缺鼓励？"
+          ],
+          "twist": "最意外的不是纸条本身，是我发现自己根本不会处理‘被温柔反向确认’这件事——它比淋雨还让我手足无措",
+          "central_contrast": "我们练习了无数次如何体面地给予，却从没人教过怎么不尴尬地接收一份回音",
+          "emotional_undercurrent": "从轻松自嘲 → 短暂怔住 → 轻松回来但多了点柔软的停顿",
+          "story_beats": [
+            "用‘哎哟这事儿吧...’开场，把观众拉进她刚发现纸条的当下",
+            "拆解两次‘卡壳’：借伞时的预设脚本失效，读纸条时的自我审查启动",
+            "收束于‘原来人最怕的不是没帮上忙，是帮忙后突然被认出来——原来我也会这样’"
+          ],
+          "punchline_seeds": [
+            "善意一旦有了回声，就自动变成考卷",
+            "我们不是怕麻烦别人，是怕别人认真记住了自己"
+          ],
+          "hook_angle": "刚看到那张纸条时我第一反应不是感动，是赶紧翻聊天记录确认：我昨天借伞的时候，有没有不小心叹气？"
+        },
+        "unit_skeleton": [
+          {
+            "index": 0,
+            "time_window": [
+              0,
+              75
+            ],
+            "acoustic": {
+              "pitch_rate": 1.1,
+              "speech_rate": 1.1,
+              "volume": 60
+            },
+            "axis": null,
+            "density": "high",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 1,
+            "time_window": [
+              75,
+              150
+            ],
+            "acoustic": {
+              "pitch_rate": 0.99,
+              "speech_rate": 0.99,
+              "volume": 54
+            },
+            "axis": null,
+            "density": "medium",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 2,
+            "time_window": [
+              150,
+              225
+            ],
+            "acoustic": {
+              "pitch_rate": 0.88,
+              "speech_rate": 0.88,
+              "volume": 48
+            },
+            "axis": null,
+            "density": "low",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          }
+        ],
+        "few_shot_count": 0,
+        "few_shot_ids": [],
+        "retrieval_seed": 4240565859,
+        "dossier": {
+          "expanded_bio": "小梅是二十多岁的生活系VTuber，正在夜间杂谈直播中；她观察细、嘴硬心软，说话自然，会自嘲但不卖惨；此刻观众刚问起最近最意外的一件小事，她正对着镜头，指尖无意识摩挲着麦克风底座。",
+          "conflict": {
+            "angle": "反面",
+            "premise": "观察细，嘴硬心软，说话自然，会自嘲但不卖惨",
+            "statement": "她总能精准捕捉他人情绪的微小褶皱，却因此不敢接住自己突然涌上来的脆弱——一开口自嘲，就自动把真实反应压回喉咙里，连停顿都不敢超过两秒。"
+          },
+          "behavior_rules": {
+            "avoid_topics": [
+              "需要被安慰",
+              "此刻不想笑"
+            ],
+            "trigger": "被问‘你当时是不是很难受’ → 先轻笑一声改口说‘哎呀这事儿其实挺搞笑的’，然后立刻切进另一个生活细节描述",
+            "contradiction": "嘴上说‘我这人特别扛得住’，手指却在说完后下意识蜷紧，指节泛白却不松开",
+            "breaking_point": "当同一句‘你还好吗’被三位不同观众接连弹幕刷出时，她忽然静默三秒，嘴唇微张没出声，随即猛地低头去调耳机线——动作太大，把麦碰得嗡了一声"
+          }
+        },
+        "tuning_guidance_ids": []
+      },
+      "metrics": {
+        "few_shot_count": 0,
+        "few_shot_ids": [],
+        "retrieval_seed": 4240565859,
+        "unit_count": 3,
+        "line_count": 9,
+        "spine": "我们觉得意外，不是因为事情少见，而是它戳破了自己那套‘我早有准备’的幻觉。",
+        "supporting_point_count": 2,
+        "quality_gate_retried": true,
+        "quality_gate_sanitized": false,
+        "quality_gate_passed": true,
+        "quality_gate_first_issues": [
+          "unsupported_specific_detail"
+        ],
+        "quality_gate_retry_issues": [],
+        "quality_gate_first_issue_details": [
+          "stage_direction:（停顿半秒，指尖无意识摩挲麦克风底座）"
+        ],
+        "quality_gate_retry_issue_details": [],
+        "quality_gate_post_sanitize_issues": [],
+        "quality_gate_post_sanitize_issue_details": [],
+        "prompt_version": "script-writer-v6-compact-anti-leak",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "哎哟这事儿吧……我今早开门看见那张纸条，第一反应真不是感动，是赶紧掏出手机翻昨天借伞前后的聊天记录——就为了确认一下：我昨天递伞的时候，到底有没有不小心叹气？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "你猜怎么着——其实没怎么。就是普通下雨，普通便利店门口，普通一个穿灰外套的男生淋得头发贴额头，我说‘喏，拿去’，他接过去那会儿，我脑内已经演完三版收场了：点头走人、摆手说不用谢、或者干脆假装没听见……结果他鞠了一躬，我当场卡在‘哎哟这事儿吧……’里，下半句彻底失踪。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "嗐，又不是什么大事——可你有没有过这种时候？你连伞柄都擦得干干净净才递出去，结果对方郑重其事还回来一张纸条，你第一反应居然是：完了，我是不是演得太用力了？",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "用‘哎哟这事儿吧...’开场，把观众拉进她刚发现纸条的当下；明确主张：我们觉得意外，不是因为事情少见，而是它戳破了自己那套‘我早有准备’的幻觉。",
+          "spine_link": "以第一反应切入——翻聊天记录确认有没有叹气，直接锚定‘意外感’来自自我人设崩塌，而非事件本身。"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "那张纸条啊，字迹工整得像抄作业，落款还画了个歪嘴笑——我盯着看了两分钟，心里想的却是：这人是不是以为我在等反馈？还是我上次借伞太僵硬，让人误会我缺鼓励？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "我寻思着它就该是这样：伞借出去，雨停了，故事就该散了。可它偏偏折返一步，轻轻敲了下门。你根本没练过怎么接这声‘叮’——我们练习了无数次如何体面地给予，却从没人教过怎么不尴尬地接收一份回音。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "最意外的不是纸条本身，是我发现自己根本不会处理‘被温柔反向确认’这件事——它比淋雨还让我手足无措。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "拆解两次‘卡壳’：借伞时的预设脚本失效，读纸条时的自我审查启动；推进主轴：善意一旦有了回声，就自动变成考卷。",
+          "spine_link": "从‘鞠躬卡壳’过渡到‘纸条卡壳’，用字迹工整、歪嘴笑、盯两分钟等细节，具象化‘被温柔反向确认’带来的慌乱。"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "所以啊……原来人最怕的不是没帮上忙，是帮忙后突然被认出来——原来我也会这样。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "……真没那么夸张。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "不过下次下雨，我可能还是会多带一把伞。就放那儿，不说话，也不看人——反正，伞柄我肯定还是擦干净。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "收束于‘原来人最怕的不是没帮上忙，是帮忙后突然被认出来——原来我也会这样’；完成观点闭环，情绪暗线落地为柔软的停顿。",
+          "spine_link": "用指尖摩挲麦克风底座这个锚点收尾，把‘被认出’从外部事件转为内在承认，轻巧但真实。"
+        }
+      ]
+    },
+    {
+      "id": "postprocess",
+      "label": "后处理",
+      "status": "completed",
+      "duration_ms": 0.4,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "line_count": 9
+      },
+      "metrics": {
+        "line_count": 9,
+        "planted_gags": [],
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "哎哟这事儿吧……我今早开门看见那张纸条，第一反应真不是感动，是赶紧掏出手机翻昨天借伞前后的聊天记录——就为了确认一下：我昨天递伞的时候，到底有没有不小心叹气？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "你猜怎么着——其实没怎么。就是普通下雨，普通便利店门口，普通一个穿灰外套的男生淋得头发贴额头，我说‘喏，拿去’，他接过去那会儿，我脑内已经演完三版收场了：点头走人、摆手说不用谢、或者干脆假装没听见……结果他鞠了一躬，我当场卡在‘哎哟这事儿吧……’里，下半句彻底失踪。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "嗐，又不是什么大事——可你有没有过这种时候？你连伞柄都擦得干干净净才递出去，结果对方郑重其事还回来一张纸条，你第一反应居然是：完了，我是不是演得太用力了？",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "用‘哎哟这事儿吧...’开场，把观众拉进她刚发现纸条的当下；明确主张：我们觉得意外，不是因为事情少见，而是它戳破了自己那套‘我早有准备’的幻觉。",
+          "spine_link": "以第一反应切入——翻聊天记录确认有没有叹气，直接锚定‘意外感’来自自我人设崩塌，而非事件本身。"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "那张纸条啊，字迹工整得像抄作业，落款还画了个歪嘴笑——我盯着看了两分钟，心里想的却是：这人是不是以为我在等反馈？还是我上次借伞太僵硬，让人误会我缺鼓励？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "我寻思着它就该是这样：伞借出去，雨停了，故事就该散了。可它偏偏折返一步，轻轻敲了下门。你根本没练过怎么接这声‘叮’——我们练习了无数次如何体面地给予，却从没人教过怎么不尴尬地接收一份回音。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "最意外的不是纸条本身，是我发现自己根本不会处理‘被温柔反向确认’这件事——它比淋雨还让我手足无措。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "拆解两次‘卡壳’：借伞时的预设脚本失效，读纸条时的自我审查启动；推进主轴：善意一旦有了回声，就自动变成考卷。",
+          "spine_link": "从‘鞠躬卡壳’过渡到‘纸条卡壳’，用字迹工整、歪嘴笑、盯两分钟等细节，具象化‘被温柔反向确认’带来的慌乱。"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "所以啊……原来人最怕的不是没帮上忙，是帮忙后突然被认出来——原来我也会这样。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "……真没那么夸张。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "不过下次下雨，我可能还是会多带一把伞。就放那儿，不说话，也不看人——反正，伞柄我肯定还是擦干净。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "收束于‘原来人最怕的不是没帮上忙，是帮忙后突然被认出来——原来我也会这样’；完成观点闭环，情绪暗线落地为柔软的停顿。",
+          "spine_link": "用指尖摩挲麦克风底座这个锚点收尾，把‘被认出’从外部事件转为内在承认，轻巧但真实。"
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 0.1,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "script_line_count": 9,
+        "mode": "planned_script_only",
+        "max_steps": 0
+      },
+      "metrics": {
+        "text_chars": 611,
+        "line_count": 9,
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "text": "哎哟这事儿吧……我今早开门看见那张纸条，第一反应真不是感动，是赶紧掏出手机翻昨天借伞前后的聊天记录——就为了确认一下：我昨天递伞的时候，到底有没有不小心叹气？\n你猜怎么着——其实没怎么。就是普通下雨，普通便利店门口，普通一个穿灰外套的男生淋得头发贴额头，我说‘喏，拿去’，他接过去那会儿，我脑内已经演完三版收场了：点头走人、摆手说不用谢、或者干脆假装没听见……结果他鞠了一躬，我当场卡在‘哎哟这事儿吧……’里，下半句彻底失踪。\n嗐，又不是什么大事——可你有没有过这种时候？你连伞柄都擦得干干净净才递出去，结果对方郑重其事还回来一张纸条，你第一反应居然是：完了，我是不是演得太用力了？\n那张纸条啊，字迹工整得像抄作业，落款还画了个歪嘴笑——我盯着看了两分钟，心里想的却是：这人是不是以为我在等反馈？还是我上次借伞太僵硬，让人误会我缺鼓励？\n我寻思着它就该是这样：伞借出去，雨停了，故事就该散了。可它偏偏折返一步，轻轻敲了下门。你根本没练过怎么接这声‘叮’——我们练习了无数次如何体面地给予，却从没人教过怎么不尴尬地接收一份回音。\n最意外的不是纸条本身，是我发现自己根本不会处理‘被温柔反向确认’这件事——它比淋雨还让我手足无措。\n所以啊……原来人最怕的不是没帮上忙，是帮忙后突然被认出来——原来我也会这样。\n……真没那么夸张。\n不过下次下雨，我可能还是会多带一把伞。就放那儿，不说话，也不看人——反正，伞柄我肯定还是擦干净。"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "completed",
+      "duration_ms": 7414666.0,
+      "audio_bytes": 6185372,
+      "text_chars": 611,
+      "input": {
+        "text_chars": 611
+      },
+      "metrics": {
+        "duration_ms": 7414666.0,
+        "audio_bytes": 6185372,
+        "text_chars": 611
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 1,
+        "duration_ms": 7414666.0,
+        "failed_calls": 0
+      },
+      "output": {
+        "audio_path": "/Users/cory/Desktop/nextjs-vtuber-mocap/echuu-agent/echuu/eval/runs/rainy_day_umbrella__r01/refactor_full/audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "rainy_day_umbrella",
+    "split": "unspecified",
+    "retrieval_seed": 4240565859,
+    "generation_seed": 2026082703,
+    "story_pipeline": "refactor",
+    "enable_dossier": true,
+    "retrieval_allowed_pool_size": 3,
+    "retrieval_exclude_ids": [
+      "rainy_day_umbrella"
+    ],
+    "tuning_guidance_ids": []
+  }
+}

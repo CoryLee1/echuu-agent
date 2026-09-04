@@ -73,7 +73,14 @@ async def onboarding_asr_endpoint(
         callback=Callback(),
         format="pcm",
         sample_rate=16000,
-        semantic_punctuation_enabled=True,
+        # VAD segmentation is the low-latency mode recommended for interactive
+        # captions. Semantic segmentation waits for more linguistic context and
+        # is better suited to meeting transcription than live VTuber subtitles.
+        semantic_punctuation_enabled=False,
+        max_sentence_silence=max(
+            200,
+            min(6000, int(os.getenv("QWEN_ASR_MAX_SENTENCE_SILENCE_MS", "500"))),
+        ),
     )
 
     async def forward_events() -> None:

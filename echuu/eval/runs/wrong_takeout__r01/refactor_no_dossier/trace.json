@@ -1,0 +1,794 @@
+{
+  "version": 1,
+  "pipeline": "refactor",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "出去送外卖送错了，最后和收错餐的人一起想办法补救",
+        "language": "zh",
+        "enable_dossier": false,
+        "story_pipeline": "refactor",
+        "generation_seed": 2026082702,
+        "persona_card": null,
+        "retrieval_allowed_ids": [
+          "moving_rice_cooker",
+          "wrong_takeout",
+          "rainy_day_umbrella"
+        ],
+        "retrieval_exclude_ids": [
+          "wrong_takeout"
+        ],
+        "retrieval_seed": 1095816437,
+        "tuning_guidance_ids": [],
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": ""
+      }
+    },
+    {
+      "id": "tuning_guidance",
+      "label": "人类批注规则",
+      "status": "skipped",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "source": "TRAIN tuning notes",
+        "note_ids": []
+      },
+      "metrics": {
+        "rule_count": 0,
+        "categories": [],
+        "fingerprint": ""
+      },
+      "output": {
+        "rules": [],
+        "prompt_text": ""
+      }
+    },
+    {
+      "id": "dossier",
+      "label": "人物扩充",
+      "status": "skipped",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "persona_card": null
+      },
+      "metrics": {
+        "enabled": false,
+        "cache_hit": false,
+        "has_conflict": false,
+        "prompt_version": "persona-expander-v3-grounded-hypothesis",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": null
+    },
+    {
+      "id": "persona_analysis",
+      "label": "人设、话语类型与内容内核",
+      "status": "completed",
+      "duration_ms": 20415.3,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 20414.7,
+        "prompt_chars": 3494,
+        "avg_prompt_chars": 3494.0,
+        "max_prompt_chars": 3494,
+        "response_chars": 1518,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 3494,
+            "prompt_sha256": "b2418cf835546f17",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1518,
+            "duration_ms": 20414.7
+          }
+        ]
+      },
+      "input": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "出去送外卖送错了，最后和收错餐的人一起想办法补救",
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": "",
+        "dossier": null
+      },
+      "output": {
+        "rich_persona": {
+          "identity": "刚转行送外卖的前奶茶店员，手机壳还贴着‘芋圆波波’贴纸",
+          "belief": "只要把餐送到门上，责任就自动清零了",
+          "flaw": "一看到顾客开门时皱眉，就下意识把头盔往下拉遮半张脸",
+          "verbal_tics": [
+            "哎哟喂——",
+            "不是说好…吗？",
+            "结果你猜怎么着",
+            "我当场就…（停顿半秒）算了"
+          ],
+          "situational_weaknesses": [
+            "一遇到电梯里和顾客撞见就假装看手机通知",
+            "一听到‘您这单送错了’就立刻掏保温袋翻小票",
+            "一发现对方比自己还慌，反而开始帮人找补"
+          ],
+          "contrast_hook": "她嘴上说‘送错不怪我，系统派单它没长眼’，可保温袋里还揣着两颗没拆封的糖，是怕人家等太久饿着",
+          "life_anchors": [
+            "手机壳上的‘芋圆波波’贴纸",
+            "保温袋侧袋里总塞着两颗独立包装的薄荷糖"
+          ],
+          "title_hook": "送错外卖后，我和陌生人一起演了场补救默剧",
+          "visual_anchor": "直播时右手无意识捻着保温袋侧袋边缘，像在确认那两颗糖还在不在"
+        },
+        "story_core": {
+          "spine": "送错不是终点，是两个人突然被推到同一边、不得不临时组队的起点",
+          "discourse_mode": "narrative",
+          "mode_rationale": "话题明确指向‘今天最意外的一件小事’，且用户指定讲亲身经历，叙事最自然承载‘送错—发现—共谋补救’这一生活化时间流",
+          "tone_mode": "conversational",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作认真+生活化反差：把补救过程当正经协作项目来复盘，实则全是小尴尬和临时起意",
+          "core_struggle": "当‘我搞砸了’遇上‘你也没想到会这样’，谁先松口，关系就往哪边倒",
+          "supporting_points": [
+            "对方没骂人，只是盯着小票念‘青椒肉丝…可我点的是鱼香肉丝’，声音越轻，我越想递糖",
+            "我们蹲在楼道口用手机查同一家店还有没有鱼香肉丝，结果发现老板正骑着电动车往这边赶——他比我们更急"
+          ],
+          "twist": "最后不是我赔钱、也不是他退单，而是三个人站在单元门口，分吃了一盒刚炒好的青椒肉丝，他尝了口说：‘其实…也挺香’",
+          "central_contrast": "系统认定的‘错误订单’，在人和人面对面的三分钟里，自动切换成了‘共同任务’",
+          "emotional_undercurrent": "从心虚僵硬→试探松动→同步笑场",
+          "story_beats": [
+            "建立主轴：不是讲‘怎么送错’，而是讲‘门开之后，空气变了’",
+            "用两人蹲楼道查外卖、老板杀到两个细节推进，不跳转场景或加新角色",
+            "收束于那句‘其实…也挺香’——不升华，只定格这个微小但真实的立场偏移"
+          ],
+          "punchline_seeds": [
+            "错误不是需要修正的bug，是系统突然给的组队邀请函"
+          ],
+          "hook_angle": "‘你们有没有过那种时刻——门一开，你俩同时低头看手机，不是在查单，是在找台阶下？’"
+        }
+      },
+      "metrics": {
+        "discourse_mode": "narrative",
+        "prompt_version": "persona-analyst-v5-tone-depth",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      }
+    },
+    {
+      "id": "unit_plan",
+      "label": "节目分段",
+      "status": "completed",
+      "duration_ms": 0.1,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "requested_unit_count": 3,
+        "story_beats": [
+          "建立主轴：不是讲‘怎么送错’，而是讲‘门开之后，空气变了’",
+          "用两人蹲楼道查外卖、老板杀到两个细节推进，不跳转场景或加新角色",
+          "收束于那句‘其实…也挺香’——不升华，只定格这个微小但真实的立场偏移"
+        ],
+        "spine": "送错不是终点，是两个人突然被推到同一边、不得不临时组队的起点",
+        "supporting_points": [
+          "对方没骂人，只是盯着小票念‘青椒肉丝…可我点的是鱼香肉丝’，声音越轻，我越想递糖",
+          "我们蹲在楼道口用手机查同一家店还有没有鱼香肉丝，结果发现老板正骑着电动车往这边赶——他比我们更急"
+        ],
+        "emotional_undercurrent": "从心虚僵硬→试探松动→同步笑场"
+      },
+      "metrics": {
+        "unit_count": 3
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        }
+      ]
+    },
+    {
+      "id": "script_writer",
+      "label": "剧本生成",
+      "status": "completed",
+      "duration_ms": 19642.7,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 19641.8,
+        "prompt_chars": 2678,
+        "avg_prompt_chars": 2678.0,
+        "max_prompt_chars": 2678,
+        "response_chars": 1538,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 2678,
+            "prompt_sha256": "673787dcca819f51",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1538,
+            "duration_ms": 19641.8
+          }
+        ]
+      },
+      "input": {
+        "rich_persona": {
+          "identity": "刚转行送外卖的前奶茶店员，手机壳还贴着‘芋圆波波’贴纸",
+          "belief": "只要把餐送到门上，责任就自动清零了",
+          "flaw": "一看到顾客开门时皱眉，就下意识把头盔往下拉遮半张脸",
+          "verbal_tics": [
+            "哎哟喂——",
+            "不是说好…吗？",
+            "结果你猜怎么着",
+            "我当场就…（停顿半秒）算了"
+          ],
+          "situational_weaknesses": [
+            "一遇到电梯里和顾客撞见就假装看手机通知",
+            "一听到‘您这单送错了’就立刻掏保温袋翻小票",
+            "一发现对方比自己还慌，反而开始帮人找补"
+          ],
+          "contrast_hook": "她嘴上说‘送错不怪我，系统派单它没长眼’，可保温袋里还揣着两颗没拆封的糖，是怕人家等太久饿着",
+          "life_anchors": [
+            "手机壳上的‘芋圆波波’贴纸",
+            "保温袋侧袋里总塞着两颗独立包装的薄荷糖"
+          ],
+          "title_hook": "送错外卖后，我和陌生人一起演了场补救默剧",
+          "visual_anchor": "直播时右手无意识捻着保温袋侧袋边缘，像在确认那两颗糖还在不在"
+        },
+        "story_core": {
+          "spine": "送错不是终点，是两个人突然被推到同一边、不得不临时组队的起点",
+          "discourse_mode": "narrative",
+          "mode_rationale": "话题明确指向‘今天最意外的一件小事’，且用户指定讲亲身经历，叙事最自然承载‘送错—发现—共谋补救’这一生活化时间流",
+          "tone_mode": "conversational",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作认真+生活化反差：把补救过程当正经协作项目来复盘，实则全是小尴尬和临时起意",
+          "core_struggle": "当‘我搞砸了’遇上‘你也没想到会这样’，谁先松口，关系就往哪边倒",
+          "supporting_points": [
+            "对方没骂人，只是盯着小票念‘青椒肉丝…可我点的是鱼香肉丝’，声音越轻，我越想递糖",
+            "我们蹲在楼道口用手机查同一家店还有没有鱼香肉丝，结果发现老板正骑着电动车往这边赶——他比我们更急"
+          ],
+          "twist": "最后不是我赔钱、也不是他退单，而是三个人站在单元门口，分吃了一盒刚炒好的青椒肉丝，他尝了口说：‘其实…也挺香’",
+          "central_contrast": "系统认定的‘错误订单’，在人和人面对面的三分钟里，自动切换成了‘共同任务’",
+          "emotional_undercurrent": "从心虚僵硬→试探松动→同步笑场",
+          "story_beats": [
+            "建立主轴：不是讲‘怎么送错’，而是讲‘门开之后，空气变了’",
+            "用两人蹲楼道查外卖、老板杀到两个细节推进，不跳转场景或加新角色",
+            "收束于那句‘其实…也挺香’——不升华，只定格这个微小但真实的立场偏移"
+          ],
+          "punchline_seeds": [
+            "错误不是需要修正的bug，是系统突然给的组队邀请函"
+          ],
+          "hook_angle": "‘你们有没有过那种时刻——门一开，你俩同时低头看手机，不是在查单，是在找台阶下？’"
+        },
+        "unit_skeleton": [
+          {
+            "index": 0,
+            "time_window": [
+              0,
+              75
+            ],
+            "acoustic": {
+              "pitch_rate": 1.1,
+              "speech_rate": 1.1,
+              "volume": 60
+            },
+            "axis": null,
+            "density": "high",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 1,
+            "time_window": [
+              75,
+              150
+            ],
+            "acoustic": {
+              "pitch_rate": 0.99,
+              "speech_rate": 0.99,
+              "volume": 54
+            },
+            "axis": null,
+            "density": "medium",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 2,
+            "time_window": [
+              150,
+              225
+            ],
+            "acoustic": {
+              "pitch_rate": 0.88,
+              "speech_rate": 0.88,
+              "volume": 48
+            },
+            "axis": null,
+            "density": "low",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          }
+        ],
+        "few_shot_count": 0,
+        "few_shot_ids": [],
+        "retrieval_seed": 1095816437,
+        "dossier": null,
+        "tuning_guidance_ids": []
+      },
+      "metrics": {
+        "few_shot_count": 0,
+        "few_shot_ids": [],
+        "retrieval_seed": 1095816437,
+        "unit_count": 3,
+        "line_count": 9,
+        "spine": "送错不是终点，是两个人突然被推到同一边、不得不临时组队的起点",
+        "supporting_point_count": 2,
+        "quality_gate_retried": false,
+        "quality_gate_sanitized": false,
+        "quality_gate_passed": true,
+        "quality_gate_first_issues": [],
+        "quality_gate_retry_issues": [],
+        "quality_gate_first_issue_details": [],
+        "quality_gate_retry_issue_details": [],
+        "quality_gate_post_sanitize_issues": [],
+        "quality_gate_post_sanitize_issue_details": [],
+        "prompt_version": "script-writer-v6-compact-anti-leak",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "哎哟喂——你们有没有过那种时刻：门一开，你俩同时低头看手机，不是在查单，是在找台阶下？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "我昨天送错单，开门那秒，手已经摸到保温袋侧袋了——里头两颗薄荷糖，还没拆封，就等着递出去挡尴尬呢。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "结果你猜怎么着？他没骂人，就盯着小票念：‘青椒肉丝……可我点的是鱼香肉丝。’声音越轻，我头盔往下拉得越狠。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "用开门瞬间的微妙僵持建立主轴：错误不是故障，是关系突然被推到同一侧的起点",
+          "spine_link": "以‘门一开，俩人同时低头看手机’切入，锚定‘心虚→同步找台阶’的情绪暗线，带出保温袋里的薄荷糖和手机壳贴纸两个有来源的生活锚点，不解释、不评判，只呈现动作与反差"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "不是说好‘送错不怪我，系统派单它没长眼’吗？结果我俩真就蹲在楼道口，拿手机查同一家店还有没有鱼香肉丝……",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "我当场就……算了，反正手指已经点开外卖APP了，他手机壳上还贴着‘芋圆波波’——跟我一模一样，刚转行那会儿舍不得撕。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "结果老板比我们更急，电动车‘吱’一下停在单元门口，保温箱一掀：‘鱼香肉丝炒糊了半勺，青椒肉丝多炒了一份——先吃这个！’",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "呈现‘共谋补救’的具体动作：蹲楼道查单、老板骑车杀到，用生活化细节落实‘临时组队’这一主轴",
+          "spine_link": "把补救过程当正经协作项目来复盘，实则全是小尴尬和临时起意；两人蹲着、手机光打在脸上、老板比我们还急——错误在此刻自动切换成共同任务"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "最后不是我赔钱，也不是他退单，是我们仨站在单元门口，分吃了一盒刚炒好的青椒肉丝。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "他尝了口，顿了半秒，说：‘其实……也挺香。’",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.6,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "哎哟喂，那一刻我才想起来——我头盔还挂在胳膊上，糖也没递出去。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "收束于立场偏移的微小瞬间，不升华，只定格真实感受：错误未被修正，但关系已悄然重置",
+          "spine_link": "用‘其实…也挺香’这句原生反馈完成主轴闭环——系统认定的错误订单，在三人分食的三分钟里，完成了从‘我的失误’到‘我们的晚饭’的自然滑动"
+        }
+      ]
+    },
+    {
+      "id": "postprocess",
+      "label": "后处理",
+      "status": "completed",
+      "duration_ms": 0.3,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "line_count": 9
+      },
+      "metrics": {
+        "line_count": 9,
+        "planted_gags": [
+          "芋圆波波"
+        ],
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "哎哟喂——你们有没有过那种时刻：门一开，你俩同时低头看手机，不是在查单，是在找台阶下？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "我昨天送错单，开门那秒，手已经摸到保温袋侧袋了——里头两颗薄荷糖，还没拆封，就等着递出去挡尴尬呢。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "结果你猜怎么着？他没骂人，就盯着小票念：‘青椒肉丝……可我点的是鱼香肉丝。’声音越轻，我头盔往下拉得越狠。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "用开门瞬间的微妙僵持建立主轴：错误不是故障，是关系突然被推到同一侧的起点",
+          "spine_link": "以‘门一开，俩人同时低头看手机’切入，锚定‘心虚→同步找台阶’的情绪暗线，带出保温袋里的薄荷糖和手机壳贴纸两个有来源的生活锚点，不解释、不评判，只呈现动作与反差"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "不是说好‘送错不怪我，系统派单它没长眼’吗？结果我俩真就蹲在楼道口，拿手机查同一家店还有没有鱼香肉丝……",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "我当场就……算了，反正手指已经点开外卖APP了，他手机壳上还贴着‘芋圆波波’——跟我一模一样，刚转行那会儿舍不得撕。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "结果老板比我们更急，电动车‘吱’一下停在单元门口，保温箱一掀：‘鱼香肉丝炒糊了半勺，青椒肉丝多炒了一份——先吃这个！’",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "呈现‘共谋补救’的具体动作：蹲楼道查单、老板骑车杀到，用生活化细节落实‘临时组队’这一主轴",
+          "spine_link": "把补救过程当正经协作项目来复盘，实则全是小尴尬和临时起意；两人蹲着、手机光打在脸上、老板比我们还急——错误在此刻自动切换成共同任务"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "最后不是我赔钱，也不是他退单，是我们仨站在单元门口，分吃了一盒刚炒好的青椒肉丝。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "他尝了口，顿了半秒，说：‘其实……也挺香。’",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.6,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "哎哟喂，那一刻我才想起来——我头盔还挂在胳膊上，糖也没递出去。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "收束于立场偏移的微小瞬间，不升华，只定格真实感受：错误未被修正，但关系已悄然重置",
+          "spine_link": "用‘其实…也挺香’这句原生反馈完成主轴闭环——系统认定的错误订单，在三人分食的三分钟里，完成了从‘我的失误’到‘我们的晚饭’的自然滑动"
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 0.1,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "script_line_count": 9,
+        "mode": "planned_script_only",
+        "max_steps": 0
+      },
+      "metrics": {
+        "text_chars": 415,
+        "line_count": 9,
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "text": "哎哟喂——你们有没有过那种时刻：门一开，你俩同时低头看手机，不是在查单，是在找台阶下？\n我昨天送错单，开门那秒，手已经摸到保温袋侧袋了——里头两颗薄荷糖，还没拆封，就等着递出去挡尴尬呢。\n结果你猜怎么着？他没骂人，就盯着小票念：‘青椒肉丝……可我点的是鱼香肉丝。’声音越轻，我头盔往下拉得越狠。\n不是说好‘送错不怪我，系统派单它没长眼’吗？结果我俩真就蹲在楼道口，拿手机查同一家店还有没有鱼香肉丝……\n我当场就……算了，反正手指已经点开外卖APP了，他手机壳上还贴着‘芋圆波波’——跟我一模一样，刚转行那会儿舍不得撕。\n结果老板比我们更急，电动车‘吱’一下停在单元门口，保温箱一掀：‘鱼香肉丝炒糊了半勺，青椒肉丝多炒了一份——先吃这个！’\n最后不是我赔钱，也不是他退单，是我们仨站在单元门口，分吃了一盒刚炒好的青椒肉丝。\n他尝了口，顿了半秒，说：‘其实……也挺香。’\n哎哟喂，那一刻我才想起来——我头盔还挂在胳膊上，糖也没递出去。"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "completed",
+      "duration_ms": 72282.7,
+      "audio_bytes": 5217116,
+      "text_chars": 415,
+      "input": {
+        "text_chars": 415
+      },
+      "metrics": {
+        "duration_ms": 72282.7,
+        "audio_bytes": 5217116,
+        "text_chars": 415
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 1,
+        "duration_ms": 72282.7,
+        "failed_calls": 0
+      },
+      "output": {
+        "audio_path": "/Users/cory/Desktop/nextjs-vtuber-mocap/echuu-agent/echuu/eval/runs/wrong_takeout__r01/refactor_no_dossier/audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "wrong_takeout",
+    "split": "unspecified",
+    "retrieval_seed": 1095816437,
+    "generation_seed": 2026082702,
+    "story_pipeline": "refactor",
+    "enable_dossier": false,
+    "retrieval_allowed_pool_size": 3,
+    "retrieval_exclude_ids": [
+      "wrong_takeout"
+    ],
+    "tuning_guidance_ids": []
+  }
+}

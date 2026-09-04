@@ -1,0 +1,14 @@
+{
+  "fixture_id": "wrong_takeout__r01",
+  "source_fixture_id": "wrong_takeout",
+  "variant": "refactor_no_dossier",
+  "repeat": 1,
+  "evaluation_split": "unspecified",
+  "retrieval_seed": 1095816437,
+  "generation_seed": 2026082702,
+  "retrieval_allowed_pool_size": 3,
+  "generated_at_utc": "2026-08-27T04:20:33.024386+00:00",
+  "eval_repeats": 1,
+  "model": "claude-sonnet-4-20250514",
+  "llm_provider": ""
+}

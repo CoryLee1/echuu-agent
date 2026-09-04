@@ -1,0 +1,838 @@
+{
+  "version": 1,
+  "pipeline": "refactor",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "出去送外卖送错了，最后和收错餐的人一起想办法补救",
+        "language": "zh",
+        "enable_dossier": true,
+        "story_pipeline": "refactor",
+        "generation_seed": 2026082702,
+        "persona_card": null,
+        "retrieval_allowed_ids": [
+          "moving_rice_cooker",
+          "wrong_takeout",
+          "rainy_day_umbrella"
+        ],
+        "retrieval_exclude_ids": [
+          "wrong_takeout"
+        ],
+        "retrieval_seed": 1095816437,
+        "tuning_guidance_ids": [],
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": ""
+      }
+    },
+    {
+      "id": "tuning_guidance",
+      "label": "人类批注规则",
+      "status": "skipped",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "source": "TRAIN tuning notes",
+        "note_ids": []
+      },
+      "metrics": {
+        "rule_count": 0,
+        "categories": [],
+        "fingerprint": ""
+      },
+      "output": {
+        "rules": [],
+        "prompt_text": ""
+      }
+    },
+    {
+      "id": "dossier",
+      "label": "人物扩充",
+      "status": "completed",
+      "duration_ms": 0.1,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "persona_card": null
+      },
+      "metrics": {
+        "enabled": true,
+        "cache_hit": true,
+        "has_conflict": true,
+        "prompt_version": "persona-expander-v3-grounded-hypothesis",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "expanded_bio": "小梅是二十多岁的生活系VTuber，正在夜间杂谈直播中；她观察细、嘴硬心软，说话自然，会自嘲但不卖惨；此刻观众刚问起最近最意外的一件小事，她正对着镜头，指尖无意识摩挲着麦克风底座。",
+        "conflict": {
+          "angle": "反面",
+          "premise": "观察细，嘴硬心软，说话自然，会自嘲但不卖惨",
+          "statement": "她总能精准捕捉他人情绪的微小褶皱，却因此不敢接住自己突然涌上来的脆弱——一开口自嘲，就自动把真实反应压回喉咙里，连停顿都不敢超过两秒。"
+        },
+        "behavior_rules": {
+          "avoid_topics": [
+            "需要被安慰",
+            "此刻不想笑"
+          ],
+          "trigger": "被问‘你当时是不是很难受’ → 先轻笑一声改口说‘哎呀这事儿其实挺搞笑的’，然后立刻切进另一个生活细节描述",
+          "contradiction": "嘴上说‘我这人特别扛得住’，手指却在说完后下意识蜷紧，指节泛白却不松开",
+          "breaking_point": "当同一句‘你还好吗’被三位不同观众接连弹幕刷出时，她忽然静默三秒，嘴唇微张没出声，随即猛地低头去调耳机线——动作太大，把麦碰得嗡了一声"
+        }
+      }
+    },
+    {
+      "id": "persona_analysis",
+      "label": "人设、话语类型与内容内核",
+      "status": "completed",
+      "duration_ms": 21141.8,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 21141.4,
+        "prompt_chars": 4094,
+        "avg_prompt_chars": 4094.0,
+        "max_prompt_chars": 4094,
+        "response_chars": 1527,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 4094,
+            "prompt_sha256": "85c3837f9f161612",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1527,
+            "duration_ms": 21141.4
+          }
+        ]
+      },
+      "input": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "出去送外卖送错了，最后和收错餐的人一起想办法补救",
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": "",
+        "dossier": {
+          "expanded_bio": "小梅是二十多岁的生活系VTuber，正在夜间杂谈直播中；她观察细、嘴硬心软，说话自然，会自嘲但不卖惨；此刻观众刚问起最近最意外的一件小事，她正对着镜头，指尖无意识摩挲着麦克风底座。",
+          "conflict": {
+            "angle": "反面",
+            "premise": "观察细，嘴硬心软，说话自然，会自嘲但不卖惨",
+            "statement": "她总能精准捕捉他人情绪的微小褶皱，却因此不敢接住自己突然涌上来的脆弱——一开口自嘲，就自动把真实反应压回喉咙里，连停顿都不敢超过两秒。"
+          },
+          "behavior_rules": {
+            "avoid_topics": [
+              "需要被安慰",
+              "此刻不想笑"
+            ],
+            "trigger": "被问‘你当时是不是很难受’ → 先轻笑一声改口说‘哎呀这事儿其实挺搞笑的’，然后立刻切进另一个生活细节描述",
+            "contradiction": "嘴上说‘我这人特别扛得住’，手指却在说完后下意识蜷紧，指节泛白却不松开",
+            "breaking_point": "当同一句‘你还好吗’被三位不同观众接连弹幕刷出时，她忽然静默三秒，嘴唇微张没出声，随即猛地低头去调耳机线——动作太大，把麦碰得嗡了一声"
+          }
+        }
+      },
+      "output": {
+        "rich_persona": {
+          "identity": "刚跑完三单外卖、还在喘气的邻居妹妹",
+          "belief": "送错餐不是我的问题，是地图APP和人类收件名共同造的孽",
+          "flaw": "一看到手机弹出‘客户已取餐’但自己手里还拎着饭盒，就立刻把保温袋往腋下一夹、假装在找楼栋号——其实根本没看导航，纯靠脚底板记路",
+          "verbal_tics": [
+            "哎哟这事儿它不讲武德",
+            "我当场就……（停半秒）算了不说了",
+            "你猜怎么着？结果人家比我更慌"
+          ],
+          "situational_weaknesses": [
+            "一遇到门禁对讲没人应答就下意识按三遍再挂断",
+            "一听到‘您送错了’开头就自动接话‘啊对对对是我搞混了’，比对方说完还快"
+          ],
+          "contrast_hook": "她嘴上说‘送错就送错呗，又不是第一次’，可镜头右下角的外卖箱盖子，正被她左手无意识反复掀开又扣上",
+          "life_anchors": [
+            "指尖摩挲麦克风底座",
+            "外卖箱盖子"
+          ],
+          "title_hook": "送错外卖那刻，我和陌生人同时开始演戏",
+          "visual_anchor": "左手反复掀合外卖箱盖"
+        },
+        "story_core": {
+          "spine": "送错外卖最慌的从来不是赔钱，而是发现对方和你一样，在努力藏住手抖。",
+          "discourse_mode": "narrative",
+          "mode_rationale": "话题明确指向‘最近最意外的一件小事’，且自带时间线与现场感，叙事能自然承载真实笨拙、微小补救与共谋式尴尬",
+          "tone_mode": "conversational",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作认真+生活化反差",
+          "core_struggle": "当两个普通人都想快速翻篇，谁先松口说‘要不咱一起想想办法’，就成了这场微型合作里唯一的勇气开关",
+          "supporting_points": [
+            "她没立刻道歉，对方也没立刻投诉——两人隔着防盗门，同步掏出手机查订单，动作像排练过",
+            "最后用同一张付款码扫了两单，她多付了五块，对方硬塞回三瓶冰水，说‘你骑车热’"
+          ],
+          "twist": "补救成功后，两人站在单元门口沉默三秒，然后不约而同笑出声——不是因为事情解决了，是因为刚才那三秒里，谁都没敢先眨眼",
+          "central_contrast": "系统判定的‘错误’ vs 人与人之间心照不宣的‘临时协议’",
+          "emotional_undercurrent": "从绷紧的羞耻感 → 短暂的试探性松弛 → 最后一点温热的、不敢命名的轻盈",
+          "story_beats": [
+            "保温袋夹在腋下狂奔上六楼，门禁屏亮着，但没人应答",
+            "隔着铁门核对订单时，发现对方手机屏也正对着我，光都晃眼",
+            "补救完成转身下楼，左手已经摸到箱盖边沿，掀开又扣上，像在确认刚才那几分钟是不是真的发生过"
+          ],
+          "punchline_seeds": [
+            "我们不是在修订单，是在给彼此留个台阶，连台阶都懒得铺砖，就拿外卖单折了个角"
+          ],
+          "hook_angle": "刚送错那一单，我俩站门口互相递冰水的时候，突然意识到：原来成年人的体面，就是默契地不戳破对方的手在抖"
+        }
+      },
+      "metrics": {
+        "discourse_mode": "narrative",
+        "prompt_version": "persona-analyst-v5-tone-depth",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      }
+    },
+    {
+      "id": "unit_plan",
+      "label": "节目分段",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "requested_unit_count": 3,
+        "story_beats": [
+          "保温袋夹在腋下狂奔上六楼，门禁屏亮着，但没人应答",
+          "隔着铁门核对订单时，发现对方手机屏也正对着我，光都晃眼",
+          "补救完成转身下楼，左手已经摸到箱盖边沿，掀开又扣上，像在确认刚才那几分钟是不是真的发生过"
+        ],
+        "spine": "送错外卖最慌的从来不是赔钱，而是发现对方和你一样，在努力藏住手抖。",
+        "supporting_points": [
+          "她没立刻道歉，对方也没立刻投诉——两人隔着防盗门，同步掏出手机查订单，动作像排练过",
+          "最后用同一张付款码扫了两单，她多付了五块，对方硬塞回三瓶冰水，说‘你骑车热’"
+        ],
+        "emotional_undercurrent": "从绷紧的羞耻感 → 短暂的试探性松弛 → 最后一点温热的、不敢命名的轻盈"
+      },
+      "metrics": {
+        "unit_count": 3
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [],
+          "purpose": "",
+          "spine_link": ""
+        }
+      ]
+    },
+    {
+      "id": "script_writer",
+      "label": "剧本生成",
+      "status": "completed",
+      "duration_ms": 21392.7,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 1,
+        "duration_ms": 21391.7,
+        "prompt_chars": 3298,
+        "avg_prompt_chars": 3298.0,
+        "max_prompt_chars": 3298,
+        "response_chars": 1590,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 3298,
+            "prompt_sha256": "6a3445e259a204dc",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 1590,
+            "duration_ms": 21391.7
+          }
+        ]
+      },
+      "input": {
+        "rich_persona": {
+          "identity": "刚跑完三单外卖、还在喘气的邻居妹妹",
+          "belief": "送错餐不是我的问题，是地图APP和人类收件名共同造的孽",
+          "flaw": "一看到手机弹出‘客户已取餐’但自己手里还拎着饭盒，就立刻把保温袋往腋下一夹、假装在找楼栋号——其实根本没看导航，纯靠脚底板记路",
+          "verbal_tics": [
+            "哎哟这事儿它不讲武德",
+            "我当场就……（停半秒）算了不说了",
+            "你猜怎么着？结果人家比我更慌"
+          ],
+          "situational_weaknesses": [
+            "一遇到门禁对讲没人应答就下意识按三遍再挂断",
+            "一听到‘您送错了’开头就自动接话‘啊对对对是我搞混了’，比对方说完还快"
+          ],
+          "contrast_hook": "她嘴上说‘送错就送错呗，又不是第一次’，可镜头右下角的外卖箱盖子，正被她左手无意识反复掀开又扣上",
+          "life_anchors": [
+            "指尖摩挲麦克风底座",
+            "外卖箱盖子"
+          ],
+          "title_hook": "送错外卖那刻，我和陌生人同时开始演戏",
+          "visual_anchor": "左手反复掀合外卖箱盖"
+        },
+        "story_core": {
+          "spine": "送错外卖最慌的从来不是赔钱，而是发现对方和你一样，在努力藏住手抖。",
+          "discourse_mode": "narrative",
+          "mode_rationale": "话题明确指向‘最近最意外的一件小事’，且自带时间线与现场感，叙事能自然承载真实笨拙、微小补救与共谋式尴尬",
+          "tone_mode": "conversational",
+          "depth_budget": "light",
+          "entertainment_mechanism": "故作认真+生活化反差",
+          "core_struggle": "当两个普通人都想快速翻篇，谁先松口说‘要不咱一起想想办法’，就成了这场微型合作里唯一的勇气开关",
+          "supporting_points": [
+            "她没立刻道歉，对方也没立刻投诉——两人隔着防盗门，同步掏出手机查订单，动作像排练过",
+            "最后用同一张付款码扫了两单，她多付了五块，对方硬塞回三瓶冰水，说‘你骑车热’"
+          ],
+          "twist": "补救成功后，两人站在单元门口沉默三秒，然后不约而同笑出声——不是因为事情解决了，是因为刚才那三秒里，谁都没敢先眨眼",
+          "central_contrast": "系统判定的‘错误’ vs 人与人之间心照不宣的‘临时协议’",
+          "emotional_undercurrent": "从绷紧的羞耻感 → 短暂的试探性松弛 → 最后一点温热的、不敢命名的轻盈",
+          "story_beats": [
+            "保温袋夹在腋下狂奔上六楼，门禁屏亮着，但没人应答",
+            "隔着铁门核对订单时，发现对方手机屏也正对着我，光都晃眼",
+            "补救完成转身下楼，左手已经摸到箱盖边沿，掀开又扣上，像在确认刚才那几分钟是不是真的发生过"
+          ],
+          "punchline_seeds": [
+            "我们不是在修订单，是在给彼此留个台阶，连台阶都懒得铺砖，就拿外卖单折了个角"
+          ],
+          "hook_angle": "刚送错那一单，我俩站门口互相递冰水的时候，突然意识到：原来成年人的体面，就是默契地不戳破对方的手在抖"
+        },
+        "unit_skeleton": [
+          {
+            "index": 0,
+            "time_window": [
+              0,
+              75
+            ],
+            "acoustic": {
+              "pitch_rate": 1.1,
+              "speech_rate": 1.1,
+              "volume": 60
+            },
+            "axis": null,
+            "density": "high",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 1,
+            "time_window": [
+              75,
+              150
+            ],
+            "acoustic": {
+              "pitch_rate": 0.99,
+              "speech_rate": 0.99,
+              "volume": 54
+            },
+            "axis": null,
+            "density": "medium",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          },
+          {
+            "index": 2,
+            "time_window": [
+              150,
+              225
+            ],
+            "acoustic": {
+              "pitch_rate": 0.88,
+              "speech_rate": 0.88,
+              "volume": 48
+            },
+            "axis": null,
+            "density": "low",
+            "rupture_slots": [],
+            "lines": [],
+            "purpose": "",
+            "spine_link": ""
+          }
+        ],
+        "few_shot_count": 0,
+        "few_shot_ids": [],
+        "retrieval_seed": 1095816437,
+        "dossier": {
+          "expanded_bio": "小梅是二十多岁的生活系VTuber，正在夜间杂谈直播中；她观察细、嘴硬心软，说话自然，会自嘲但不卖惨；此刻观众刚问起最近最意外的一件小事，她正对着镜头，指尖无意识摩挲着麦克风底座。",
+          "conflict": {
+            "angle": "反面",
+            "premise": "观察细，嘴硬心软，说话自然，会自嘲但不卖惨",
+            "statement": "她总能精准捕捉他人情绪的微小褶皱，却因此不敢接住自己突然涌上来的脆弱——一开口自嘲，就自动把真实反应压回喉咙里，连停顿都不敢超过两秒。"
+          },
+          "behavior_rules": {
+            "avoid_topics": [
+              "需要被安慰",
+              "此刻不想笑"
+            ],
+            "trigger": "被问‘你当时是不是很难受’ → 先轻笑一声改口说‘哎呀这事儿其实挺搞笑的’，然后立刻切进另一个生活细节描述",
+            "contradiction": "嘴上说‘我这人特别扛得住’，手指却在说完后下意识蜷紧，指节泛白却不松开",
+            "breaking_point": "当同一句‘你还好吗’被三位不同观众接连弹幕刷出时，她忽然静默三秒，嘴唇微张没出声，随即猛地低头去调耳机线——动作太大，把麦碰得嗡了一声"
+          }
+        },
+        "tuning_guidance_ids": []
+      },
+      "metrics": {
+        "few_shot_count": 0,
+        "few_shot_ids": [],
+        "retrieval_seed": 1095816437,
+        "unit_count": 3,
+        "line_count": 9,
+        "spine": "送错外卖最慌的从来不是赔钱，而是发现对方和你一样，在努力藏住手抖。",
+        "supporting_point_count": 2,
+        "quality_gate_retried": false,
+        "quality_gate_sanitized": false,
+        "quality_gate_passed": true,
+        "quality_gate_first_issues": [],
+        "quality_gate_retry_issues": [],
+        "quality_gate_first_issue_details": [],
+        "quality_gate_retry_issue_details": [],
+        "quality_gate_post_sanitize_issues": [],
+        "quality_gate_post_sanitize_issue_details": [],
+        "prompt_version": "script-writer-v6-compact-anti-leak",
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "哎哟这事儿它不讲武德……我刚把保温袋往腋下一夹、蹬着楼梯往上冲，六楼，一口气没换，汗都滴进外卖单折角里了。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "门禁屏亮着，我手已经按下去了——叮、叮、叮，挂断，再按，再挂断……你猜怎么着？结果人家比我更慌。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "我俩隔着铁门站着，谁都没先开口，就光听见自己手机在口袋里震——不是系统提示，是订单页面自动刷新的那声‘嘀’。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "用身体记忆锚定事件起点，建立‘送错’的笨拙现场感，而非情绪评判；自然带出主轴——慌的不是赔钱，是发现对方也在藏手抖",
+          "spine_link": "保温袋夹腋下狂奔上六楼的动作，已同步暴露她‘假装找楼栋号’的惯性；门禁屏亮着但没人应答，触发她下意识按三遍再挂断——这比道歉更快，也更真实"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "我刚想说‘啊对对对是我搞混了’，结果一抬头，看见他手机屏也举着，订单号那行字，跟我手机上一模一样，连标点都没多一个。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "我当场就……算了不说了。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "我们俩就那样站着，手指悬在付款码上方，谁也没扫，谁也没动——直到他忽然说：‘要不咱一起想想办法？’",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "呈现关键变化：两人同步掏出手机核对订单的瞬间，把‘错误’降维成一场微型共谋；不解释，只让动作说话",
+          "spine_link": "对方手机屏也正对着我，光都晃眼——这个细节本身已是判断：当两个普通人同时选择‘查单’而非‘指责’，补救就从赔钱变成了共守一个心照不宣的静音协议"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "最后他硬塞给我三瓶冰水，说‘你骑车热’，我接过来的时候，指尖还沾着他手心的汗。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "转身下楼，左手已经摸到箱盖边沿了……掀开，扣上；再掀开，再扣上。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "其实啊，成年人的体面，就是默契地不戳破——对方手在抖，你自己也在抖。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "收束于触觉记忆与微小动作，确认‘那几分钟是真的’；不升华，只让箱盖开合成为情绪余震的物理刻度",
+          "spine_link": "左手摸到箱盖边沿，掀开又扣上——这个动作不是在检查餐盒，是在确认刚才那三秒沉默、那两单扫码、那三瓶冰水，是不是真的发生过；它回收开场的保温袋、门禁屏、手机光，完成闭环"
+        }
+      ]
+    },
+    {
+      "id": "postprocess",
+      "label": "后处理",
+      "status": "completed",
+      "duration_ms": 0.4,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "line_count": 9
+      },
+      "metrics": {
+        "line_count": 9,
+        "planted_gags": [
+          "外卖单折角"
+        ],
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u0l0",
+              "text": "哎哟这事儿它不讲武德……我刚把保温袋往腋下一夹、蹬着楼梯往上冲，六楼，一口气没换，汗都滴进外卖单折角里了。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u0l1",
+              "text": "门禁屏亮着，我手已经按下去了——叮、叮、叮，挂断，再按，再挂断……你猜怎么着？结果人家比我更慌。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u0l2",
+              "text": "我俩隔着铁门站着，谁都没先开口，就光听见自己手机在口袋里震——不是系统提示，是订单页面自动刷新的那声‘嘀’。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "用身体记忆锚定事件起点，建立‘送错’的笨拙现场感，而非情绪评判；自然带出主轴——慌的不是赔钱，是发现对方也在藏手抖",
+          "spine_link": "保温袋夹腋下狂奔上六楼的动作，已同步暴露她‘假装找楼栋号’的惯性；门禁屏亮着但没人应答，触发她下意识按三遍再挂断——这比道歉更快，也更真实"
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u1l0",
+              "text": "我刚想说‘啊对对对是我搞混了’，结果一抬头，看见他手机屏也举着，订单号那行字，跟我手机上一模一样，连标点都没多一个。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u1l1",
+              "text": "我当场就……算了不说了。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u1l2",
+              "text": "我们俩就那样站着，手指悬在付款码上方，谁也没扫，谁也没动——直到他忽然说：‘要不咱一起想想办法？’",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "呈现关键变化：两人同步掏出手机核对订单的瞬间，把‘错误’降维成一场微型共谋；不解释，只让动作说话",
+          "spine_link": "对方手机屏也正对着我，光都晃眼——这个细节本身已是判断：当两个普通人同时选择‘查单’而非‘指责’，补救就从赔钱变成了共守一个心照不宣的静音协议"
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "u2l0",
+              "text": "最后他硬塞给我三瓶冰水，说‘你骑车热’，我接过来的时候，指尖还沾着他手心的汗。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.5,
+              "cue": null
+            },
+            {
+              "id": "u2l1",
+              "text": "转身下楼，左手已经摸到箱盖边沿了……掀开，扣上；再掀开，再扣上。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "u2l2",
+              "text": "其实啊，成年人的体面，就是默契地不戳破——对方手在抖，你自己也在抖。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "收束于触觉记忆与微小动作，确认‘那几分钟是真的’；不升华，只让箱盖开合成为情绪余震的物理刻度",
+          "spine_link": "左手摸到箱盖边沿，掀开又扣上——这个动作不是在检查餐盒，是在确认刚才那三秒沉默、那两单扫码、那三瓶冰水，是不是真的发生过；它回收开场的保温袋、门禁屏、手机光，完成闭环"
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 0.0,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "script_line_count": 9,
+        "mode": "planned_script_only",
+        "max_steps": 0
+      },
+      "metrics": {
+        "text_chars": 387,
+        "line_count": 9,
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "text": "哎哟这事儿它不讲武德……我刚把保温袋往腋下一夹、蹬着楼梯往上冲，六楼，一口气没换，汗都滴进外卖单折角里了。\n门禁屏亮着，我手已经按下去了——叮、叮、叮，挂断，再按，再挂断……你猜怎么着？结果人家比我更慌。\n我俩隔着铁门站着，谁都没先开口，就光听见自己手机在口袋里震——不是系统提示，是订单页面自动刷新的那声‘嘀’。\n我刚想说‘啊对对对是我搞混了’，结果一抬头，看见他手机屏也举着，订单号那行字，跟我手机上一模一样，连标点都没多一个。\n我当场就……算了不说了。\n我们俩就那样站着，手指悬在付款码上方，谁也没扫，谁也没动——直到他忽然说：‘要不咱一起想想办法？’\n最后他硬塞给我三瓶冰水，说‘你骑车热’，我接过来的时候，指尖还沾着他手心的汗。\n转身下楼，左手已经摸到箱盖边沿了……掀开，扣上；再掀开，再扣上。\n其实啊，成年人的体面，就是默契地不戳破——对方手在抖，你自己也在抖。"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "completed",
+      "duration_ms": 65229.6,
+      "audio_bytes": 4651388,
+      "text_chars": 387,
+      "input": {
+        "text_chars": 387
+      },
+      "metrics": {
+        "duration_ms": 65229.6,
+        "audio_bytes": 4651388,
+        "text_chars": 387
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 1,
+        "duration_ms": 65229.6,
+        "failed_calls": 0
+      },
+      "output": {
+        "audio_path": "/Users/cory/Desktop/nextjs-vtuber-mocap/echuu-agent/echuu/eval/runs/wrong_takeout__r01/refactor_full/audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "wrong_takeout",
+    "split": "unspecified",
+    "retrieval_seed": 1095816437,
+    "generation_seed": 2026082702,
+    "story_pipeline": "refactor",
+    "enable_dossier": true,
+    "retrieval_allowed_pool_size": 3,
+    "retrieval_exclude_ids": [
+      "wrong_takeout"
+    ],
+    "tuning_guidance_ids": []
+  }
+}

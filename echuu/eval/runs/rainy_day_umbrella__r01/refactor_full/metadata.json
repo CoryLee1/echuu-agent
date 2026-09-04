@@ -1,0 +1,14 @@
+{
+  "fixture_id": "rainy_day_umbrella__r01",
+  "source_fixture_id": "rainy_day_umbrella",
+  "variant": "refactor_full",
+  "repeat": 1,
+  "evaluation_split": "unspecified",
+  "retrieval_seed": 4240565859,
+  "generation_seed": 2026082703,
+  "retrieval_allowed_pool_size": 3,
+  "generated_at_utc": "2026-08-27T06:34:18.114659+00:00",
+  "eval_repeats": 1,
+  "model": "claude-sonnet-4-20250514",
+  "llm_provider": ""
+}

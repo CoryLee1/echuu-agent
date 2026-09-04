@@ -1,0 +1,332 @@
+{
+  "version": 1,
+  "pipeline": "legacy_v4",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "出去送外卖送错了，最后和收错餐的人一起想办法补救",
+        "language": "zh",
+        "enable_dossier": false,
+        "story_pipeline": "legacy_v4",
+        "generation_seed": 2026082702,
+        "persona_card": null,
+        "retrieval_allowed_ids": [
+          "moving_rice_cooker",
+          "wrong_takeout",
+          "rainy_day_umbrella"
+        ],
+        "retrieval_exclude_ids": [
+          "wrong_takeout"
+        ],
+        "retrieval_seed": 1095816437,
+        "tuning_guidance_ids": [],
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": ""
+      }
+    },
+    {
+      "id": "tuning_guidance",
+      "label": "人类批注规则",
+      "status": "skipped",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "source": "TRAIN tuning notes",
+        "note_ids": []
+      },
+      "metrics": {
+        "rule_count": 0,
+        "categories": [],
+        "fingerprint": ""
+      },
+      "output": {
+        "rules": [],
+        "prompt_text": ""
+      }
+    },
+    {
+      "id": "legacy_v4_generation",
+      "label": "Legacy V4 故事生成",
+      "status": "degraded",
+      "duration_ms": 42812.3,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 2,
+        "duration_ms": 42808.9,
+        "prompt_chars": 5133,
+        "avg_prompt_chars": 2566.5,
+        "max_prompt_chars": 4938,
+        "response_chars": 3218,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 195,
+            "prompt_sha256": "e79433498f7720d6",
+            "max_tokens": 200,
+            "status": "completed",
+            "response_chars": 85,
+            "duration_ms": 3194.4
+          },
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 4938,
+            "prompt_sha256": "0424c55372677cb9",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 3133,
+            "duration_ms": 39614.5
+          }
+        ]
+      },
+      "input": {
+        "seed": 2026082702,
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "出去送外卖送错了，最后和收错餐的人一起想办法补救"
+      },
+      "metrics": {
+        "seed": 2026082702,
+        "line_count": 9,
+        "unit_count": 3,
+        "safety_issue_count": 9,
+        "safety_issues": [
+          "unsupported_number:一秒",
+          "unsupported_number:两份",
+          "unsupported_number:一个",
+          "unsupported_number:一份",
+          "unsupported_number:两个",
+          "unsupported_number:三分钟",
+          "unsupported_number:四十秒",
+          "unsupported_number:五分钟",
+          "unsupported_number:一次"
+        ],
+        "dossier_enabled": false
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_0",
+              "text": "刚刚弹幕说‘送错外卖’，让我想起……哎不是，真不是我想讲，是刚才擦泡面酱包的时候手一滑，酱汁甩到键盘缝里了——就那一会儿，脑子‘啪’一下切进去年暴雨天，我拎着一阵子黄焖鸡在单元门口狂按电梯，鞋子里全是水，袜子吸饱了，走一步‘咕叽’一声……我到现在都不懂，为啥那会儿心跳快得像要报警。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_1",
+              "text": "其实就俩单：A栋702，B栋702。我瞄了一眼地址截图，又瞄了眼手机定位——当时雨太大，屏幕全是水雾，我拿袖子擦，结果把‘B’字擦糊了，只剩个‘702’……然后我就冲进A栋，按门铃，一些穿睡袍的男生开门，头发还滴水，手里攥着半截没拆的湿纸巾，说‘我没点黄焖鸡啊’，我嘴比脑子快：‘哦…可能系统派错了，您先吃，我赔’——说完我就转身跑，连伞都没撑。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_2",
+              "text": "但问题来了——我跑下楼才发现，自己手抖着把另一阵子也塞进他家门缝了！不是递过去，是‘嗖’一下从猫眼底下塞进去，像投毒……我站在雨里，手指头还在抖，脑子里一些声音：‘你完了小梅，这人以为你跟踪他’，另一些说‘他刚洗完澡，你塞饭像塞赎身券’……我当场想打110自首，但110接线员应该不受理‘外卖式社死’。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_3",
+              "text": "结果他微信加我了。头像是一只瘫着的柴犬，昵称叫‘被投喂的流浪汉’。我点开对话框，光标闪了一会儿，打出‘对不起我搞错了’，删掉；‘您能退我一阵子吗’，删掉；最后发了个‘🙏（双手合十）’，发完立刻关掉微信——身体记忆就是那一刻后颈发凉，耳根烫得像刚蒸过桑拿，连泡面汤都喝不下去，光盯着锅里咕嘟冒泡。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "line_4",
+              "text": "他回得超快：‘没事，我室友刚失恋，正需要这份黄焖鸡配啤酒。你地址给我，我让楼下便利店小哥顺路给你带瓶可乐压惊...那时候我住郊区那边，就是那个楼下有便利店的，楼下每天早上六点就有人在叫卖，租金多少来着...几百块？反正比现在便宜多了...对说回出去送外卖送错了，最后和收错餐的人一起想办法补救。’……我盯着这句话看了一会儿，不是感动，是懵——怎么有人收到错误外卖第一反应不是骂人，而是考虑我需不需要可乐？我甚至怀疑他是不是AI训练出来的反向客服，专门治我这种人间故障体。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.35,
+              "cue": null
+            },
+            {
+              "id": "line_5",
+              "text": "后来我们蹲在便利店门口分装调料包，他掏出一包腰果，说‘补给你的精神损失费’，我伸手去接，结果手心全是汗，腰果全掉地上了……他蹲下来捡，我也蹲，一些人头差点撞一起，他忽然笑出声：‘你紧张的样子，好像我偷了你户口本。’——我当场愣住，不是因为这话，是因为他说话时睫毛在路灯下颤了一下，像蝴蝶翅膀，我居然记得这么清楚……这算什么？善意触发PTSD？",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.45,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_6",
+              "text": "对了，那天汇率多少来着？七块多？现在日元才四块八……诶我说到哪了？哦对，腰果。他后来真把腰果重新装进小纸袋，还画了个歪歪扭扭的笑脸，我回家打开，发现里面夹了张便签：‘下次别塞猫眼，塞我微信就行。P.S. 黄焖鸡很好吃，就是米饭太软。’——我对着那张纸盯了一会儿，不是因为害羞，是第几次意识到：原来别人的好意，可以轻得像一粒盐，但我非把它当炸弹拆。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            },
+            {
+              "id": "line_7",
+              "text": "所以这事一直卡在我脑子里，不是因为多浪漫，是它太反常了——我帮人修过路由器、借过充电宝、甚至替邻居收过快递，但从来没几次，让对方觉得‘这人需要被温柔接住’。而那天，我只是送错了一阵子外卖，却被人用可乐和腰果，轻轻托住了我所有摇晃的尴尬……我好像……真的不太会接收善意。就像现在，我边搅泡面边说这个，手还在抖。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.35,
+              "cue": null
+            },
+            {
+              "id": "line_8",
+              "text": "弹幕问‘后来呢’？后来我真加他微信了，但他再没点过外卖……倒是我，上周自己点了黄焖鸡，特意备注‘不要米饭，只要腰果’，结果商家回我：‘亲，腰果不在套餐里哦～’……我盯着那条消息笑了一会儿，笑完又有点想哭，又觉得自己傻。就这样，我看弹幕——SC有人问泡面酱包怎么洗？等我擦完键盘再说。我本来还想说什么来着...算了想不起来了",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 0.1,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "script_line_count": 9,
+        "mode": "planned_script_only",
+        "max_steps": 0
+      },
+      "metrics": {
+        "text_chars": 1514,
+        "line_count": 9,
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "text": "刚刚弹幕说‘送错外卖’，让我想起……哎不是，真不是我想讲，是刚才擦泡面酱包的时候手一滑，酱汁甩到键盘缝里了——就那一会儿，脑子‘啪’一下切进去年暴雨天，我拎着一阵子黄焖鸡在单元门口狂按电梯，鞋子里全是水，袜子吸饱了，走一步‘咕叽’一声……我到现在都不懂，为啥那会儿心跳快得像要报警。\n其实就俩单：A栋702，B栋702。我瞄了一眼地址截图，又瞄了眼手机定位——当时雨太大，屏幕全是水雾，我拿袖子擦，结果把‘B’字擦糊了，只剩个‘702’……然后我就冲进A栋，按门铃，一些穿睡袍的男生开门，头发还滴水，手里攥着半截没拆的湿纸巾，说‘我没点黄焖鸡啊’，我嘴比脑子快：‘哦…可能系统派错了，您先吃，我赔’——说完我就转身跑，连伞都没撑。\n但问题来了——我跑下楼才发现，自己手抖着把另一阵子也塞进他家门缝了！不是递过去，是‘嗖’一下从猫眼底下塞进去，像投毒……我站在雨里，手指头还在抖，脑子里一些声音：‘你完了小梅，这人以为你跟踪他’，另一些说‘他刚洗完澡，你塞饭像塞赎身券’……我当场想打110自首，但110接线员应该不受理‘外卖式社死’。\n结果他微信加我了。头像是一只瘫着的柴犬，昵称叫‘被投喂的流浪汉’。我点开对话框，光标闪了一会儿，打出‘对不起我搞错了’，删掉；‘您能退我一阵子吗’，删掉；最后发了个‘🙏（双手合十）’，发完立刻关掉微信——身体记忆就是那一刻后颈发凉，耳根烫得像刚蒸过桑拿，连泡面汤都喝不下去，光盯着锅里咕嘟冒泡。\n他回得超快：‘没事，我室友刚失恋，正需要这份黄焖鸡配啤酒。你地址给我，我让楼下便利店小哥顺路给你带瓶可乐压惊...那时候我住郊区那边，就是那个楼下有便利店的，楼下每天早上六点就有人在叫卖，租金多少来着...几百块？反正比现在便宜多了...对说回出去送外卖送错了，最后和收错餐的人一起想办法补救。’……我盯着这句话看了一会儿，不是感动，是懵——怎么有人收到错误外卖第一反应不是骂人，而是考虑我需不需要可乐？我甚至怀疑他是不是AI训练出来的反向客服，专门治我这种人间故障体。\n后来我们蹲在便利店门口分装调料包，他掏出一包腰果，说‘补给你的精神损失费’，我伸手去接，结果手心全是汗，腰果全掉地上了……他蹲下来捡，我也蹲，一些人头差点撞一起，他忽然笑出声：‘你紧张的样子，好像我偷了你户口本。’——我当场愣住，不是因为这话，是因为他说话时睫毛在路灯下颤了一下，像蝴蝶翅膀，我居然记得这么清楚……这算什么？善意触发PTSD？\n对了，那天汇率多少来着？七块多？现在日元才四块八……诶我说到哪了？哦对，腰果。他后来真把腰果重新装进小纸袋，还画了个歪歪扭扭的笑脸，我回家打开，发现里面夹了张便签：‘下次别塞猫眼，塞我微信就行。P.S. 黄焖鸡很好吃，就是米饭太软。’——我对着那张纸盯了一会儿，不是因为害羞，是第几次意识到：原来别人的好意，可以轻得像一粒盐，但我非把它当炸弹拆。\n所以这事一直卡在我脑子里，不是因为多浪漫，是它太反常了——我帮人修过路由器、借过充电宝、甚至替邻居收过快递，但从来没几次，让对方觉得‘这人需要被温柔接住’。而那天，我只是送错了一阵子外卖，却被人用可乐和腰果，轻轻托住了我所有摇晃的尴尬……我好像……真的不太会接收善意。就像现在，我边搅泡面边说这个，手还在抖。\n弹幕问‘后来呢’？后来我真加他微信了，但他再没点过外卖……倒是我，上周自己点了黄焖鸡，特意备注‘不要米饭，只要腰果’，结果商家回我：‘亲，腰果不在套餐里哦～’……我盯着那条消息笑了一会儿，笑完又有点想哭，又觉得自己傻。就这样，我看弹幕——SC有人问泡面酱包怎么洗？等我擦完键盘再说。我本来还想说什么来着...算了想不起来了"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "completed",
+      "duration_ms": 311610.9,
+      "audio_bytes": 18338972,
+      "text_chars": 1514,
+      "input": {
+        "text_chars": 1514
+      },
+      "metrics": {
+        "duration_ms": 311610.9,
+        "audio_bytes": 18338972,
+        "text_chars": 1514
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 1,
+        "duration_ms": 311610.9,
+        "failed_calls": 0
+      },
+      "output": {
+        "audio_path": "/Users/cory/Desktop/nextjs-vtuber-mocap/echuu-agent/echuu/eval/runs/wrong_takeout__r01/legacy_v4/audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "wrong_takeout",
+    "split": "unspecified",
+    "retrieval_seed": 1095816437,
+    "generation_seed": 2026082702,
+    "story_pipeline": "legacy_v4",
+    "enable_dossier": false,
+    "retrieval_allowed_pool_size": 3,
+    "retrieval_exclude_ids": [
+      "wrong_takeout"
+    ],
+    "tuning_guidance_ids": []
+  }
+}

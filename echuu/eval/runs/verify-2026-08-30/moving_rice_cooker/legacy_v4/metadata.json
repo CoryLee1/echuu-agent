@@ -1,0 +1,13 @@
+{
+  "fixture_id": "moving_rice_cooker",
+  "source_fixture_id": "moving_rice_cooker",
+  "variant": "legacy_v4",
+  "repeat": 1,
+  "evaluation_split": "unspecified",
+  "retrieval_seed": 2527184555,
+  "generation_seed": 2026082701,
+  "retrieval_allowed_pool_size": null,
+  "generated_at_utc": "2026-08-29T17:11:06.238190+00:00",
+  "purpose": "verify-2026-08-30",
+  "text_only": true
+}

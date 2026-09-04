@@ -1,0 +1,320 @@
+{
+  "version": 1,
+  "pipeline": "legacy_v4",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "下雨天把伞借给陌生人，第二天在门口收到一张手写纸条",
+        "language": "zh",
+        "enable_dossier": false,
+        "story_pipeline": "legacy_v4",
+        "generation_seed": 2026082703,
+        "persona_card": null,
+        "retrieval_allowed_ids": null,
+        "retrieval_exclude_ids": [
+          "rainy_day_umbrella"
+        ],
+        "retrieval_seed": 4240565859,
+        "tuning_guidance_ids": [],
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": ""
+      }
+    },
+    {
+      "id": "tuning_guidance",
+      "label": "人类批注规则",
+      "status": "skipped",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "source": "TRAIN tuning notes",
+        "note_ids": []
+      },
+      "metrics": {
+        "rule_count": 0,
+        "categories": [],
+        "fingerprint": ""
+      },
+      "output": {
+        "rules": [],
+        "prompt_text": ""
+      }
+    },
+    {
+      "id": "legacy_v4_generation",
+      "label": "Legacy V4 故事生成",
+      "status": "completed",
+      "duration_ms": 36569.6,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 2,
+        "duration_ms": 36567.0,
+        "prompt_chars": 5127,
+        "avg_prompt_chars": 2563.5,
+        "max_prompt_chars": 4932,
+        "response_chars": 2833,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 195,
+            "prompt_sha256": "d04a47176af6a088",
+            "max_tokens": 200,
+            "status": "completed",
+            "response_chars": 85,
+            "duration_ms": 3173.4
+          },
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 4932,
+            "prompt_sha256": "6afe6f0b26d2be77",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 2748,
+            "duration_ms": 33393.6
+          }
+        ]
+      },
+      "input": {
+        "seed": 2026082703,
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "下雨天把伞借给陌生人，第二天在门口收到一张手写纸条"
+      },
+      "metrics": {
+        "seed": 2026082703,
+        "line_count": 9,
+        "unit_count": 3,
+        "safety_issue_count": 0,
+        "safety_issues": [],
+        "dossier_enabled": false
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_0",
+              "text": "困了困了...但是我突然想起一个事必须跟你们说！真不是我爱叨叨，是刚才摸晾衣绳上那件没干透的衬衫，潮气蹭手背那一秒——哎哟，跟那天伞柄沾的雨气一模一样，脑子‘啪’就亮了，不讲出来今晚肯定睡不着。",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_1",
+              "text": "你们猜怎么着？去年梅雨季，我穿着那件洗到发灰的蓝衬衫赶地铁，包里还塞着三份没改完的小学教案——对，就是那个‘想当老师’的我。结果刚出站，...说到吃的，那时候常吃食堂，打折的时候买的，十块不到——跑题了，正说的这茬雨直接砸下来，我撑开伞，转头看见个穿校服的小孩蹲在便利店檐下，书包带子都湿透了，头发贴在额头上，像只淋懵的麻雀。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_2",
+              "text": "我本来真没打算借。真没打算！我连伞骨都锈了两根，伞面还有块补丁——上次修伞师傅说我这伞‘再撑三次就得进博物馆’。可那小孩抬头看我一眼，我就……手比脑子快，把伞塞他手里了。自己一头扎进雨里，头发当场吸饱水，沉得脖子发酸。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_3",
+              "text": "第二天早上开门，门口有张折成小方块的纸，边角还沾着点泥印。我拆开一看，字歪歪扭扭像蚯蚓爬：‘谢谢姐姐，伞还你啦～’底下画了个笑哭脸，右下角用铅笔戳了三个小点，估计是怕我认不出是谁写的。我盯着那三个点看了半分钟，手指头不自觉抠门框，木屑都蹭进指甲缝里了。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_4",
+              "text": "诶我说到哪了？哦对，那三个点——我后来才反应过来，是他校服左胸口袋上别着的三颗纽扣，我昨天扶他拎书包时瞥见的。所以那不是随便戳的，是……是认出我了。我站在门口，手还捏着纸条，脚后跟踩着门槛缝，凉风从裤管灌进来，整个人愣那儿，像被按了暂停键。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_5",
+              "text": "但其实吧……我根本不喜欢小孩。真的。不是讨厌，是那种——看见他们跑跳我就下意识绷肩膀，听人喊‘老师好’我喉咙发紧，改作文看到‘我妈妈说’开头就想划掉重写。可那天我把伞递出去的时候，心里居然没想‘啊这孩子真烦’，就光想着：伞柄有点滑，得帮他攥紧点。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_6",
+              "text": "正说的这茬——我后来翻过教案本，发现那天下雨前一页，我还用红笔圈了句‘儿童心理发展关键期’，旁边批注：‘需高度共情与稳定情绪输出’。结果呢？我连自己伞都舍不得借，却把伞柄上那点温热汗渍，糊糊地、糊糊地全留给他了。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_7",
+              "text": "我跟你们说，现在每次下雨，我包里一定塞把伞。不是为我自己——是怕哪天又碰见个头发贴额头的小孩。但我也绝不主动问‘你家在哪’，更不会加家长微信。就……把伞递过去，转身就走。因为那张纸条我没回，也没留联系方式，就让它停在‘谢谢姐姐’那儿，刚刚好。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_8",
+              "text": "刚才那事想起来，我顺手把衬衫挂回晾衣绳了——湿的那面朝外。弹幕说‘小梅你衣服反着挂’？嗯……可能吧。反正它干得慢点，我就能多想一会儿那三个铅笔点。差不多就这样吧",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 1.6,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "script_line_count": 9,
+        "mode": "planned_script_only",
+        "max_steps": 0
+      },
+      "metrics": {
+        "text_chars": 1053,
+        "line_count": 9,
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "text": "困了困了...但是我突然想起一个事必须跟你们说！真不是我爱叨叨，是刚才摸晾衣绳上那件没干透的衬衫，潮气蹭手背那一秒——哎哟，跟那天伞柄沾的雨气一模一样，脑子‘啪’就亮了，不讲出来今晚肯定睡不着。\n你们猜怎么着？去年梅雨季，我穿着那件洗到发灰的蓝衬衫赶地铁，包里还塞着三份没改完的小学教案——对，就是那个‘想当老师’的我。结果刚出站，...说到吃的，那时候常吃食堂，打折的时候买的，十块不到——跑题了，正说的这茬雨直接砸下来，我撑开伞，转头看见个穿校服的小孩蹲在便利店檐下，书包带子都湿透了，头发贴在额头上，像只淋懵的麻雀。\n我本来真没打算借。真没打算！我连伞骨都锈了两根，伞面还有块补丁——上次修伞师傅说我这伞‘再撑三次就得进博物馆’。可那小孩抬头看我一眼，我就……手比脑子快，把伞塞他手里了。自己一头扎进雨里，头发当场吸饱水，沉得脖子发酸。\n第二天早上开门，门口有张折成小方块的纸，边角还沾着点泥印。我拆开一看，字歪歪扭扭像蚯蚓爬：‘谢谢姐姐，伞还你啦～’底下画了个笑哭脸，右下角用铅笔戳了三个小点，估计是怕我认不出是谁写的。我盯着那三个点看了半分钟，手指头不自觉抠门框，木屑都蹭进指甲缝里了。\n诶我说到哪了？哦对，那三个点——我后来才反应过来，是他校服左胸口袋上别着的三颗纽扣，我昨天扶他拎书包时瞥见的。所以那不是随便戳的，是……是认出我了。我站在门口，手还捏着纸条，脚后跟踩着门槛缝，凉风从裤管灌进来，整个人愣那儿，像被按了暂停键。\n但其实吧……我根本不喜欢小孩。真的。不是讨厌，是那种——看见他们跑跳我就下意识绷肩膀，听人喊‘老师好’我喉咙发紧，改作文看到‘我妈妈说’开头就想划掉重写。可那天我把伞递出去的时候，心里居然没想‘啊这孩子真烦’，就光想着：伞柄有点滑，得帮他攥紧点。\n正说的这茬——我后来翻过教案本，发现那天下雨前一页，我还用红笔圈了句‘儿童心理发展关键期’，旁边批注：‘需高度共情与稳定情绪输出’。结果呢？我连自己伞都舍不得借，却把伞柄上那点温热汗渍，糊糊地、糊糊地全留给他了。\n我跟你们说，现在每次下雨，我包里一定塞把伞。不是为我自己——是怕哪天又碰见个头发贴额头的小孩。但我也绝不主动问‘你家在哪’，更不会加家长微信。就……把伞递过去，转身就走。因为那张纸条我没回，也没留联系方式，就让它停在‘谢谢姐姐’那儿，刚刚好。\n刚才那事想起来，我顺手把衬衫挂回晾衣绳了——湿的那面朝外。弹幕说‘小梅你衣服反着挂’？嗯……可能吧。反正它干得慢点，我就能多想一会儿那三个铅笔点。差不多就这样吧"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "degraded",
+      "duration_ms": 0,
+      "audio_bytes": 0,
+      "text_chars": 1053,
+      "skipped": true,
+      "input": {
+        "text_chars": 1053
+      },
+      "metrics": {
+        "duration_ms": 0,
+        "audio_bytes": 0,
+        "text_chars": 1053,
+        "skipped": true
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 0,
+        "duration_ms": 0,
+        "failed_calls": 0
+      },
+      "output": {
+        "audio_path": "/Users/cory/Desktop/nextjs-vtuber-mocap/echuu-agent/echuu/eval/runs/verify-2026-08-30-v2/rainy_day_umbrella/legacy_v4/audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "rainy_day_umbrella",
+    "split": "unspecified",
+    "retrieval_seed": 4240565859,
+    "generation_seed": 2026082703,
+    "story_pipeline": "legacy_v4",
+    "enable_dossier": false,
+    "retrieval_allowed_pool_size": null,
+    "retrieval_exclude_ids": [
+      "rainy_day_umbrella"
+    ],
+    "tuning_guidance_ids": []
+  }
+}

@@ -1,0 +1,312 @@
+{
+  "version": 1,
+  "pipeline": "legacy_v4",
+  "stages": [
+    {
+      "id": "input",
+      "label": "输入",
+      "status": "completed",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "output": {
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "出去送外卖送错了，最后和收错餐的人一起想办法补救",
+        "language": "zh",
+        "enable_dossier": false,
+        "story_pipeline": "legacy_v4",
+        "generation_seed": 2026082702,
+        "persona_card": null,
+        "retrieval_allowed_ids": null,
+        "retrieval_exclude_ids": [
+          "wrong_takeout"
+        ],
+        "retrieval_seed": 1095816437,
+        "tuning_guidance_ids": [],
+        "tone_intent": "auto",
+        "depth_budget": "auto",
+        "entertainment_mechanism": ""
+      }
+    },
+    {
+      "id": "tuning_guidance",
+      "label": "人类批注规则",
+      "status": "skipped",
+      "duration_ms": 0,
+      "ai": {
+        "uses_ai": false,
+        "call_count": 0
+      },
+      "input": {
+        "source": "TRAIN tuning notes",
+        "note_ids": []
+      },
+      "metrics": {
+        "rule_count": 0,
+        "categories": [],
+        "fingerprint": ""
+      },
+      "output": {
+        "rules": [],
+        "prompt_text": ""
+      }
+    },
+    {
+      "id": "legacy_v4_generation",
+      "label": "Legacy V4 故事生成",
+      "status": "completed",
+      "duration_ms": 36395.1,
+      "ai": {
+        "uses_ai": true,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 2,
+        "duration_ms": 36393.0,
+        "prompt_chars": 5144,
+        "avg_prompt_chars": 2572.0,
+        "max_prompt_chars": 4949,
+        "response_chars": 2751,
+        "failed_calls": 0,
+        "calls": [
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 195,
+            "prompt_sha256": "e79433498f7720d6",
+            "max_tokens": 200,
+            "status": "completed",
+            "response_chars": 96,
+            "duration_ms": 3333.2
+          },
+          {
+            "provider": "QwenClient",
+            "model": "qwen-plus",
+            "prompt_chars": 4949,
+            "prompt_sha256": "405f25b3168a6ec0",
+            "max_tokens": 8000,
+            "status": "completed",
+            "response_chars": 2655,
+            "duration_ms": 33059.8
+          }
+        ]
+      },
+      "input": {
+        "seed": 2026082702,
+        "name": "小梅",
+        "persona": "二十多岁的生活系VTuber，观察细，嘴硬心软，说话自然，会自嘲但不卖惨；只围绕本期主题讲亲身经历，不套固定动物比喻。",
+        "background": "正在夜间杂谈直播，观众刚问起最近最意外的一件小事。",
+        "topic": "出去送外卖送错了，最后和收错餐的人一起想办法补救"
+      },
+      "metrics": {
+        "seed": 2026082702,
+        "line_count": 8,
+        "unit_count": 3,
+        "safety_issue_count": 0,
+        "safety_issues": [],
+        "dossier_enabled": false
+      },
+      "output": [
+        {
+          "index": 0,
+          "time_window": [
+            0,
+            75
+          ],
+          "acoustic": {
+            "pitch_rate": 1.1,
+            "speech_rate": 1.1,
+            "volume": 60
+          },
+          "axis": null,
+          "density": "high",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_0",
+              "text": "刚刚弹幕说‘送错外卖还被夸’，让我想起……哎，我到现在都不懂，为什么那天我手抖得像刚考完驾照，把一份酸辣粉送到隔壁楼302，结果人家开门笑得特别亮，还递给我半根香蕉——我就盯着那根香蕉，脑子直接死机：这不该是投诉电话开场白吗？怎么变成水果社交现场了？",
+              "stage": "hook",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_1",
+              "text": "那时候暴雨砸窗，我骑着小电驴在积水里打滑，头盔镜片全是雾，导航还卡在‘请重新规划’——结果我鬼使神差拐进老小区后门，连电梯都锈得吱呀响。302门一开，是个穿蓝拖鞋的阿姨，头发卷着没干的水汽，手里还拎着刚收的湿衣服……我张嘴就喊‘您点的酸辣粉！’，说完自己先愣住：她根本没点单啊。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_2",
+              "text": "我脑子里三台戏同时演：左边说‘快道歉快跑’，右边喊‘她会不会报警说诈骗’，中间那个小人蹲地上啃指甲——然后阿姨突然说‘哎哟，我闺女刚打电话说饿了，正想点呢！’……我当场瞳孔地震，手里的保温袋‘啪’掉地上，酱汁顺着塑料袋缝漏出来，像条绝望的小蚯蚓。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 1,
+          "time_window": [
+            75,
+            150
+          ],
+          "acoustic": {
+            "pitch_rate": 0.99,
+            "speech_rate": 0.99,
+            "volume": 54
+          },
+          "axis": null,
+          "density": "medium",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_3",
+              "text": "身体还记得——左手无名指一直抠着保温袋提手，直到勒出红印；右手悬在半空，想接香蕉又不敢抬高，怕袖口滴水弄湿她家地板……最后我接过那半根香蕉，凉的，皮上还有水珠，咬一口居然甜得发慌。不是香蕉甜，是我喉咙突然堵住，眼眶发热，但绝对不是感动，就是……生理性的、莫名其妙的羞耻过载。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_4",
+              "text": "阿姨转身回屋喊‘闺女！快出来看送错外卖的小姑娘！’——我听见拖鞋啪嗒啪嗒跑过来，然后一个扎马尾的女生探头，举着手机录像，边拍边笑：‘妈你别吓人家...那时候我住郊区那边，就是那个楼下有便利店的，楼下每天早上六点就有人在叫卖，租金多少来着...几百块？反正比现在便宜多了...对说回出去送外卖送错了，最后和收错餐的人一起想办法补救！’……我站在门口，脚跟发软，心想：完了，这下真成社区吉祥物了。可更怪的是，我居然没逃，反而掏出手机问：‘要不……我再跑一趟给您俩补份双人套餐？’",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_5",
+              "text": "严重跑题一下——你们知道老小区那种铁皮信箱吗？锈得能刮下红粉，我小时候总偷看里面有没有我的信，其实根本没人给我写信，就爱听钥匙捅锁孔的‘咔哒’声……那天阿姨家楼道也有个，我补餐回来路过，鬼使神差摸了下，冰凉，还掉渣。那一刻我突然觉得，好像所有偶然都长着毛茸茸的边儿，包括我漏酱的泡面盒。",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.4,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        },
+        {
+          "index": 2,
+          "time_window": [
+            150,
+            225
+          ],
+          "acoustic": {
+            "pitch_rate": 0.88,
+            "speech_rate": 0.88,
+            "volume": 48
+          },
+          "axis": null,
+          "density": "low",
+          "rupture_slots": [],
+          "lines": [
+            {
+              "id": "line_6",
+              "text": "后来我们仨蹲在楼道口分酸辣粉，她闺女非说要加醋，阿姨抢着拌，我搅汤搅得手腕发酸……雨停了，路灯亮起来，照见三双不同款式的拖鞋。我低头看自己左脚袜子破了个洞，右脚没破——就那一秒，我突然意识到：我这辈子都没这么笨拙地被接纳过。不是被原谅，是被当成‘顺路来坐坐的人’。",
+              "stage": "pad",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            },
+            {
+              "id": "line_7",
+              "text": "现在想起来还是脸热……不是因为丢人，是那种‘我好像不太会接住善意’的感觉太鲜明了。别人递来半根香蕉，我第一反应是检查自己有没有违规，而不是尝一口。就像现在，我擦着泡面酱包，还在想：那天要是没漏酱，是不是就错过那盏灯了？……算了，不说了，SC有人问酸辣粉哪家的。我本来还想说什么来着...算了想不起来了",
+              "stage": "turn",
+              "is_rupture": false,
+              "interruption_cost": 0.3,
+              "cue": null
+            }
+          ],
+          "purpose": "",
+          "spine_link": ""
+        }
+      ]
+    },
+    {
+      "id": "runtime_output",
+      "label": "运行输出",
+      "status": "completed",
+      "duration_ms": 4.6,
+      "ai": {
+        "uses_ai": false,
+        "provider": "QwenClient",
+        "model": "qwen-plus",
+        "call_count": 0,
+        "duration_ms": 0,
+        "prompt_chars": 0,
+        "avg_prompt_chars": 0,
+        "max_prompt_chars": 0,
+        "response_chars": 0,
+        "failed_calls": 0,
+        "calls": []
+      },
+      "input": {
+        "script_line_count": 8,
+        "mode": "planned_script_only",
+        "max_steps": 0
+      },
+      "metrics": {
+        "text_chars": 1193,
+        "line_count": 8,
+        "prompt_leak_detected": false,
+        "prompt_leak_markers": []
+      },
+      "output": {
+        "text": "刚刚弹幕说‘送错外卖还被夸’，让我想起……哎，我到现在都不懂，为什么那天我手抖得像刚考完驾照，把一份酸辣粉送到隔壁楼302，结果人家开门笑得特别亮，还递给我半根香蕉——我就盯着那根香蕉，脑子直接死机：这不该是投诉电话开场白吗？怎么变成水果社交现场了？\n那时候暴雨砸窗，我骑着小电驴在积水里打滑，头盔镜片全是雾，导航还卡在‘请重新规划’——结果我鬼使神差拐进老小区后门，连电梯都锈得吱呀响。302门一开，是个穿蓝拖鞋的阿姨，头发卷着没干的水汽，手里还拎着刚收的湿衣服……我张嘴就喊‘您点的酸辣粉！’，说完自己先愣住：她根本没点单啊。\n我脑子里三台戏同时演：左边说‘快道歉快跑’，右边喊‘她会不会报警说诈骗’，中间那个小人蹲地上啃指甲——然后阿姨突然说‘哎哟，我闺女刚打电话说饿了，正想点呢！’……我当场瞳孔地震，手里的保温袋‘啪’掉地上，酱汁顺着塑料袋缝漏出来，像条绝望的小蚯蚓。\n身体还记得——左手无名指一直抠着保温袋提手，直到勒出红印；右手悬在半空，想接香蕉又不敢抬高，怕袖口滴水弄湿她家地板……最后我接过那半根香蕉，凉的，皮上还有水珠，咬一口居然甜得发慌。不是香蕉甜，是我喉咙突然堵住，眼眶发热，但绝对不是感动，就是……生理性的、莫名其妙的羞耻过载。\n阿姨转身回屋喊‘闺女！快出来看送错外卖的小姑娘！’——我听见拖鞋啪嗒啪嗒跑过来，然后一个扎马尾的女生探头，举着手机录像，边拍边笑：‘妈你别吓人家...那时候我住郊区那边，就是那个楼下有便利店的，楼下每天早上六点就有人在叫卖，租金多少来着...几百块？反正比现在便宜多了...对说回出去送外卖送错了，最后和收错餐的人一起想办法补救！’……我站在门口，脚跟发软，心想：完了，这下真成社区吉祥物了。可更怪的是，我居然没逃，反而掏出手机问：‘要不……我再跑一趟给您俩补份双人套餐？’\n严重跑题一下——你们知道老小区那种铁皮信箱吗？锈得能刮下红粉，我小时候总偷看里面有没有我的信，其实根本没人给我写信，就爱听钥匙捅锁孔的‘咔哒’声……那天阿姨家楼道也有个，我补餐回来路过，鬼使神差摸了下，冰凉，还掉渣。那一刻我突然觉得，好像所有偶然都长着毛茸茸的边儿，包括我漏酱的泡面盒。\n后来我们仨蹲在楼道口分酸辣粉，她闺女非说要加醋，阿姨抢着拌，我搅汤搅得手腕发酸……雨停了，路灯亮起来，照见三双不同款式的拖鞋。我低头看自己左脚袜子破了个洞，右脚没破——就那一秒，我突然意识到：我这辈子都没这么笨拙地被接纳过。不是被原谅，是被当成‘顺路来坐坐的人’。\n现在想起来还是脸热……不是因为丢人，是那种‘我好像不太会接住善意’的感觉太鲜明了。别人递来半根香蕉，我第一反应是检查自己有没有违规，而不是尝一口。就像现在，我擦着泡面酱包，还在想：那天要是没漏酱，是不是就错过那盏灯了？……算了，不说了，SC有人问酸辣粉哪家的。我本来还想说什么来着...算了想不起来了"
+      }
+    },
+    {
+      "id": "tts",
+      "label": "语音合成",
+      "status": "degraded",
+      "duration_ms": 0,
+      "audio_bytes": 0,
+      "text_chars": 1193,
+      "skipped": true,
+      "input": {
+        "text_chars": 1193
+      },
+      "metrics": {
+        "duration_ms": 0,
+        "audio_bytes": 0,
+        "text_chars": 1193,
+        "skipped": true
+      },
+      "ai": {
+        "uses_ai": true,
+        "provider": "DashScope",
+        "model": "qwen3-tts-flash-realtime",
+        "call_count": 0,
+        "duration_ms": 0,
+        "failed_calls": 0
+      },
+      "output": {
+        "audio_path": "/Users/cory/Desktop/nextjs-vtuber-mocap/echuu-agent/echuu/eval/runs/verify-2026-08-30/wrong_takeout/legacy_v4/audio.wav"
+      }
+    }
+  ],
+  "evaluation_context": {
+    "source_fixture_id": "wrong_takeout",
+    "split": "unspecified",
+    "retrieval_seed": 1095816437,
+    "generation_seed": 2026082702,
+    "story_pipeline": "legacy_v4",
+    "enable_dossier": false,
+    "retrieval_allowed_pool_size": null,
+    "retrieval_exclude_ids": [
+      "wrong_takeout"
+    ],
+    "tuning_guidance_ids": []
+  }
+}
