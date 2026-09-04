@@ -371,6 +371,29 @@ async def get_public_diary(session_id: str, db: Session = Depends(get_db)):
     return compose_diary(session)
 
 
+@router.get("/diaries/{session_id}/replay")
+async def get_public_diary_replay(session_id: str, db: Session = Depends(get_db)):
+    """公开场次的重演数据：日记摘要 + timeline 事件（含可播放的 audio_url）。"""
+    try:
+        from ..services.diary import compose_diary, is_public_diary
+        from ..services.replay import load_replay_timeline
+    except ImportError:
+        from services.diary import compose_diary, is_public_diary
+        from services.replay import load_replay_timeline
+
+    session = db.query(LiveSession).filter(LiveSession.session_id == session_id).first()
+    if not session or not is_public_diary(session.session_metadata):
+        raise HTTPException(status_code=404, detail="日记不存在或未公开")
+    timeline = load_replay_timeline(session)
+    if not timeline:
+        raise HTTPException(status_code=404, detail="这场直播还没有可重演的记录")
+    return {
+        "session_id": session.session_id,
+        "diary": compose_diary(session),
+        "timeline": timeline,
+    }
+
+
 @router.get("/history", response_model=list)
 async def get_history(
     current_user: User = Depends(get_current_active_user),
